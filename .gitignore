@@ -1,0 +1,50 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Builds
+dist/
+lib/
+out/
+build/
+
+# Logs
+*.log
+*.tsbuildinfo
+
+# TypeScript
+*.d.ts
+*.js
+*.js.map
+
+# Jest
+coverage/
+.cache/
+*.snap
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# SO
+.DS_Store
+Thumbs.db
+
+# ts-node/ts-node-dev
+*.tmp
+
+# env
+.env
+.env.local
+.env.*.local
+
+# Lock
+package-lock.json
+yarn.lock
+
+# Temp
+example/
