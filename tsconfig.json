@@ -7,7 +7,12 @@
     "sourceMap": true,
     "outDir": "./dist",
     "skipLibCheck": true,
-    "strict": true
+    "strict": true,
+    "paths": {
+      "@fwg/utils/*": ["src/utils/*"],
+      "@fwg/methods/*": ["src/methods/*"],
+      "@fwg/types/*": ["src/types/*"],
+    }
   },
   "include": [
     "src/**/*"
@@ -15,5 +20,5 @@
   "exclude": [
     "node_modules",
     "**/__tests__/*"
-  ]
+  ],
 }

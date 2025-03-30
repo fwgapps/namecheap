@@ -1,10 +1,19 @@
 /**
- * Represents the available command domains for interacting with Namecheap's API.
- * Each enum value corresponds to a specific API operation for managing domains.
+ * Enumeration representing a collection of commands associated with domain operations in the Namecheap API.
+ * Each member of the enum represents a specific operation that can be performed on a domain.
  *
- * Enum members:
- * - GetList: Retrieves a list of domains associated with a Namecheap account.
- * - GetContact: Retrieves the contact details associated with a specific domain.
+ * Members:
+ * - GetList: Represents the command to retrieve a list of domains associated with an account.
+ * - GetContact: Represents the command to fetch contact details of a specific domain.
+ * - Create: Represents the command to register a new domain.
+ * - GetTldList: Represents the command to retrieve the list of supported TLDs (Top Level Domains).
+ * - SetContact: Represents the command to set or update contact information for a domain.
+ * - Check: Represents the command to check the availability of a specific domain.
+ * - Reactivate: Represents the command to reactivate an expired domain.
+ * - Renew: Represents the command to renew an active or expired domain.
+ * - GetRegistrarLock: Represents the command to retrieve the current registrar lock status of a domain.
+ * - SetRegistrarLock: Represents the command to set or modify the registrar lock status of a domain.
+ * - GetInfo: Represents the command to retrieve detailed information and configuration details of a domain.
  */
 export enum CommandsDomain {
     GetList = "namecheap.domains.getList",
@@ -13,4 +22,9 @@ export enum CommandsDomain {
     GetTldList = "namecheap.domains.getTldList",
     SetContact = "namecheap.domains.setContacts",
     Check = "namecheap.domains.check",
+    Reactivate = "namecheap.domains.reactivate",
+    Renew = "namecheap.domains.renew",
+    GetRegistrarLock = "namecheap.domains.getRegistrarLock",
+    SetRegistrarLock = "namecheap.domains.setRegistrarLock",
+    GetInfo = "namecheap.domains.getInfo",
 }
