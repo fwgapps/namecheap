@@ -1,26 +1,39 @@
-import {NamecheapResponse} from "../types/response.type";
+// TODO: Create types
+export const simplifyObject = (obj: any): any => {
+    if (Array.isArray(obj)) {
+        return obj
+            .map(simplifyObject)
+            .filter(item => item !== null && item !== undefined && item !== "");
+    } else if (typeof obj === "object" && obj !== null) {
+        const keys = Object.keys(obj);
 
-export const transformNumber = (value?: unknown): unknown | number => !value || isNaN(+value) ? value : +value;
-
-export const transformBoolean = (value?: unknown): unknown | boolean => {
-    if (typeof value === "string") {
-        const valueLowerCase = value.toLowerCase();
-        if (valueLowerCase === 'true' || valueLowerCase === "false") {
-            return valueLowerCase === "true";
+        if (
+            keys.length === 2 &&
+            keys.includes("#text") &&
+            keys.some(key => key !== "#text" && obj[key] === true)
+        ) {
+            return obj["#text"];
         }
+
+        if (
+            keys.length === 2 &&
+            keys.some(key => obj[key] === true)
+        ) {
+            const keyWithValue = keys.find(key => obj[key] !== true);
+            return simplifyObject(obj[keyWithValue!]);
+        }
+
+        return Object.keys(obj).reduce((acc, key) => {
+            const newKey = key === "#text" ? "value" : key;
+            const simplifiedValue = simplifyObject(obj[key]);
+
+            if (simplifiedValue !== null && simplifiedValue !== undefined && simplifiedValue !== "") {
+                acc[newKey] = simplifiedValue;
+            }
+
+            return acc;
+        }, {} as Record<string, any>);
     }
 
-    return value;
-};
-
-export const removeUndefinedKeys = <T = NamecheapResponse>(obj: NamecheapResponse): T => {
-    if (typeof obj !== 'object' || obj === null) {
-        return obj;
-    }
-
-    return Object.fromEntries(
-        Object.entries(obj)
-            .filter(([_, value]) => value !== undefined)
-            .map(([key, value]) => [key, removeUndefinedKeys(value)])
-    ) as T;
+    return obj;
 };

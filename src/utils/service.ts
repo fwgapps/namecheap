@@ -1,35 +1,22 @@
-import {parseStringPromise} from "xml2js";
+import { XMLParser } from "fast-xml-parser";
+import {camelCase, pascalCase} from "change-case";
 import type { NamecheapProps } from "../types/config.type";
-import {
-    NamecheapCommandResponseWithSuccessMap, NamecheapParamsMap,
-    NamecheapResponse,
-    NamecheapResponseWithErrors,
-    NamecheapResponseWithSuccess
-} from "../types/response.type";
-import {removeUndefinedKeys, transformBoolean, transformNumber} from "./xml";
-
-function capitalizeFirstLetter(input: string): string {
-    if (!input) return input; //
-    return input.charAt(0).toUpperCase() + input.slice(1);
-}
-
+import { simplifyObject} from "./xml";
+import {NamecheapXMLParsedBase, NamecheapXMLParsedFail, NamecheapXMLParsedSuccess} from "../types/methods/base.type";
+import {MappedDomain, NamecheapParamsMap} from "../types/methods/mapped.type";
 
 export const getNamecheapHost = (isSandbox: boolean) => {
     const host = !isSandbox ? "api.namecheap.com" : "api.sandbox.namecheap.com";
     return `https://${host}/xml.response`;
 };
 
-const checkRequestError = (response: NamecheapResponse) => {
-    return "Errors" in response && response.Errors && Object.keys(response.Errors).length > 0;
-};
+const checkRequestError = (response: NamecheapXMLParsedBase | NamecheapXMLParsedFail) => response.status === "ERROR" || Object.hasOwn(response, "errors")
 
-
-
-function flattenObjectToArray(input: Record<string, any>, prefix = ""): Array<[string, string]> {
+const flattenObjectToArray = (input: Record<string, any>, prefix = ""): Array<[string, string]> => {
     const result: Array<[string, string]> = [];
 
     Object.entries(input).forEach(([key, value]) => {
-        const capitalizedKey = `${prefix}${capitalizeFirstLetter(key)}`;
+        const capitalizedKey = pascalCase(`${prefix} ${key}`);
 
         if (typeof value === "object" && value !== null && !Array.isArray(value)) {
             result.push(...flattenObjectToArray(value, capitalizedKey));
@@ -41,9 +28,29 @@ function flattenObjectToArray(input: Record<string, any>, prefix = ""): Array<[s
     return result;
 }
 
+const tagNamesArray = [
+    "apiResponse.commandResponse.tlds.tld",
+    "apiResponse.commandResponse.tlds.tld.categories",
+    "apiResponse.commandResponse.domainGetListResult.domain",
+    "apiResponse.commandResponse.domainCheckResult"
+];
 
+const parser = new XMLParser({
+    allowBooleanAttributes: true,
+    attributeNamePrefix: "",
+    ignoreAttributes: false,
+    processEntities: true,
+    parseTagValue: true,
+    parseAttributeValue: true,
+    trimValues: true,
+    isArray: (_tagName, jPath) => {
+        return tagNamesArray.includes(jPath);
+    },
+    transformTagName: (tagName) => camelCase(tagName),
+    transformAttributeName: (attributeName) => camelCase(attributeName),
+});
 
-export async function request<T extends keyof NamecheapCommandResponseWithSuccessMap>(
+export async function request<T extends keyof MappedDomain>(
     namecheapProps: NamecheapProps, 
     command: T,
     params: NamecheapParamsMap[T] = {} as NamecheapParamsMap[T]
@@ -70,19 +77,11 @@ export async function request<T extends keyof NamecheapCommandResponseWithSucces
 
     const xmlData =  await response.text();
 
-
-    const json: NamecheapResponse<NamecheapCommandResponseWithSuccessMap[T]> = await parseStringPromise(xmlData, {
-        explicitArray: false,
-        normalize: true,
-        explicitRoot: false,
-        emptyTag: undefined,
-        valueProcessors: [transformNumber, transformBoolean],
-        attrValueProcessors: [transformNumber, transformBoolean]
-    });
+    const json: NamecheapXMLParsedBase = simplifyObject(parser.parse(xmlData)?.apiResponse);
 
     if(checkRequestError(json)){
-        throw (json as NamecheapResponseWithErrors);
+        throw (json as NamecheapXMLParsedFail);
     }
 
-    return removeUndefinedKeys<NamecheapCommandResponseWithSuccessMap[T]>(json);
+    return json as NamecheapXMLParsedSuccess<MappedDomain[T]>
 }

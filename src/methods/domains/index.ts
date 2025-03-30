@@ -1,14 +1,16 @@
 import {NamecheapProps} from "../../types/config.type";
 import {request} from "../../utils/service";
 import {CommandsDomain} from "../../utils/commands";
-import {formatGetListResponseSuccess} from "./formatResponse/getList";
-import { formatResponseError } from "../../utils/format";
-import {ContactDomain, CreateDomain, NamecheapResponseWithErrors} from "../../types/response.type";
-import {formatGetContactResponseSuccess} from "./formatResponse/getContacts";
-import {formatCreateResponseSuccess} from "./formatResponse/create";
-import {formatGetTldtListResponseSuccess} from "./formatResponse/getTldList";
-import {formatSetContactResponseSuccess} from "./formatResponse/setContacts";
-import {formatCheckResponseSuccess} from "./formatResponse/check";
+import type {
+    CheckSuccess,
+    CreateSuccess,
+    GetContactSuccess,
+    GetListSuccess,
+    GetTldListSuccess,
+    SetContactSuccess
+} from "../../types/methods/domains.type";
+import {NamecheapXMLParsedSuccess} from "../../types/methods/base.type";
+import {ContactDomain, CreateDomain} from "../../types/methods/params.type";
 
 export class Domains {
     private readonly config: NamecheapProps;
@@ -17,68 +19,37 @@ export class Domains {
         this.config = config;
     }
 
-    async getList() {
-        try {
-            const response =  await request(this.config, CommandsDomain.GetList);
-            return formatGetListResponseSuccess(response)
-        } catch (error) {
-            throw formatResponseError(error as NamecheapResponseWithErrors)
-        }
+    getList(): Promise<NamecheapXMLParsedSuccess<GetListSuccess>> {
+       return request(this.config, CommandsDomain.GetList);
     }
 
-    async getContacts(domainName: string) {
-        try {
-            const response =  await request(this.config, CommandsDomain.GetContact, {
-                domainName
-            });
-
-            return formatGetContactResponseSuccess(response)
-        } catch (error) {
-            throw formatResponseError(error as NamecheapResponseWithErrors)
-        }
+    getContacts(domainName: string): Promise<NamecheapXMLParsedSuccess<GetContactSuccess>> {
+        return request(this.config, CommandsDomain.GetContact, {
+            domainName
+        });
     }
 
-    async create(domain: string, params: Omit<CreateDomain, "domainName">) {
-        try {
-            const response =  await request(this.config, CommandsDomain.Create, {
-                ...params,
-                domainName: domain
-            });
-            return formatCreateResponseSuccess(response)
-        } catch (error) {
-            throw formatResponseError(error as NamecheapResponseWithErrors)
-        }
+    create(domain: string, params: Omit<CreateDomain, "domainName">): Promise<NamecheapXMLParsedSuccess<CreateSuccess>> {
+        return request(this.config, CommandsDomain.Create, {
+            ...params,
+            domainName: domain
+        });
     }
 
-    async getTldList(){
-        try {
-            const response =  await request(this.config, CommandsDomain.GetTldList);
-            return formatGetTldtListResponseSuccess(response)
-        } catch (error) {
-            throw formatResponseError(error as NamecheapResponseWithErrors)
-        }
+    getTldList(): Promise<NamecheapXMLParsedSuccess<GetTldListSuccess>>{
+       return request(this.config, CommandsDomain.GetTldList)
     }
 
-    async setContacts(domain: string, params: Omit<ContactDomain, "domainName">) {
-        try {
-            const response =  await request(this.config, CommandsDomain.SetContact, {
-                ...params,
-                domainName: domain,
-            });
-            return formatSetContactResponseSuccess(response)
-        } catch (error) {
-            throw formatResponseError(error as NamecheapResponseWithErrors)
-        }
+    setContacts(domain: string, params: Omit<ContactDomain, "domainName">): Promise<NamecheapXMLParsedSuccess<SetContactSuccess>> {
+        return request(this.config, CommandsDomain.SetContact, {
+            ...params,
+            domainName: domain,
+        });
     }
 
-    async check(domains: Array<string>){
-        try {
-            const response =  await request(this.config, CommandsDomain.Check, {
-                domainList: domains.join(),
-            });
-            return formatCheckResponseSuccess(response)
-        } catch (error) {
-            throw formatResponseError(error as NamecheapResponseWithErrors)
-        }
+    check(domains: Array<string>): Promise<NamecheapXMLParsedSuccess<CheckSuccess>>{
+        return request(this.config, CommandsDomain.Check, {
+            domainList: domains.join(),
+        });
     }
 }
