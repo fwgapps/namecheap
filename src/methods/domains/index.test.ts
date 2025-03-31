@@ -10,6 +10,7 @@ jest.mock('./index', () => {
     };
 });
 
+/* eslint-disable */
 const requestMock = require('./index').request;
 
 const mockConfig: NamecheapProps = {

@@ -28,7 +28,7 @@ export const getNamecheapHost = (isSandbox: boolean): string => {
  * @param {NamecheapXMLParsedBase | NamecheapXMLParsedFail} response - The parsed response object to evaluate.
  * @returns {boolean} True if the response indicates an error, otherwise false.
  */
-const checkRequestError = (response: NamecheapXMLParsedBase | NamecheapXMLParsedFail): boolean => response.status === "ERROR" || Object.hasOwn(response, "errors")
+const checkRequestError = (response: NamecheapXMLParsedBase | NamecheapXMLParsedFail): boolean => response.status === "ERROR" || Object.hasOwnProperty.call(response, "errors")
 
 /**
  * Flattens a nested object into an array of key-value pairs where the keys are
@@ -39,6 +39,7 @@ const checkRequestError = (response: NamecheapXMLParsedBase | NamecheapXMLParsed
  * @returns {Array<[string, string]>} An array of key-value pairs where each key is in PascalCase,
  *                                    and values are converted to strings.
  */
+/* eslint-disable */
 const flattenObjectToArray = (input: Record<string, any>, prefix: string = ""): Array<[string, string]> => {
     const result: Array<[string, string]> = [];
 

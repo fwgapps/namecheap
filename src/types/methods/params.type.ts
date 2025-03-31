@@ -224,6 +224,7 @@ export interface ContactDomain extends Contacts {
  * Represents an empty set of parameters.
  * This interface is typically used as a placeholder where no parameters are required.
  */
+/* eslint-disable */
 export interface EmptyParams {}
 
 /**
