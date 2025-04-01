@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import { camelCase, pascalCase } from "change-case";
+import { camelCase, pascalCase } from "change-case-all";
 import { simplifyObject } from "./xml";
 import type { NamecheapProps } from "../types/config.type";
 import type { NamecheapXMLParsedBase, NamecheapXMLParsedFail, NamecheapXMLParsedSuccess } from "../types/methods/base.type";

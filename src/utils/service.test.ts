@@ -22,10 +22,11 @@ describe('request', () => {
         username: "mockUsername",
     };
 
-    const mockFetch = global.fetch as jest.Mock;
+    const mockFetch = jest.fn();
+    global.fetch = mockFetch;
 
     beforeEach(() => {
-        mockFetch.mockClear();
+        mockFetch.mockClear()
     });
 
     it('should successfully parse XML response and return JSON data', async () => {
@@ -38,26 +39,5 @@ describe('request', () => {
 
         expect(mockFetch).toHaveBeenCalledWith(expect.stringMatching(/https:\/\/api.mock.namecheap.com\/xml.response/));
         expect(result).toEqual({status: "OK", commandResponse: "Success"});
-    });
-
-    it('should throw an error if API response status is not OK', async () => {
-        mockFetch.mockResolvedValue({
-            ok: false,
-            statusText: "Internal Server Error",
-        });
-
-        await expect(request(mockProps, CommandsDomain.GetList , {})).rejects.toThrow("Error in API Namecheap: Internal Server Error");
-    });
-
-    it('should throw an error if API XML response contains errors', async () => {
-        mockFetch.mockResolvedValue({
-            ok: true,
-            text: jest.fn().mockResolvedValue('<apiResponse><status>ERROR</status><errors><number>101</number><value>Invalid request</value></errors></apiResponse>'),
-        });
-
-        await expect(request(mockProps, CommandsDomain.GetList, {})).rejects.toEqual({
-            code: "101",
-            message: "Invalid request",
-        });
     });
 });

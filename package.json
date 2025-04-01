@@ -40,7 +40,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "change-case": "^5.4.4",
+    "change-case-all": "^2.1.0",
     "fast-xml-parser": "^5.0.9"
   },
   "repository": {
