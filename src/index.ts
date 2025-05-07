@@ -1,6 +1,7 @@
 import {ConfigType, type NamecheapProps} from "./types/config.type";
 import {getNamecheapHost} from "./utils/service";
 import {Domains} from "./methods/domains";
+import {DomainsDNS} from "@fwg/methods/domains/dns";
 
 export default class Namecheap {
     private readonly apiUrl: string;
@@ -10,6 +11,7 @@ export default class Namecheap {
     private readonly clientIp: string;
 
     public readonly domains: Domains;
+    public readonly domainsDns: DomainsDNS;
 
     constructor(
         config: ConfigType
@@ -23,6 +25,7 @@ export default class Namecheap {
         this.apiUrl = getNamecheapHost(sandbox);
 
         this.domains = new Domains(this.getConfig());
+        this.domainsDns = new DomainsDNS(this.getConfig());
 
     }
 

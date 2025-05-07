@@ -28,3 +28,13 @@ export enum CommandsDomain {
     SetRegistrarLock = "namecheap.domains.setRegistrarLock",
     GetInfo = "namecheap.domains.getInfo",
 }
+
+export enum CommandsDomainDNS {
+    SetDefault = "namecheap.domains.dns.setDefault",
+    SetCustom = "namecheap.domains.dns.setCustom",
+    GetList = "namecheap.domains.dns.getList",
+    GetHosts = "namecheap.domains.dns.getHosts",
+    GetEmailForwarding = "namecheap.domains.dns.getEmailForwarding",
+    SetEmailForwarding = "namecheap.domains.dns.setEmailForwarding",
+    SetHosts = "namecheap.domains.dns.setHosts",
+}

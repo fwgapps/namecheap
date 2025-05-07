@@ -1,4 +1,4 @@
-import { CommandsDomain } from "@fwg/utils/commands";
+import {CommandsDomain, CommandsDomainDNS} from "@fwg/utils/commands";
 import type {
     CreateSuccess,
     GetContactSuccess,
@@ -17,6 +17,22 @@ import type {
     RenewDomain,
     SetRegistrarLock
 } from "./params.type";
+import {
+    SetCustomSuccess,
+    SetDefaultSuccess,
+    GetListSuccess as DNSGetListSuccess,
+    GetHostsSuccess, GetEmailForwardingSuccess, SetEmailForwardingSuccess, SetHostsSuccess
+} from "@fwg/types/methods/domains-dns.type";
+import {
+    SetCustom,
+    SetDefault,
+    GetList as DNSGetList,
+    GetHosts,
+    GetEmailForwarding, SetEmailForwarding, SetHosts
+} from "@fwg/types/methods/dns-params.type";
+import {
+    SetHosts as SetHostsRoot
+} from "@fwg/types/methods/dns-root-params.type";
 
 /**
  * Represents a mapped collection of domain operation commands to their corresponding success response types.
@@ -32,7 +48,7 @@ import type {
  * The purpose of this interface is to provide a clear structure for handling the outcomes of domain-related
  * operations, improving type safety and ensuring accurate typing of responses.
  */
-export interface MappedDomain {
+export interface MappedDomainSuccess {
     [CommandsDomain.GetList]: GetListSuccess
     [CommandsDomain.GetContact]: GetContactSuccess
     [CommandsDomain.Create]: CreateSuccess
@@ -46,14 +62,19 @@ export interface MappedDomain {
     [CommandsDomain.GetInfo]: GetInfoSuccess
 }
 
-/**
- * Represents a mapping of Namecheap API command types to their respective parameter types.
- *
- * The `NamecheapParamsMap` type is an object where each key corresponds to a specific
- * Namecheap command within the `CommandsDomain` enumeration and the associated value
- * represents the required parameters for executing that command.
- */
-export type NamecheapParamsMap = {
+export interface MappedDomainDNSSuccess {
+    [CommandsDomainDNS.SetDefault]: SetDefaultSuccess
+    [CommandsDomainDNS.SetCustom]: SetCustomSuccess
+    [CommandsDomainDNS.GetList]: DNSGetListSuccess
+    [CommandsDomainDNS.GetHosts]: GetHostsSuccess
+    [CommandsDomainDNS.GetEmailForwarding]: GetEmailForwardingSuccess
+    [CommandsDomainDNS.SetEmailForwarding]: SetEmailForwardingSuccess
+    [CommandsDomainDNS.SetHosts]: SetHostsSuccess
+}
+
+export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess
+
+export type NamecheapParamsDomainMap = {
     [CommandsDomain.GetList]: GetList
     [CommandsDomain.GetContact]: GetContactParams
     [CommandsDomain.Create]: CreateDomain
@@ -66,3 +87,47 @@ export type NamecheapParamsMap = {
     [CommandsDomain.SetRegistrarLock]: SetRegistrarLock,
     [CommandsDomain.GetInfo]: GetInfo
 }
+
+export type NamecheapParamsDomainDNSMap = {
+    [CommandsDomainDNS.SetDefault]: SetDefault
+    [CommandsDomainDNS.SetCustom]: SetCustom
+    [CommandsDomainDNS.GetList]: DNSGetList
+    [CommandsDomainDNS.GetHosts]: GetHosts
+    [CommandsDomainDNS.GetEmailForwarding]: GetEmailForwarding
+    [CommandsDomainDNS.SetEmailForwarding]: SetEmailForwarding
+    [CommandsDomainDNS.SetHosts]: SetHosts
+}
+
+
+export type NamecheapRootParamsMap = {
+    [CommandsDomainDNS.SetHosts]: SetHostsRoot
+
+    // Only to keep compatible with GET method
+    [CommandsDomainDNS.SetDefault]: EmptyParams
+    [CommandsDomainDNS.SetCustom]: EmptyParams
+    [CommandsDomainDNS.GetList]: EmptyParams
+    [CommandsDomainDNS.GetHosts]: EmptyParams
+    [CommandsDomainDNS.GetEmailForwarding]: EmptyParams
+    [CommandsDomainDNS.SetEmailForwarding]: EmptyParams
+    [CommandsDomain.GetList]: EmptyParams
+    [CommandsDomain.GetContact]: EmptyParams
+    [CommandsDomain.Create]: EmptyParams
+    [CommandsDomain.GetTldList]: EmptyParams
+    [CommandsDomain.SetContact]: EmptyParams
+    [CommandsDomain.Check]: EmptyParams
+    [CommandsDomain.Reactivate]: EmptyParams,
+    [CommandsDomain.Renew]: EmptyParams,
+    [CommandsDomain.GetRegistrarLock]: EmptyParams,
+    [CommandsDomain.SetRegistrarLock]: EmptyParams,
+    [CommandsDomain.GetInfo]: EmptyParams
+}
+
+/**
+     }
+ * Represents a mapping of Namecheap API command types to their respective parameter types.
+ *
+ * The `NamecheapParamsMap` type is an object where each key corresponds to a specific
+ * Namecheap command within the `CommandsDomain` enumeration and the associated value
+ * represents the required parameters for executing that command.
+ */
+export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap

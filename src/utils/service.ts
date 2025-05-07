@@ -2,8 +2,13 @@ import { XMLParser } from "fast-xml-parser";
 import { camelCase, pascalCase } from "change-case-all";
 import { simplifyObject } from "./xml";
 import type { NamecheapProps } from "../types/config.type";
-import type { NamecheapXMLParsedBase, NamecheapXMLParsedFail, NamecheapXMLParsedSuccess } from "../types/methods/base.type";
-import type { MappedDomain, NamecheapParamsMap } from "../types/methods/mapped.type";
+import {
+    NamecheapXMLParsedBase,
+    NamecheapXMLParsedFail,
+    NamecheapXMLParsedSuccess,
+    RequestValues
+} from "../types/methods/base.type";
+import {MappedResponseSuccess, NamecheapParamsMap, NamecheapRootParamsMap} from "../types/methods/mapped.type";
 
 /**
  * Generates the URL for the Namecheap API endpoint based on the environment.
@@ -40,7 +45,7 @@ const checkRequestError = (response: NamecheapXMLParsedBase | NamecheapXMLParsed
  *                                    and values are converted to strings.
  */
 /* eslint-disable */
-const flattenObjectToArray = (input: Record<string, any>, prefix: string = ""): Array<[string, string]> => {
+const flattenObjectToArray = (input: Record<string, any>, prefix: string = "", arrayFormat = true): Array<[string, string]> => {
     const result: Array<[string, string]> = [];
 
     Object.entries(input).forEach(([key, value]) => {
@@ -48,6 +53,14 @@ const flattenObjectToArray = (input: Record<string, any>, prefix: string = ""): 
 
         if (typeof value === "object" && value !== null && !Array.isArray(value)) {
             result.push(...flattenObjectToArray(value, capitalizedKey));
+        }  else if (typeof value === "object" && value !== null && Array.isArray(value)) {
+            value.forEach((item, index) => {
+                if(arrayFormat){
+                    result.push([`${capitalizedKey}[${index + 1}]`, String(item)]);
+                } else {
+                    result.push([`${capitalizedKey}${index + 1}`, String(item)]);
+                }
+            })
         } else if (value !== undefined && value !== null) {
             result.push([capitalizedKey, String(value)]);
         }
@@ -100,11 +113,11 @@ const parser = new XMLParser({
  * @return {Promise<NamecheapXMLParsedSuccess<MappedDomain[T]>>} The parsed JSON response representing the successful result of the API request.
  * @throws {Error} Throws an error if the API response status is not OK or if the API returns a failure response.
  */
-export async function request<T extends keyof MappedDomain>(
+export async function request<T extends keyof MappedResponseSuccess>(
     namecheapProps: NamecheapProps, 
     command: T,
     params: NamecheapParamsMap[T] = {} as NamecheapParamsMap[T]
-) {
+): Promise<NamecheapXMLParsedSuccess<MappedResponseSuccess[T]>> {
     const { apiUser, apiKey, apiUrl, username, clientIp} = namecheapProps;
 
     let url = new URL(apiUrl);
@@ -120,13 +133,12 @@ export async function request<T extends keyof MappedDomain>(
 
     const response = await fetch(url.toString());
 
-
     if (!response.ok) {
         throw new Error(`Error in API Namecheap: ${response.statusText}`);
     }
 
     const xmlData =  await response.text();
-    const parsedValue: { apiResponse: MappedDomain[T] } = parser.parse(xmlData);
+    const parsedValue: { apiResponse: MappedResponseSuccess[T] } = parser.parse(xmlData);
     const json: NamecheapXMLParsedBase = simplifyObject(parsedValue.apiResponse);
 
     if(checkRequestError(json)){
@@ -137,5 +149,65 @@ export async function request<T extends keyof MappedDomain>(
         }
     }
 
-    return json as NamecheapXMLParsedSuccess<MappedDomain[T]>
+    return json as NamecheapXMLParsedSuccess<MappedResponseSuccess[T]>
+}
+
+export async function requestPost<T extends keyof MappedResponseSuccess>(
+    namecheapProps: NamecheapProps,
+    command: T,
+    rootParams: NamecheapRootParamsMap[T] = {} as NamecheapRootParamsMap[T],
+    params: NamecheapParamsMap[T] = {} as NamecheapParamsMap[T]
+): Promise<NamecheapXMLParsedSuccess<MappedResponseSuccess[T]>> {
+    const { apiUser, apiKey, apiUrl, username, clientIp} = namecheapProps;
+
+    let url = new URL(apiUrl);
+    url.searchParams.append("ApiUser", apiUser);
+    url.searchParams.append("ApiKey", apiKey);
+    url.searchParams.append("UserName", username);
+    url.searchParams.append("ClientIp", clientIp);
+    url.searchParams.append("Command", command);
+
+    const requestValues: Array<RequestValues> = [];
+
+    flattenObjectToArray(rootParams).forEach(([key, value]) => {
+        url.searchParams.append(key, value)
+    })
+
+    flattenObjectToArray(params, "", false).forEach(([key, value]) => {
+        requestValues.push({
+            Key: key,
+            Value: value
+        })
+    })
+
+
+    const body = {
+        request: {
+            RequestValues: requestValues,
+            ...rootParams
+        }
+    }
+
+    const response = await fetch(url.toString(), {
+        method: "POST",
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error in API Namecheap: ${response.statusText}`);
+    }
+
+    const xmlData =  await response.text();
+    const parsedValue: { apiResponse: MappedResponseSuccess[T] } = parser.parse(xmlData);
+    const json: NamecheapXMLParsedBase = simplifyObject(parsedValue.apiResponse);
+
+    if(checkRequestError(json)){
+        const error = (json as NamecheapXMLParsedFail).errors;
+        throw {
+            code: error.number,
+            message: error.value
+        }
+    }
+
+    return json as NamecheapXMLParsedSuccess<MappedResponseSuccess[T]>
 }

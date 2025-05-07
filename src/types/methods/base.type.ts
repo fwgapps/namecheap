@@ -95,3 +95,5 @@ export interface Paging {
 export type NamecheapCommandResponse<T> = T & {
     type: string;
 }
+
+export type RequestValues = Record<string, string>;
