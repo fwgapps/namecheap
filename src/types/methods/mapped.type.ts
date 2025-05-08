@@ -1,4 +1,4 @@
-import {CommandsDomain, CommandsDomainDNS, CommandsDomainNS} from "@fwg/utils/commands";
+import {CommandsDomain, CommandsDomainDNS, CommandsDomainNS, CommandsDomainTransfer} from "@fwg/utils/commands";
 import type {
     CreateSuccess,
     GetContactSuccess,
@@ -55,6 +55,13 @@ import {
     GetInfoNSParams,
     UpdateNSParams
 } from "@fwg/types/methods/params/ns-params.type";
+import {CreateTransferParams, GetListTransferParams} from "@fwg/types/methods/params/transfer-params.type";
+import {
+    DomainTransferCreateBaseResult,
+    DomainTransferGetListBaseResult,
+    DomainTransferGetStatusBaseResult,
+    DomainTransferUpdateBaseStatus,
+} from "@fwg/types/methods/response/domains-transfer.type";
 
 interface EmptyParams {}
 /**
@@ -102,7 +109,14 @@ export interface MappedDomainNSSuccess {
     [CommandsDomainNS.Delete]: DeleteNSSuccess
 }
 
-export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess
+export type MappedDomainTransferSuccess = {
+    [CommandsDomainTransfer.Create]: DomainTransferCreateBaseResult
+    [CommandsDomainTransfer.GetList]: DomainTransferGetListBaseResult
+    [CommandsDomainTransfer.GetStatus]: DomainTransferGetStatusBaseResult
+    [CommandsDomainTransfer.UpdateStatus]: DomainTransferUpdateBaseStatus
+}
+
+export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess
 
 export type NamecheapParamsDomainMap = {
     [CommandsDomain.GetList]: GetListParams
@@ -135,6 +149,13 @@ export type NamecheapParamsDomainNSMap = {
     [CommandsDomainNS.GetInfo]: GetInfoNSParams
 }
 
+export type NamecheapParamsDomainTransferMap = {
+    [CommandsDomainTransfer.Create]: CreateTransferParams
+    [CommandsDomainTransfer.GetList]: GetListTransferParams
+    [CommandsDomainTransfer.GetStatus]: EmptyParams
+    [CommandsDomainTransfer.UpdateStatus]: EmptyParams
+}
+
 type AllCommands = CommandsDomain | CommandsDomainDNS | CommandsDomainNS;
 type NamecheapPostCommands =  Omit<{
     [K in AllCommands]: EmptyParams;
@@ -157,4 +178,4 @@ export type NamecheapPostParamsMap = NamecheapPostCommands & {
  * Namecheap command within the `CommandsDomain` enumeration and the associated value
  * represents the required parameters for executing that command.
  */
-export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap
+export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap

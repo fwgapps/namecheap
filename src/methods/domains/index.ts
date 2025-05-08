@@ -16,6 +16,7 @@ import type {
     RenewDomainParams,
     SetRegistrarLockParams
 } from "@fwg/types/methods/params/domains-params.type";
+import {Paging} from "@fwg/types/methods/base.type";
 
 /**
  * The `Domains` class provides methods to interact with domain-related functionalities
@@ -42,9 +43,15 @@ export class Domains {
         listType: "ALL",
         page: 1,
         pageSize: 20
-    }): Promise<Array<DomainGetListResult>> {
+    }): Promise<{
+        data: Array<DomainGetListResult>;
+        paging: Paging
+    }> {
        const response = await request(this.config, CommandsDomain.GetList, params);
-       return response.commandResponse.domainGetListResult
+       return {
+           data: response.commandResponse.domainGetListResult,
+           paging: response.commandResponse.paging
+       }
     }
 
     /**

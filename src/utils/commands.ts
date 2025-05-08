@@ -45,3 +45,10 @@ export enum CommandsDomainNS {
     GetInfo = "namecheap.domains.ns.getInfo",
     Update = "namecheap.domains.ns.update"
 }
+
+export enum CommandsDomainTransfer {
+    Create = "namecheap.domains.transfer.create",
+    GetStatus = "namecheap.domains.transfer.getStatus",
+    UpdateStatus = "namecheap.domains.transfer.updateStatus",
+    GetList = "namecheap.domains.transfer.getList"
+}
