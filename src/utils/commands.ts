@@ -52,3 +52,48 @@ export enum CommandsDomainTransfer {
     UpdateStatus = "namecheap.domains.transfer.updateStatus",
     GetList = "namecheap.domains.transfer.getList"
 }
+
+export enum CommandsSSL {
+    Create = "namecheap.ssl.create",
+    GetList = "namecheap.ssl.getList",
+    ParseCRS = "namecheap.ssl.parseCSR",
+    GetApproverEmailList = "namecheap.ssl.getApproverEmailList",
+    Activate = "namecheap.ssl.activate",
+    ResendApproverEmail = "namecheap.ssl.resendApproverEmail",
+    GetInfo = "namecheap.ssl.getInfo",
+    Renew = "namecheap.ssl.renew",
+    Reissue = "namecheap.ssl.reissue",
+    ResendFulfillmentEmail = "namecheap.ssl.resendfulfillmentemail",
+    PurchaseMoreSANS = "namecheap.ssl.purchasemoresans",
+    RevokeCertificate = "namecheap.ssl.revokecertificate",
+    EditDCVMethod = "namecheap.ssl.editDCVMethod"
+}
+
+export enum CommandsUser {
+    GetPricing = "namecheap.users.getPricing",
+    GetBalances = "namecheap.users.getBalances",
+    ChangePassword = "namecheap.users.changePassword",
+    Update = "namecheap.users.update",
+    CreateAddFundsRequest = "namecheap.users.createaddfundsrequest",
+    GetAddFundsStatus = "namecheap.users.getAddFundsStatus",
+    Create = "namecheap.users.create",
+    Login = "namecheap.users.login",
+    ResetPassword = "namecheap.users.resetPassword"
+}
+
+export enum CommandsUserAddress {
+    Create = "namecheap.users.address.create",
+    Delete = "namecheap.users.address.delete",
+    GetInfo = "namecheap.users.address.getInfo",
+    GetList = "namecheap.users.address.getList",
+    SetDefault = "namecheap.users.address.setDefault",
+    Update = "namecheap.users.address.update"
+}
+
+export enum CommandsWhoIsGuard {
+    ChangeEmailAddress = "namecheap.whoisguard.changeemailaddress",
+    Enable = "namecheap.whoisguard.enable",
+    Disable = "namecheap.whoisguard.disable",
+    GetList = "namecheap.whoisguard.getList",
+    Renew = "namecheap.whoisguard.renew"
+}
