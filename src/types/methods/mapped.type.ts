@@ -1,4 +1,4 @@
-import {CommandsDomain, CommandsDomainDNS} from "@fwg/utils/commands";
+import {CommandsDomain, CommandsDomainDNS, CommandsDomainNS} from "@fwg/utils/commands";
 import type {
     CreateSuccess,
     GetContactSuccess,
@@ -6,34 +6,59 @@ import type {
     GetTldListSuccess,
     SetContactSuccess,
     CheckSuccess,
-    ReactiveSuccess, RenewSuccess, GetRegistrarLockSuccess, SetRegistrarLockSuccess, GetInfoSuccess
-} from "./domains.type";
+    ReactiveSuccess,
+    RenewSuccess,
+    GetRegistrarLockSuccess,
+    SetRegistrarLockSuccess,
+    GetInfoSuccess
+} from "./response/domains.type";
 import type {
-    ContactDomain,
-    CreateDomain,
-    EmptyParams,
-    GetContactParams, GetInfo, GetList,
-    ReactivateDomain,
-    RenewDomain,
-    SetRegistrarLock
-} from "./params.type";
+    ContactDomainParams,
+    CreateDomainParams,
+    GetContactParams,
+    GetInfoParams,
+    GetListParams,
+    ReactivateDomainParams,
+    RenewDomainParams,
+    SetRegistrarLockParams
+} from "./params/domains-params.type";
 import {
-    SetCustomSuccess,
-    SetDefaultSuccess,
-    GetListSuccess as DNSGetListSuccess,
-    GetHostsSuccess, GetEmailForwardingSuccess, SetEmailForwardingSuccess, SetHostsSuccess
-} from "@fwg/types/methods/domains-dns.type";
+    SetDNSCustomSuccess,
+    SetDNSDefaultSuccess,
+    GetDNSListSuccess,
+    GetDNSHostsSuccess,
+    GetDNSEmailForwardingSuccess,
+    SetDNSEmailForwardingSuccess,
+    SetDNSHostsSuccess
+} from "@fwg/types/methods/response/domains-dns.type";
 import {
-    SetCustom,
-    SetDefault,
-    GetList as DNSGetList,
-    GetHosts,
-    GetEmailForwarding, SetEmailForwarding, SetHosts
-} from "@fwg/types/methods/dns-params.type";
+    SetDNSCustomParams,
+    SetDNSDefaultParams,
+    GetDNSListParams,
+    GetDNSHostsParams,
+    GetDNSEmailForwardingParams,
+    SetDNSEmailForwardingParams,
+    SetDNSHostsParams, SetDNSHostsFormattedParams
+} from "@fwg/types/methods/params/dns-params.type";
 import {
-    SetHosts as SetHostsRoot
-} from "@fwg/types/methods/dns-root-params.type";
+    SetDNSRootHostsParams
+} from "@fwg/types/methods/params/dns-root-params.type";
+import {
+    CreateNSSuccess,
+    GetNSInfoSuccess,
+    DeleteNSSuccess,
+    UpdateNSSuccess
+} from "@fwg/types/methods/response/domains-ns.type";
+import {
+    CreateNSParams,
+    DeleteNSParams,
+    GetInfoNSParams,
+    UpdateNSParams
+} from "@fwg/types/methods/params/ns-params.type";
 
+interface EmptyParams {
+
+}
 /**
  * Represents a mapped collection of domain operation commands to their corresponding success response types.
  *
@@ -63,65 +88,66 @@ export interface MappedDomainSuccess {
 }
 
 export interface MappedDomainDNSSuccess {
-    [CommandsDomainDNS.SetDefault]: SetDefaultSuccess
-    [CommandsDomainDNS.SetCustom]: SetCustomSuccess
-    [CommandsDomainDNS.GetList]: DNSGetListSuccess
-    [CommandsDomainDNS.GetHosts]: GetHostsSuccess
-    [CommandsDomainDNS.GetEmailForwarding]: GetEmailForwardingSuccess
-    [CommandsDomainDNS.SetEmailForwarding]: SetEmailForwardingSuccess
-    [CommandsDomainDNS.SetHosts]: SetHostsSuccess
+    [CommandsDomainDNS.SetDefault]: SetDNSDefaultSuccess
+    [CommandsDomainDNS.SetCustom]: SetDNSCustomSuccess
+    [CommandsDomainDNS.GetList]: GetDNSListSuccess
+    [CommandsDomainDNS.GetHosts]: GetDNSHostsSuccess
+    [CommandsDomainDNS.GetEmailForwarding]: GetDNSEmailForwardingSuccess
+    [CommandsDomainDNS.SetEmailForwarding]: SetDNSEmailForwardingSuccess
+    [CommandsDomainDNS.SetHosts]: SetDNSHostsSuccess
 }
 
-export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess
+export interface MappedDomainNSSuccess {
+    [CommandsDomainNS.Create]: CreateNSSuccess
+    [CommandsDomainNS.GetInfo]: GetNSInfoSuccess
+    [CommandsDomainNS.Update]: UpdateNSSuccess
+    [CommandsDomainNS.Delete]: DeleteNSSuccess
+}
+
+export type MappedResponseSuccess = MappedDomainSuccess | MappedDomainDNSSuccess | MappedDomainNSSuccess
 
 export type NamecheapParamsDomainMap = {
-    [CommandsDomain.GetList]: GetList
+    [CommandsDomain.GetList]: GetListParams
     [CommandsDomain.GetContact]: GetContactParams
-    [CommandsDomain.Create]: CreateDomain
+    [CommandsDomain.Create]: CreateDomainParams
     [CommandsDomain.GetTldList]: EmptyParams
-    [CommandsDomain.SetContact]: ContactDomain
+    [CommandsDomain.SetContact]: ContactDomainParams
     [CommandsDomain.Check]: EmptyParams
-    [CommandsDomain.Reactivate]: ReactivateDomain,
-    [CommandsDomain.Renew]: RenewDomain,
+    [CommandsDomain.Reactivate]: ReactivateDomainParams,
+    [CommandsDomain.Renew]: RenewDomainParams,
     [CommandsDomain.GetRegistrarLock]: EmptyParams,
-    [CommandsDomain.SetRegistrarLock]: SetRegistrarLock,
-    [CommandsDomain.GetInfo]: GetInfo
+    [CommandsDomain.SetRegistrarLock]: SetRegistrarLockParams,
+    [CommandsDomain.GetInfo]: GetInfoParams
 }
 
 export type NamecheapParamsDomainDNSMap = {
-    [CommandsDomainDNS.SetDefault]: SetDefault
-    [CommandsDomainDNS.SetCustom]: SetCustom
-    [CommandsDomainDNS.GetList]: DNSGetList
-    [CommandsDomainDNS.GetHosts]: GetHosts
-    [CommandsDomainDNS.GetEmailForwarding]: GetEmailForwarding
-    [CommandsDomainDNS.SetEmailForwarding]: SetEmailForwarding
-    [CommandsDomainDNS.SetHosts]: SetHosts
+    [CommandsDomainDNS.SetDefault]: SetDNSDefaultParams
+    [CommandsDomainDNS.SetCustom]: SetDNSCustomParams
+    [CommandsDomainDNS.GetList]: GetDNSListParams
+    [CommandsDomainDNS.GetHosts]: GetDNSHostsParams
+    [CommandsDomainDNS.GetEmailForwarding]: GetDNSEmailForwardingParams
+    [CommandsDomainDNS.SetEmailForwarding]: SetDNSEmailForwardingParams
+    [CommandsDomainDNS.SetHosts]: SetDNSHostsParams
 }
 
+export type NamecheapParamsDomainNSMap = {
+    [CommandsDomainNS.Create]: CreateNSParams
+    [CommandsDomainNS.Delete]: DeleteNSParams
+    [CommandsDomainNS.Update]: UpdateNSParams
+    [CommandsDomainNS.GetInfo]: GetInfoNSParams
+}
 
 export type NamecheapRootParamsMap = {
-    [CommandsDomainDNS.SetHosts]: SetHostsRoot
-
-    // Only to keep compatible with GET method
-    [CommandsDomainDNS.SetDefault]: EmptyParams
-    [CommandsDomainDNS.SetCustom]: EmptyParams
-    [CommandsDomainDNS.GetList]: EmptyParams
-    [CommandsDomainDNS.GetHosts]: EmptyParams
-    [CommandsDomainDNS.GetEmailForwarding]: EmptyParams
-    [CommandsDomainDNS.SetEmailForwarding]: EmptyParams
-    [CommandsDomain.GetList]: EmptyParams
-    [CommandsDomain.GetContact]: EmptyParams
-    [CommandsDomain.Create]: EmptyParams
-    [CommandsDomain.GetTldList]: EmptyParams
-    [CommandsDomain.SetContact]: EmptyParams
-    [CommandsDomain.Check]: EmptyParams
-    [CommandsDomain.Reactivate]: EmptyParams,
-    [CommandsDomain.Renew]: EmptyParams,
-    [CommandsDomain.GetRegistrarLock]: EmptyParams,
-    [CommandsDomain.SetRegistrarLock]: EmptyParams,
-    [CommandsDomain.GetInfo]: EmptyParams
+    [K in CommandsDomain | CommandsDomainDNS | CommandsDomainNS]: EmptyParams
+} | {
+    [CommandsDomainDNS.SetHosts]: SetDNSRootHostsParams
 }
 
+export type NamecheapPostParamsMap = {
+    [K in CommandsDomain | CommandsDomainDNS | CommandsDomainNS]: EmptyParams
+} | {
+    [CommandsDomainDNS.SetHosts]: SetDNSHostsFormattedParams
+}
 /**
      }
  * Represents a mapping of Namecheap API command types to their respective parameter types.
@@ -130,4 +156,4 @@ export type NamecheapRootParamsMap = {
  * Namecheap command within the `CommandsDomain` enumeration and the associated value
  * represents the required parameters for executing that command.
  */
-export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap
+export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap

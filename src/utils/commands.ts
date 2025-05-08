@@ -38,3 +38,10 @@ export enum CommandsDomainDNS {
     SetEmailForwarding = "namecheap.domains.dns.setEmailForwarding",
     SetHosts = "namecheap.domains.dns.setHosts",
 }
+
+export enum CommandsDomainNS {
+    Create = "namecheap.domains.ns.create",
+    Delete = "namecheap.domains.ns.delete",
+    GetInfo = "namecheap.domains.ns.getInfo",
+    Update = "namecheap.domains.ns.update"
+}

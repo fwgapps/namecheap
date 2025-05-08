@@ -8,7 +8,12 @@ import {
     NamecheapXMLParsedSuccess,
     RequestValues
 } from "../types/methods/base.type";
-import {MappedResponseSuccess, NamecheapParamsMap, NamecheapRootParamsMap} from "../types/methods/mapped.type";
+import {
+    MappedResponseSuccess,
+    NamecheapParamsMap,
+    NamecheapPostParamsMap,
+    NamecheapRootParamsMap
+} from "../types/methods/mapped.type";
 
 /**
  * Generates the URL for the Namecheap API endpoint based on the environment.
@@ -144,8 +149,8 @@ export async function request<T extends keyof MappedResponseSuccess>(
     if(checkRequestError(json)){
         const error = (json as NamecheapXMLParsedFail).errors;
         throw {
-            code: error.number,
-            message: error.value
+            code: error.number || -1,
+            message: error.value || "Unknown Error"
         }
     }
 
@@ -156,7 +161,7 @@ export async function requestPost<T extends keyof MappedResponseSuccess>(
     namecheapProps: NamecheapProps,
     command: T,
     rootParams: NamecheapRootParamsMap[T] = {} as NamecheapRootParamsMap[T],
-    params: NamecheapParamsMap[T] = {} as NamecheapParamsMap[T]
+    params: NamecheapPostParamsMap[T] = {} as NamecheapPostParamsMap[T]
 ): Promise<NamecheapXMLParsedSuccess<MappedResponseSuccess[T]>> {
     const { apiUser, apiKey, apiUrl, username, clientIp} = namecheapProps;
 
@@ -183,8 +188,7 @@ export async function requestPost<T extends keyof MappedResponseSuccess>(
 
     const body = {
         request: {
-            RequestValues: requestValues,
-            ...rootParams
+            RequestValues: requestValues
         }
     }
 

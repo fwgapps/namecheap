@@ -1,15 +1,17 @@
 import type { NamecheapProps } from "@fwg/types/config.type";
-import type {NamecheapXMLParsedSuccess} from "@fwg/types/methods/base.type";
 import {
-    GetEmailForwardingSuccess,
-    GetHostsSuccess,
-    GetListSuccess,
-    SetCustomSuccess,
-    SetDefaultSuccess, SetEmailForwardingSuccess, SetHostsSuccess
-} from "@fwg/types/methods/domains-dns.type";
+    DomainDnsGetEmailForwardingResult,
+    DomainDnsGetHostsResult,
+    DomainDnsGetListResult
+} from "@fwg/types/methods/response/domains-dns.type";
 import {request, requestPost} from "@fwg/utils/service";
 import { CommandsDomainDNS } from "@fwg/utils/commands";
-import {SetEmailForwarding, SetHosts} from "@fwg/types/methods/dns-params.type";
+import {
+    Host,
+    RecordType,
+    SetDNSEmailForwardingParams,
+    SetDNSHostsParams
+} from "@fwg/types/methods/params/dns-params.type";
 
 export class DomainsDNS {
     private readonly config: NamecheapProps;
@@ -18,73 +20,87 @@ export class DomainsDNS {
         this.config = config;
     }
 
-    setDefault(sld: string, tld: string): Promise<NamecheapXMLParsedSuccess<SetDefaultSuccess>> {
-        return request(this.config, CommandsDomainDNS.SetDefault, {
+    async setDefault(sld: string, tld: string): Promise<string> {
+        const response = await request(this.config, CommandsDomainDNS.SetDefault, {
             sld,
             tld
         });
+
+        return response.commandResponse.domainDnsSetDefaultResult
     }
 
-    setCustom(sld: string, tld: string, nameservers: Array<string>): Promise<NamecheapXMLParsedSuccess<SetCustomSuccess>> {
-        return request(this.config, CommandsDomainDNS.SetCustom, {
+    async setCustom(sld: string, tld: string, nameservers: Array<string>): Promise<string> {
+        const response = await request(this.config, CommandsDomainDNS.SetCustom, {
             sld,
             tld,
             nameservers
         });
+
+        return response.commandResponse.domainDNSSetCustomResult
     }
 
-    getList(sld: string, tld: string): Promise<NamecheapXMLParsedSuccess<GetListSuccess>> {
-        return request(this.config, CommandsDomainDNS.GetList, {
+    async getList(sld: string, tld: string): Promise<DomainDnsGetListResult> {
+        const response = await request(this.config, CommandsDomainDNS.GetList, {
             sld,
             tld,
         });
+
+        return response.commandResponse.domainDnsGetListResult
     }
 
-    getHosts(sld: string, tld: string): Promise<NamecheapXMLParsedSuccess<GetHostsSuccess>> {
-        return request(this.config, CommandsDomainDNS.GetHosts, {
+    async getHosts(sld: string, tld: string): Promise<DomainDnsGetHostsResult> {
+        const response = await request(this.config, CommandsDomainDNS.GetHosts, {
             sld,
             tld,
         });
+
+        return response.commandResponse.domainDnsGetHostsResult
     }
 
-    getEmailForwarding(domain: string): Promise<NamecheapXMLParsedSuccess<GetEmailForwardingSuccess>> {
-        return request(this.config, CommandsDomainDNS.GetEmailForwarding, {
+    async getEmailForwarding(domain: string): Promise<DomainDnsGetEmailForwardingResult> {
+        const response = await request(this.config, CommandsDomainDNS.GetEmailForwarding, {
             domainName: domain
         });
+
+        return response.commandResponse.domainDnsGetEmailForwardingResult
     }
 
-    setEmailForwarding(
+    async setEmailForwarding(
         domain: string,
-        params: Omit<SetEmailForwarding, "domainName">
-    ): Promise<NamecheapXMLParsedSuccess<SetEmailForwardingSuccess>> {
-        return request(this.config, CommandsDomainDNS.SetEmailForwarding, {
+        params: Omit<SetDNSEmailForwardingParams, "domainName">
+    ): Promise<string> {
+        const response = await request(this.config, CommandsDomainDNS.SetEmailForwarding, {
             ...params,
             domainName: domain
         });
+
+        return response.commandResponse.domainDnsSetEmailForwardingResult
     }
 
-    setHosts(
+    async setHosts(
         sld: string,
         tld: string,
-        params: Omit<SetHosts, "sld" | "tld">
-    ): Promise<NamecheapXMLParsedSuccess<SetHostsSuccess>> {
+        params: Omit<SetDNSHostsParams, "sld" | "tld"> & { hosts: Array<Host> }
+    ): Promise<string> {
         const { hosts } = params;
         const paramsFormatted = hosts.reduce((acc, host, i) => {
             Object.entries(host).forEach(([key, value]) => {
-               acc[key][i] = value
+               // @ts-ignore
+                acc[key][i] = value
             });
 
             return acc;
         }, {
-            hostname: [],
-            ttl: [],
-            address: [],
-            mxpref: [],
-            recordType: []
+            hostname: [] as Array<string>,
+            ttl: [] as Array<number>,
+            address: [] as Array<string>,
+            mxpref: [] as Array<string>,
+            recordType: [] as Array<RecordType>,
         })
+        let response;
 
         if(hosts.length > 10) {
-            return requestPost(this.config, CommandsDomainDNS.SetHosts, {
+            response = await requestPost(this.config, CommandsDomainDNS.SetHosts, {
                 SLD: sld,
                 TLD: tld,
             }, {
@@ -93,15 +109,17 @@ export class DomainsDNS {
                 flag: params.flag,
                 emailType: params.emailType
             });
+        } else {
+            response = await request(this.config, CommandsDomainDNS.SetHosts, {
+                ...paramsFormatted,
+                sld,
+                tld,
+                tag: params.tag,
+                flag: params.flag,
+                emailType: params.emailType
+            });
         }
 
-        return request(this.config, CommandsDomainDNS.SetHosts, {
-            ...paramsFormatted,
-            sld,
-            tld,
-            tag: params.tag,
-            flag: params.flag,
-            emailType: params.emailType
-        });
+       return response.commandResponse.domainDnsSetHostsResult
     }
 }

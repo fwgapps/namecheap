@@ -1,4 +1,4 @@
-import {EmailType, RecordType} from "@fwg/types/methods/dns-params.type";
+import {EmailType, RecordType} from "@fwg/types/methods/params/dns-params.type";
 
 interface Host {
     hostname: string,
@@ -8,7 +8,7 @@ interface Host {
     ttl?: number,
 }
 
-export interface SetHosts {
+export interface SetDNSRootHostsParams {
     hosts: Array<Host>
     emailType?: EmailType,
     flag?: number,

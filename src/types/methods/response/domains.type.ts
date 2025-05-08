@@ -1,22 +1,24 @@
-import type { Paging } from "./base.type";
+import type { Paging } from "../base.type";
+
+export interface DomainGetListResult {
+    id: number,
+    name: string,
+    user: string,
+    created: string,
+    expires: string,
+    isExpired: boolean,
+    isLocked: boolean,
+    autoRenew: boolean,
+    whoisGuard: string,
+    isPremium: boolean,
+    isOurDns: boolean
+}
 
 /**
  * Interface representing the structure of a successful response for a domain list retrieval operation.
  */
 export interface GetListSuccess {
-    domainGetListResult: Array<{
-        id: number,
-        name: string,
-        user: string,
-        created: string,
-        expires: string,
-        isExpired: boolean,
-        isLocked: boolean,
-        autoRenew: boolean,
-        whoisGuard: string,
-        isPremium: boolean,
-        isOurDns: boolean
-    }>,
+    domainGetListResult: Array<DomainGetListResult>,
     paging: Paging
 }
 
@@ -92,6 +94,15 @@ interface CurrentAttributes {
     registrantPurpose: string
 }
 
+export interface DomainContactsResult extends Contacts {
+    currentAttributes: CurrentAttributes,
+        whoisGuardContact: Contacts & {
+        whoisGuardContact: boolean
+    },
+    domain: string,
+    domainnameid: number
+}
+
 /**
  * Represents the successful retrieval of contact information for a specific domain.
  *
@@ -105,16 +116,19 @@ interface CurrentAttributes {
  * @property {number} domainContactsResult.domainnameid - Represents the unique identifier for the domain name.
  */
 export interface GetContactSuccess {
-    domainContactsResult: Contacts & {
-        currentAttributes: CurrentAttributes,
-        whoisGuardContact: Contacts & {
-            whoisGuardContact: boolean
-        },
-        domain: string,
-        domainnameid: number
-    }
+    domainContactsResult: DomainContactsResult
 }
 
+export interface DomainCreateResult {
+    domain: string,
+    registered: boolean,
+    chargedAmount: number,
+    domainID: number,
+    orderID: number,
+    transactionID: number,
+    whoisguardEnable: boolean,
+    nonRealTimeDomain: boolean
+}
 /**
  * Represents the outcome of a successful domain creation operation.
  *
@@ -129,14 +143,7 @@ export interface GetContactSuccess {
  * @property {boolean} nonRealTimeDomain - Indicates if the domain is a non-real-time domain requiring additional processing time.
  */
 export interface CreateSuccess {
-    domain: string,
-    registered: boolean,
-    chargedAmount: number,
-    domainID: number,
-    orderID: number,
-    transactionID: number,
-    whoisguardEnable: boolean,
-    nonRealTimeDomain: boolean
+    domainCreateResult: DomainCreateResult
 }
 
 /**
@@ -151,43 +158,44 @@ interface Category {
     sequenceNumber: number,
 }
 
+export interface TLD {
+    name: string,
+    nonRealTime: boolean,
+    minRegisterYears: number,
+    maxRegisterYears: number,
+    minRenewYears: number,
+    maxRenewYears: number,
+    renewalMinDays: number,
+    renewalMaxDays: number,
+    reactivateMaxDays: number,
+    minTransferYears: number,
+    maxTransferYears: number,
+    isApiRegisterable: boolean,
+    isApiRenewable: boolean,
+    isApiTransferable: boolean,
+    isEppRequired: boolean,
+    isDisableModContact: boolean,
+    isDisableWGAllot: boolean,
+    isIncludeInExtendedSearchOnly: boolean,
+    sequenceNumber: number,
+    type: string,
+    subType: string,
+    isSupportsIDN: boolean,
+    category: string,
+    supportsRegistrarLock: boolean,
+    addGracePeriodDays: number,
+    whoisVerification: boolean,
+    providerApiDelete: boolean,
+    tldState: string,
+    searchGroup: string,
+    registry: string
+    categories: Array<Category>
+}
 /**
  * Represents the successful response containing a list of Top-Level Domains (TLDs) and their attributes in the system.
  */
 export interface GetTldListSuccess {
-   tlds: Array<{
-       name: string,
-       nonRealTime: boolean,
-       minRegisterYears: number,
-       maxRegisterYears: number,
-       minRenewYears: number,
-       maxRenewYears: number,
-       renewalMinDays: number,
-       renewalMaxDays: number,
-       reactivateMaxDays: number,
-       minTransferYears: number,
-       maxTransferYears: number,
-       isApiRegisterable: boolean,
-       isApiRenewable: boolean,
-       isApiTransferable: boolean,
-       isEppRequired: boolean,
-       isDisableModContact: boolean,
-       isDisableWGAllot: boolean,
-       isIncludeInExtendedSearchOnly: boolean,
-       sequenceNumber: number,
-       type: string,
-       subType: string,
-       isSupportsIDN: boolean,
-       category: string,
-       supportsRegistrarLock: boolean,
-       addGracePeriodDays: number,
-       whoisVerification: boolean,
-       providerApiDelete: boolean,
-       tldState: string,
-       searchGroup: string,
-       registry: string
-       categories: Array<Category>
-   }>
+   tlds: Array<TLD>
 }
 
 /**
@@ -199,24 +207,33 @@ export interface SetContactSuccess {
     domainSetContactResult: string
 }
 
+export interface DomainCheckResult {
+    domain: string,
+    available: boolean,
+    errorNo: number,
+    isPremiumName: boolean,
+    premiumRegistrationPrice: number,
+    premiumRenewalPrice: number,
+    premiumRestorePrice: number,
+    premiumTransferPrice: number,
+    icannFee: number,
+    eapFee: number
+}
+
 /**
  * Represents the result of a domain check operation.
  */
 export interface CheckSuccess {
-    domainCheckResult: {
-        domain: string,
-        available: boolean,
-        errorNo: number,
-        isPremiumName: boolean,
-        premiumRegistrationPrice: number,
-        premiumRenewalPrice: number,
-        premiumRestorePrice: number,
-        premiumTransferPrice: number,
-        icannFee: number,
-        eapFee: number
-    }
+    domainCheckResult: DomainCheckResult
 }
 
+export interface DomainReactivateResult {
+    domain: string,
+    isSuccess: boolean,
+    chargedAmount: number,
+    orderId: number,
+    transactionId: number
+}
 /**
  * Represents the response for a domain reactivation operation.
  *
@@ -225,13 +242,21 @@ export interface CheckSuccess {
  * and related transaction details.
  */
 export interface ReactiveSuccess {
-    domainReactivateResult: {
-        domain: string,
-        isSuccess: boolean,
-        chargedAmount: number,
-        orderId: number,
-        transactionId: number
-    }
+    domainReactivateResult: DomainReactivateResult
+}
+
+export interface DomainRenewResult {
+    domainDetails: {
+        expiredDate: string,
+        numYears: number,
+        domainDetails: boolean
+    },
+    domainName: string,
+    domainId: number,
+    renew: true,
+    orderId: number,
+    transactionId: number,
+    chargedAmount: number
 }
 
 /**
@@ -241,19 +266,15 @@ export interface ReactiveSuccess {
  * including domain information, renewal status, and transaction details.
  */
 export interface RenewSuccess {
-    domainRenewResult: {
-        domainDetails: {
-            expiredDate: string,
-            numYears: number,
-            domainDetails: boolean
-        },
-        domainName: string,
-        domainId: number,
-        renew: true,
-        orderId: number,
-        transactionId: number,
-        chargedAmount: number
-    }
+    domainRenewResult: DomainRenewResult
+}
+
+export interface DomainGetRegistrarLockResult {
+    domain: string,
+    registrarLockStatus: boolean,
+    isClientUpdateProhibited: boolean,
+    isClientDeleteProhibited: boolean,
+    isClientHold: boolean
 }
 
 /**
@@ -271,13 +292,17 @@ export interface RenewSuccess {
  * @property {boolean} domainGetRegistrarLockResult.isClientHold - Indicates if the domain is currently placed on client hold.
  */
 export interface GetRegistrarLockSuccess {
-    domainGetRegistrarLockResult: {
-        domain: string,
-        registrarLockStatus: boolean,
-        isClientUpdateProhibited: boolean,
-        isClientDeleteProhibited: boolean,
-        isClientHold: boolean
-    },
+    domainGetRegistrarLockResult: DomainGetRegistrarLockResult
+}
+
+export interface DomainSetRegistrarLockResult {
+    domain: string,
+    isSuccess: boolean,
+    registrarLockStatus: boolean,
+    isRegistrarLockStatusUpdated: boolean,
+    isClientUpdateProhibitedUpdated: boolean,
+    isClientDeleteProhibitedUpdated: boolean,
+    isClientHoldUpdated: boolean
 }
 
 /**
@@ -296,53 +321,45 @@ export interface GetRegistrarLockSuccess {
  * @property {boolean} domainSetRegistrarLockResult.isClientHoldUpdated - Indicates if the client hold status has been updated.
  */
 export interface SetRegistrarLockSuccess {
-    domainSetRegistrarLockResult: {
-        domain: string,
-        isSuccess: boolean,
-        registrarLockStatus: boolean,
-        isRegistrarLockStatusUpdated: boolean,
-        isClientUpdateProhibitedUpdated: boolean,
-        isClientDeleteProhibitedUpdated: boolean,
-        isClientHoldUpdated: boolean
-    }
+    domainSetRegistrarLockResult: DomainSetRegistrarLockResult
 }
 
+export interface DomainGetInfoResult {
+    domainDetails: {
+        createdDate: string,
+        expiredDate: string,
+        numYears: number,
+        domainDetails: boolean
+    },
+    whoisguard: { id: number, enabled: string },
+    premiumDnsSubscription: {
+        useAutoRenew: boolean,
+        subscriptionId: number,
+        createdDate: string,
+        expirationDate: string,
+        isActive: boolean,
+        premiumDnsSubscription: boolean
+    },
+    dnsDetails: {
+        nameserver: Array<string>,
+        providerType: string,
+        isUsingOurDns: boolean,
+        hostCount: number,
+        emailType: string,
+        dynamicDnsStatus: boolean,
+        isFailover: boolean
+    },
+    modificationrights: { all: boolean },
+    status: string,
+    id: number,
+    domainName: string,
+    ownerName: string,
+    isOwner: boolean,
+    isPremium: boolean
+}
 /**
  * Interface representing the successful response structure for getting domain information.
  */
 export interface GetInfoSuccess {
-    domainGetInfoResult: {
-        domainDetails: {
-            createdDate: string,
-            expiredDate: string,
-            numYears: number,
-            domainDetails: boolean
-        },
-        whoisguard: { id: number, enabled: string },
-        premiumDnsSubscription: {
-            useAutoRenew: boolean,
-            subscriptionId: number,
-            createdDate: string,
-            expirationDate: string,
-            isActive: boolean,
-            premiumDnsSubscription: boolean
-        },
-        dnsDetails: {
-            nameserver: Array<string>,
-            providerType: string,
-            isUsingOurDns: boolean,
-            hostCount: number,
-            emailType: string,
-            dynamicDnsStatus: boolean,
-            isFailover: boolean
-        },
-        modificationrights: { all: boolean },
-        status: string,
-        id: number,
-        domainName: string,
-        ownerName: string,
-        isOwner: boolean,
-        isPremium: boolean
-    },
-
+    domainGetInfoResult: DomainGetInfoResult
 }

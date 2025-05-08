@@ -1,4 +1,4 @@
-import type { ContactDetail, Contacts } from "./domains.type";
+import type { ContactDetail, Contacts } from "../response/domains.type";
 
 /**
  * Represents a type that defines a set of standardized language codes.
@@ -146,7 +146,7 @@ export type SortBy = "NAME" | "NAME_DESC" | "EXPIREDATE" | "EXPIREDATE_DESC" | "
 /**
  * Represents the parameters for obtaining a list with optional filters and pagination.
  *
- * @interface GetList
+ * @interface GetListParams
  *
  * @property {ListType} [listType] The type of list to retrieve; optional.
  * @property {string} [searchTerm] A search query to filter the list; optional.
@@ -154,7 +154,7 @@ export type SortBy = "NAME" | "NAME_DESC" | "EXPIREDATE" | "EXPIREDATE_DESC" | "
  * @property {number} [pageSize] The number of items per page for paginated results; optional.
  * @property {SortBy} [sortBy] The sorting criteria for the list; optional.
  */
-export interface GetList {
+export interface GetListParams {
     listType?: ListType,
     searchTerm?: string,
     page?: number,
@@ -193,7 +193,7 @@ export interface GetContactParams {
  * - `premiumPrice`: (Optional) The price of the premium domain, if applicable.
  * - `eapPrice`: (Optional) Early access pricing for the domain, if in an early access phase.
  */
-export interface CreateDomain extends Contacts {
+export interface CreateDomainParams extends Contacts {
     domainName: string,
     years: number,
     promoCode?: string,
@@ -212,32 +212,25 @@ export interface CreateDomain extends Contacts {
  * Represents a contact domain that extends the base Contacts interface.
  * It includes additional attributes specific to domain-level contacts.
  *
- * @interface ContactDomain
+ * @interface ContactDomainParams
  * @extends Contacts
  */
-export interface ContactDomain extends Contacts {
+export interface ContactDomainParams extends Contacts {
     domainName: string,
     extendedAttributes: string
 }
 
 /**
- * Represents an empty set of parameters.
- * This interface is typically used as a placeholder where no parameters are required.
- */
-/* eslint-disable */
-export interface EmptyParams {}
-
-/**
  * Represents the details required to reactivate a domain.
  *
- * @interface ReactivateDomain
+ * @interface ReactivateDomainParams
  * @property {string} domainName - The name of the domain to be reactivated.
  * @property {string} [promotionCode] - Optional promotion code to be applied during reactivation.
  * @property {number} [yearsToAdd] - Optional number of years to extend the domain registration upon reactivation.
  * @property {boolean} [isPremiumDomain] - Indicates if the domain is a premium domain.
  * @property {number} [premiumPrice] - The cost associated with reactivating a premium domain, if applicable.
  */
-export interface ReactivateDomain {
+export interface ReactivateDomainParams {
     domainName: string,
     promotionCode?: string,
     yearsToAdd?: number,
@@ -248,7 +241,7 @@ export interface ReactivateDomain {
 /**
  * Represents the data required to renew a domain.
  *
- * @interface RenewDomain
+ * @interface RenewDomainParams
  *
  * @property {string} domainName - The name of the domain to be renewed.
  * @property {number} years - The number of years for which the domain should be renewed.
@@ -256,7 +249,7 @@ export interface ReactivateDomain {
  * @property {boolean} [isPremiumDomain] - Indicates if the domain is a premium domain.
  * @property {number} [premiumPrice] - The price of the premium domain, if applicable.
  */
-export interface RenewDomain {
+export interface RenewDomainParams {
     domainName: string,
     years: number,
     promotionCode?: string,
@@ -277,13 +270,13 @@ export type LockAction = "LOCK" | "UNLOCK"
  * Represents the structure required to set or manage a registrar lock for a domain.
  * The registrar lock prevents unauthorized transfer or modification of the domain.
  *
- * @interface SetRegistrarLock
+ * @interface SetRegistrarLockParams
  *
  * @property {string} domainName - The fully qualified domain name (FQDN) to which the registrar lock action will be applied.
  *
  * @property {LockAction} lockAction - Specifies the action to be performed on the registrar lock, such as enabling or disabling it.
  */
-export interface SetRegistrarLock {
+export interface SetRegistrarLockParams {
     domainName: string,
     lockAction: LockAction
 }
@@ -291,11 +284,11 @@ export interface SetRegistrarLock {
 /**
  * Represents a structure to store information about a domain and its host.
  *
- * @interface GetInfo
+ * @interface GetInfoParams
  * @property {string} domainName - The name of the domain.
  * @property {string} [hostName] - The optional name of the host associated with the domain.
  */
-export interface GetInfo {
+export interface GetInfoParams {
     domainName: string
     hostName?: string
 }
