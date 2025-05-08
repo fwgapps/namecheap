@@ -56,9 +56,7 @@ import {
     UpdateNSParams
 } from "@fwg/types/methods/params/ns-params.type";
 
-interface EmptyParams {
-
-}
+interface EmptyParams {}
 /**
  * Represents a mapped collection of domain operation commands to their corresponding success response types.
  *
@@ -104,7 +102,7 @@ export interface MappedDomainNSSuccess {
     [CommandsDomainNS.Delete]: DeleteNSSuccess
 }
 
-export type MappedResponseSuccess = MappedDomainSuccess | MappedDomainDNSSuccess | MappedDomainNSSuccess
+export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess
 
 export type NamecheapParamsDomainMap = {
     [CommandsDomain.GetList]: GetListParams
@@ -137,17 +135,20 @@ export type NamecheapParamsDomainNSMap = {
     [CommandsDomainNS.GetInfo]: GetInfoNSParams
 }
 
-export type NamecheapRootParamsMap = {
-    [K in CommandsDomain | CommandsDomainDNS | CommandsDomainNS]: EmptyParams
-} | {
-    [CommandsDomainDNS.SetHosts]: SetDNSRootHostsParams
-}
+type AllCommands = CommandsDomain | CommandsDomainDNS | CommandsDomainNS;
+type NamecheapPostCommands =  Omit<{
+    [K in AllCommands]: EmptyParams;
+}, CommandsDomainDNS.SetHosts>;
 
-export type NamecheapPostParamsMap = {
-    [K in CommandsDomain | CommandsDomainDNS | CommandsDomainNS]: EmptyParams
-} | {
-    [CommandsDomainDNS.SetHosts]: SetDNSHostsFormattedParams
-}
+
+export type NamecheapRootParamsMap = NamecheapPostCommands & {
+    [CommandsDomainDNS.SetHosts]: SetDNSRootHostsParams;
+};
+
+export type NamecheapPostParamsMap = NamecheapPostCommands & {
+    [CommandsDomainDNS.SetHosts]: SetDNSHostsFormattedParams;
+};
+
 /**
      }
  * Represents a mapping of Namecheap API command types to their respective parameter types.
