@@ -1,17 +1,17 @@
 export enum ListType {
     ALL = "ALL",
-    IN_PROGRESS = "INPROGRESS",
-    CANCELLED = "CANCELLED",
-    COMPLETED = "COMPLETED"
+    InProgress = "INPROGRESS",
+    Cancelled = "CANCELLED",
+    Completed = "COMPLETED"
 }
 
 export enum SortBy {
-    DOMAIN_NAME = "DOMAINNAME",
-    DOMAIN_NAME_DESC = "DOMAINNAME_DESC",
-    TRANSFER_DATE = "TRANSFERDATE",
-    TRANSFER_DATE_DESC = "TRANSFERDATE_DESC",
-    STATUS_DATE = "STATUSDATE",
-    STATUS_DATE_DESC = "STATUSDATE_DESC"
+    DomainName = "DOMAINNAME",
+    DomainNameDesc = "DOMAINNAME_DESC",
+    TransferDate = "TRANSFERDATE",
+    TransferDateDesc = "TRANSFERDATE_DESC",
+    StatusDate = "STATUSDATE",
+    StatusDateDesc = "STATUSDATE_DESC"
 }
 
 export interface CreateTransferParams  {

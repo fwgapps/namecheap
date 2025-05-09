@@ -1,4 +1,10 @@
-import {CommandsDomain, CommandsDomainDNS, CommandsDomainNS, CommandsDomainTransfer} from "@fwg/utils/commands";
+import {
+    CommandsDomain,
+    CommandsDomainDNS,
+    CommandsDomainNS,
+    CommandsDomainTransfer,
+    CommandsSSL
+} from "@fwg/utils/commands";
 import type {
     CreateSuccess,
     GetContactSuccess,
@@ -39,10 +45,10 @@ import {
     GetDNSEmailForwardingParams,
     SetDNSEmailForwardingParams,
     SetDNSHostsParams, SetDNSHostsFormattedParams
-} from "@fwg/types/methods/params/dns-params.type";
+} from "@fwg/types/methods/params/domains-dns-params.type";
 import {
     SetDNSRootHostsParams
-} from "@fwg/types/methods/params/dns-root-params.type";
+} from "@fwg/types/methods/params/domains-dns-root-params.type";
 import {
     CreateNSSuccess,
     GetNSInfoSuccess,
@@ -54,14 +60,34 @@ import {
     DeleteNSParams,
     GetInfoNSParams,
     UpdateNSParams
-} from "@fwg/types/methods/params/ns-params.type";
-import {CreateTransferParams, GetListTransferParams} from "@fwg/types/methods/params/transfer-params.type";
+} from "@fwg/types/methods/params/domains-ns-params.type";
+import {CreateTransferParams, GetListTransferParams} from "@fwg/types/methods/params/domains-transfer-params.type";
 import {
     DomainTransferCreateBaseResult,
     DomainTransferGetListBaseResult,
     DomainTransferGetStatusBaseResult,
     DomainTransferUpdateBaseStatus,
 } from "@fwg/types/methods/response/domains-transfer.type";
+import {
+    ActivateSSLParams,
+    CreateSSLParams, EditDCVMethodParams,
+    GetApproverEmailListSSLParams,
+    GetListSSLParams,
+    ParseCSRSSLParams, ReissueSSLParams, RenewSSLParams
+} from "@fwg/types/methods/params/ssl-params.type";
+import {
+    RevokeCertificateBaseResult,
+    SSLActivateBaseResult,
+    SSLCreateBaseResult, SSLEditDcvMethodBaseResult,
+    SSLGetApproverEmailListBaseResult,
+    SSLGetInfoBaseResult,
+    SSLGetListBaseResult,
+    SSLParseCsrBaseResult,
+    SSLPurchaseMoreSansBaseResult,
+    SSLRenewBaseResult,
+    SSLResendApproverEmailBaseResult,
+    SSLResendFulfillmentEmailBaseResult
+} from "@fwg/types/methods/response/ssl.type";
 
 interface EmptyParams {}
 /**
@@ -116,7 +142,23 @@ export type MappedDomainTransferSuccess = {
     [CommandsDomainTransfer.UpdateStatus]: DomainTransferUpdateBaseStatus
 }
 
-export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess
+export type NamecheapParamsSSLSuccess = {
+    [CommandsSSL.Create]: SSLCreateBaseResult
+    [CommandsSSL.GetList]: SSLGetListBaseResult
+    [CommandsSSL.ParseCRS]: SSLParseCsrBaseResult
+    [CommandsSSL.GetApproverEmailList]: SSLGetApproverEmailListBaseResult
+    [CommandsSSL.Activate]: SSLActivateBaseResult
+    [CommandsSSL.ResendApproverEmail]: SSLResendApproverEmailBaseResult
+    [CommandsSSL.GetInfo]: SSLGetInfoBaseResult
+    [CommandsSSL.Renew]: SSLRenewBaseResult
+    [CommandsSSL.Reissue]: SSLActivateBaseResult
+    [CommandsSSL.ResendFulfillmentEmail]: SSLResendFulfillmentEmailBaseResult
+    [CommandsSSL.PurchaseMoreSANS]: SSLPurchaseMoreSansBaseResult
+    [CommandsSSL.RevokeCertificate]: RevokeCertificateBaseResult
+    [CommandsSSL.EditDCVMethod]: SSLEditDcvMethodBaseResult
+}
+
+export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess & NamecheapParamsSSLSuccess
 
 export type NamecheapParamsDomainMap = {
     [CommandsDomain.GetList]: GetListParams
@@ -156,7 +198,8 @@ export type NamecheapParamsDomainTransferMap = {
     [CommandsDomainTransfer.UpdateStatus]: EmptyParams
 }
 
-type AllCommands = CommandsDomain | CommandsDomainDNS | CommandsDomainNS;
+type AllCommands = CommandsDomain | CommandsDomainDNS | CommandsDomainNS | CommandsDomainTransfer | CommandsSSL;
+
 type NamecheapPostCommands =  Omit<{
     [K in AllCommands]: EmptyParams;
 }, CommandsDomainDNS.SetHosts>;
@@ -164,18 +207,34 @@ type NamecheapPostCommands =  Omit<{
 
 export type NamecheapRootParamsMap = NamecheapPostCommands & {
     [CommandsDomainDNS.SetHosts]: SetDNSRootHostsParams;
+    [CommandsSSL.ParseCRS]: ParseCSRSSLParams;
 };
 
 export type NamecheapPostParamsMap = NamecheapPostCommands & {
     [CommandsDomainDNS.SetHosts]: SetDNSHostsFormattedParams;
 };
 
+export type NamecheapParamsSSLMap = {
+    [CommandsSSL.Create]: CreateSSLParams,
+    [CommandsSSL.GetList]: GetListSSLParams,
+    [CommandsSSL.ParseCRS]: EmptyParams,
+    [CommandsSSL.GetApproverEmailList]: GetApproverEmailListSSLParams,
+    [CommandsSSL.Activate]: ActivateSSLParams,
+    [CommandsSSL.ResendApproverEmail]: EmptyParams,
+    [CommandsSSL.GetInfo]: EmptyParams,
+    [CommandsSSL.Renew]: RenewSSLParams,
+    [CommandsSSL.Reissue]: ReissueSSLParams,
+    [CommandsSSL.ResendFulfillmentEmail]: EmptyParams,
+    [CommandsSSL.PurchaseMoreSANS]: EmptyParams,
+    [CommandsSSL.RevokeCertificate]: EmptyParams,
+    [CommandsSSL.EditDCVMethod]: EditDCVMethodParams,
+}
+
 /**
-     }
  * Represents a mapping of Namecheap API command types to their respective parameter types.
  *
  * The `NamecheapParamsMap` type is an object where each key corresponds to a specific
  * Namecheap command within the `CommandsDomain` enumeration and the associated value
  * represents the required parameters for executing that command.
  */
-export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap
+export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap & NamecheapParamsSSLMap

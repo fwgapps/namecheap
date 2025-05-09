@@ -6,7 +6,7 @@ import {
     GetListTransferParams,
     ListType,
     SortBy
-} from "@fwg/types/methods/params/transfer-params.type";
+} from "@fwg/types/methods/params/domains-transfer-params.type";
 import {
     DomainTransferCreateResult,
     DomainTransferGetStatusResult, TransferGetResult
@@ -49,7 +49,7 @@ export class DomainsTransfer {
         listType: ListType.ALL,
         page: 1,
         pageSize: 10,
-        sortBy: SortBy.DOMAIN_NAME
+        sortBy: SortBy.DomainName
     }): Promise<{
         data: Array<TransferGetResult>,
         paging: Paging

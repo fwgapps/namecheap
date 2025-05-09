@@ -11,7 +11,7 @@ import {
     RecordType,
     SetDNSEmailForwardingParams,
     SetDNSHostsParams
-} from "@fwg/types/methods/params/dns-params.type";
+} from "@fwg/types/methods/params/domains-dns-params.type";
 
 export class DomainsDNS {
     private readonly config: NamecheapProps;
