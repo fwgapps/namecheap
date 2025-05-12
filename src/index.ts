@@ -6,6 +6,7 @@ import {DomainsNS} from "@fwg/methods/domains/ns";
 import {DomainsTransfer} from "@fwg/methods/domains/transfer";
 import {SSL} from "@fwg/methods/ssl";
 import {Users} from "@fwg/methods/users";
+import {UsersAddress} from "@fwg/methods/users/address";
 
 export default class Namecheap {
     private readonly apiUrl: string;
@@ -18,8 +19,11 @@ export default class Namecheap {
     public readonly domainsDns: DomainsDNS;
     public readonly domainsNs: DomainsNS;
     public readonly domainsTransfer: DomainsTransfer;
+
     public readonly ssl: SSL;
+
     public readonly users: Users;
+    public readonly usersAddress: UsersAddress;
 
     constructor(
         config: ConfigType
@@ -38,6 +42,7 @@ export default class Namecheap {
         this.domainsTransfer = new DomainsTransfer(this.getConfig());
         this.ssl = new SSL(this.getConfig());
         this.users = new Users(this.getConfig());
+        this.usersAddress = new UsersAddress(this.getConfig());
     }
 
     private getConfig(): NamecheapProps {

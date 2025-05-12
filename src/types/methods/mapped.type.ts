@@ -3,7 +3,7 @@ import {
     CommandsDomainDNS,
     CommandsDomainNS,
     CommandsDomainTransfer,
-    CommandsSSL, CommandsUser
+    CommandsSSL, CommandsUser, CommandsUserAddress
 } from "@fwg/utils/commands";
 import type {
     CreateSuccess,
@@ -103,6 +103,16 @@ import {
     GetPricingUserParams, LoginUserParams, ResetPasswordParams,
     UpdateParams
 } from "@fwg/types/methods/params/users-params.type";
+import {
+    CreateUserAddressParams,
+    DeleteUserAddressParams,
+    GetUserAddressInfoParam, SetDefaultUserAddressParams, UpdateUserAddressParams
+} from "@fwg/types/methods/params/users-address-params.type";
+import {
+    AddressCreateBaseResult,
+    AddressDeleteBaseResult, AddressGetListBaseResult, AddressSetDefaultBaseResult, AddressUpdateBaseResult,
+    GetAddressInfoBaseResult
+} from "@fwg/types/methods/response/users-address.type";
 
 interface EmptyParams {}
 /**
@@ -186,7 +196,16 @@ export type NamecheapParamsUserSuccess = {
     [CommandsUser.ResetPassword]: UserResetPasswordBaseResult
 }
 
-export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess & NamecheapParamsSSLSuccess & NamecheapParamsUserSuccess
+export type NamecheapParamsUserAddressSuccess = {
+    [CommandsUserAddress.Create]: AddressCreateBaseResult
+    [CommandsUserAddress.Delete]: AddressDeleteBaseResult
+    [CommandsUserAddress.GetInfo]: GetAddressInfoBaseResult
+    [CommandsUserAddress.GetList]: AddressGetListBaseResult
+    [CommandsUserAddress.SetDefault]: AddressSetDefaultBaseResult
+    [CommandsUserAddress.Update]: AddressUpdateBaseResult
+}
+
+export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess & NamecheapParamsSSLSuccess & NamecheapParamsUserSuccess & NamecheapParamsUserAddressSuccess
 
 export type NamecheapParamsDomainMap = {
     [CommandsDomain.GetList]: GetListParams
@@ -238,6 +257,15 @@ export type NamecheapParamsUsersMap = {
     [CommandsUser.ResetPassword]: ResetPasswordParams
 }
 
+export type NamecheapParamsUsersAddressMap = {
+    [CommandsUserAddress.Create]: CreateUserAddressParams
+    [CommandsUserAddress.Delete]: DeleteUserAddressParams
+    [CommandsUserAddress.GetInfo]: GetUserAddressInfoParam
+    [CommandsUserAddress.GetList]: EmptyParams
+    [CommandsUserAddress.SetDefault]: SetDefaultUserAddressParams
+    [CommandsUserAddress.Update]: UpdateUserAddressParams
+}
+
 type AllCommands = CommandsDomain |
     CommandsDomainDNS |
     CommandsDomainNS |
@@ -282,4 +310,4 @@ export type NamecheapParamsSSLMap = {
  * Namecheap command within the `CommandsDomain` enumeration and the associated value
  * represents the required parameters for executing that command.
  */
-export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap & NamecheapParamsSSLMap & NamecheapParamsUsersMap
+export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap & NamecheapParamsSSLMap & NamecheapParamsUsersMap & NamecheapParamsUsersAddressMap
