@@ -86,7 +86,10 @@ const tagNamesArray = [
     "apiResponse.commandResponse.tlds.tld",
     "apiResponse.commandResponse.tlds.tld.categories",
     "apiResponse.commandResponse.domainGetListResult.domain",
-    "apiResponse.commandResponse.domainCheckResult"
+    "apiResponse.commandResponse.domainCheckResult",
+    "apiResponse.commandResponse.userGetPricingResult.productType.productCategory",
+    "apiResponse.commandResponse.userGetPricingResult.productType.productCategory.product",
+    "apiResponse.commandResponse.userGetPricingResult.productType.productCategory.product.price"
 ];
 
 /**

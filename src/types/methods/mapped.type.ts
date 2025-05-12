@@ -3,7 +3,7 @@ import {
     CommandsDomainDNS,
     CommandsDomainNS,
     CommandsDomainTransfer,
-    CommandsSSL
+    CommandsSSL, CommandsUser
 } from "@fwg/utils/commands";
 import type {
     CreateSuccess,
@@ -88,6 +88,21 @@ import {
     SSLResendApproverEmailBaseResult,
     SSLResendFulfillmentEmailBaseResult
 } from "@fwg/types/methods/response/ssl.type";
+import {
+    UserChangePasswordBaseResult,
+    UserCreateAddFundsRequestBaseResult,
+    UserCreateBaseResult,
+    UserGetAddFundsStatusBaseResult,
+    UserGetBalancesBaseResult,
+    UserGetPricingBaseResult, UserLoginBaseResult, UserResetPasswordBaseResult,
+    UserUpdateBaseResult
+} from "@fwg/types/methods/response/users.type";
+import {
+    ChangePasswordParams,
+    CreateAddFundsRequestParams, CreateUserParams, GetAddFundsStatusParams,
+    GetPricingUserParams, LoginUserParams, ResetPasswordParams,
+    UpdateParams
+} from "@fwg/types/methods/params/users-params.type";
 
 interface EmptyParams {}
 /**
@@ -158,7 +173,20 @@ export type NamecheapParamsSSLSuccess = {
     [CommandsSSL.EditDCVMethod]: SSLEditDcvMethodBaseResult
 }
 
-export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess & NamecheapParamsSSLSuccess
+
+export type NamecheapParamsUserSuccess = {
+    [CommandsUser.GetPricing]: UserGetPricingBaseResult
+    [CommandsUser.GetBalances]: UserGetBalancesBaseResult
+    [CommandsUser.ChangePassword]: UserChangePasswordBaseResult
+    [CommandsUser.Update]: UserUpdateBaseResult
+    [CommandsUser.CreateAddFundsRequest]: UserCreateAddFundsRequestBaseResult
+    [CommandsUser.GetAddFundsStatus]: UserGetAddFundsStatusBaseResult
+    [CommandsUser.Create]: UserCreateBaseResult
+    [CommandsUser.Login]: UserLoginBaseResult
+    [CommandsUser.ResetPassword]: UserResetPasswordBaseResult
+}
+
+export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess & NamecheapParamsSSLSuccess & NamecheapParamsUserSuccess
 
 export type NamecheapParamsDomainMap = {
     [CommandsDomain.GetList]: GetListParams
@@ -198,7 +226,24 @@ export type NamecheapParamsDomainTransferMap = {
     [CommandsDomainTransfer.UpdateStatus]: EmptyParams
 }
 
-type AllCommands = CommandsDomain | CommandsDomainDNS | CommandsDomainNS | CommandsDomainTransfer | CommandsSSL;
+export type NamecheapParamsUsersMap = {
+    [CommandsUser.GetPricing]: GetPricingUserParams
+    [CommandsUser.GetBalances]: EmptyParams
+    [CommandsUser.ChangePassword]: ChangePasswordParams
+    [CommandsUser.Update]: UpdateParams
+    [CommandsUser.CreateAddFundsRequest]: CreateAddFundsRequestParams
+    [CommandsUser.GetAddFundsStatus]: GetAddFundsStatusParams
+    [CommandsUser.Create]: CreateUserParams
+    [CommandsUser.Login]: LoginUserParams
+    [CommandsUser.ResetPassword]: ResetPasswordParams
+}
+
+type AllCommands = CommandsDomain |
+    CommandsDomainDNS |
+    CommandsDomainNS |
+    CommandsDomainTransfer |
+    CommandsSSL |
+    CommandsUser;
 
 type NamecheapPostCommands =  Omit<{
     [K in AllCommands]: EmptyParams;
@@ -237,4 +282,4 @@ export type NamecheapParamsSSLMap = {
  * Namecheap command within the `CommandsDomain` enumeration and the associated value
  * represents the required parameters for executing that command.
  */
-export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap & NamecheapParamsSSLMap
+export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap & NamecheapParamsSSLMap & NamecheapParamsUsersMap
