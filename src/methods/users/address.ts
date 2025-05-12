@@ -3,7 +3,7 @@ import {request} from "@fwg/utils/service";
 import {CommandsUserAddress} from "@fwg/utils/commands";
 import {
     AddressCreateResult,
-    AddressDeleteResult, AddressGetListResult,
+    AddressDeleteResult, AddressGetListResult, AddressUpdateResult,
     GetAddressInfoResult
 } from "@fwg/types/methods/response/users-address.type";
 import {CreateUserAddressParams, UpdateUserAddressParams} from "@fwg/types/methods/params/users-address-params.type";
@@ -50,7 +50,7 @@ export class UsersAddress {
         return response.commandResponse.addressSetDefaultResult
     }
 
-    async update(addressId: number, params: Omit<UpdateUserAddressParams, "addressId">): Promise<void> {
+    async update(addressId: number, params: Omit<UpdateUserAddressParams, "addressId">): Promise<AddressUpdateResult> {
         const response = await request(this.config, CommandsUserAddress.Update, {
             ...params,
             addressId

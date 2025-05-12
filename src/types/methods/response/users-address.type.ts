@@ -59,10 +59,12 @@ export interface AddressSetDefaultBaseResult {
     addressSetDefaultResult: number
 }
 
+export interface AddressUpdateResult {
+    success: boolean,
+    addressId: number,
+    addressName: string
+}
+
 export interface AddressUpdateBaseResult {
-    addressUpdateResult: {
-        success: boolean,
-        addressId: number,
-        addressName: string
-    }
+    addressUpdateResult: AddressUpdateResult
 }
