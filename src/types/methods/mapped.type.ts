@@ -3,7 +3,7 @@ import {
     CommandsDomainDNS,
     CommandsDomainNS,
     CommandsDomainTransfer,
-    CommandsSSL, CommandsUser, CommandsUserAddress
+    CommandsSSL, CommandsUser, CommandsUserAddress, CommandsWhoIsGuard
 } from "@fwg/utils/commands";
 import type {
     CreateSuccess,
@@ -113,6 +113,17 @@ import {
     AddressDeleteBaseResult, AddressGetListBaseResult, AddressSetDefaultBaseResult, AddressUpdateBaseResult,
     GetAddressInfoBaseResult
 } from "@fwg/types/methods/response/users-address.type";
+import {
+    ChangeEmailAddressParams,
+    DisableParams,
+    EnableParams,
+    GetListParams as WhoIsGuardGetListParams,
+    RenewParams
+} from "@fwg/types/methods/params/whois-guard-params.type";
+import {
+    WhoIsGuardChangeEmailAddressBaseResult, WhoIsGuardDisableBaseResult,
+    WhoIsGuardEnableBaseResult, WhoIsGuardGetListBaseResult, WhoIsGuardRenewBaseResult,
+} from "@fwg/types/methods/response/whois-guard.type";
 
 interface EmptyParams {}
 /**
@@ -205,7 +216,15 @@ export type NamecheapParamsUserAddressSuccess = {
     [CommandsUserAddress.Update]: AddressUpdateBaseResult
 }
 
-export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess & NamecheapParamsSSLSuccess & NamecheapParamsUserSuccess & NamecheapParamsUserAddressSuccess
+export type NamecheapParamsWhoisGuardSuccess = {
+    [CommandsWhoIsGuard.ChangeEmailAddress]: WhoIsGuardChangeEmailAddressBaseResult
+    [CommandsWhoIsGuard.Enable]: WhoIsGuardEnableBaseResult
+    [CommandsWhoIsGuard.Disable]: WhoIsGuardDisableBaseResult
+    [CommandsWhoIsGuard.GetList]: WhoIsGuardGetListBaseResult
+    [CommandsWhoIsGuard.Renew]: WhoIsGuardRenewBaseResult
+}
+
+export type MappedResponseSuccess = MappedDomainSuccess & MappedDomainDNSSuccess & MappedDomainNSSuccess & MappedDomainTransferSuccess & NamecheapParamsSSLSuccess & NamecheapParamsUserSuccess & NamecheapParamsUserAddressSuccess & NamecheapParamsWhoisGuardSuccess
 
 export type NamecheapParamsDomainMap = {
     [CommandsDomain.GetList]: GetListParams
@@ -266,12 +285,22 @@ export type NamecheapParamsUsersAddressMap = {
     [CommandsUserAddress.Update]: UpdateUserAddressParams
 }
 
+export type NamecheapParamsWhoIsGuardMap = {
+    [CommandsWhoIsGuard.ChangeEmailAddress]: ChangeEmailAddressParams
+    [CommandsWhoIsGuard.Enable]: EnableParams
+    [CommandsWhoIsGuard.Disable]: DisableParams
+    [CommandsWhoIsGuard.GetList]: WhoIsGuardGetListParams
+    [CommandsWhoIsGuard.Renew]: RenewParams
+}
+
 type AllCommands = CommandsDomain |
     CommandsDomainDNS |
     CommandsDomainNS |
     CommandsDomainTransfer |
     CommandsSSL |
-    CommandsUser;
+    CommandsUser |
+    CommandsUserAddress |
+    CommandsWhoIsGuard;
 
 type NamecheapPostCommands =  Omit<{
     [K in AllCommands]: EmptyParams;
@@ -310,4 +339,4 @@ export type NamecheapParamsSSLMap = {
  * Namecheap command within the `CommandsDomain` enumeration and the associated value
  * represents the required parameters for executing that command.
  */
-export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap & NamecheapParamsSSLMap & NamecheapParamsUsersMap & NamecheapParamsUsersAddressMap
+export type NamecheapParamsMap = NamecheapParamsDomainMap & NamecheapParamsDomainDNSMap & NamecheapParamsDomainNSMap & NamecheapParamsDomainTransferMap & NamecheapParamsSSLMap & NamecheapParamsUsersMap & NamecheapParamsUsersAddressMap & NamecheapParamsWhoIsGuardMap

@@ -22,8 +22,7 @@ export class Users {
 
     async getPricing(params: GetPricingUserParams): Promise<UserGetPricingResult> {
         const response = await request(this.config, CommandsUser.GetPricing, params);
-        return response.commandResponse
-        // return response.commandResponse.userGetPricingResult
+        return response.commandResponse.userGetPricingResult
     }
 
     async getBalances(): Promise<UserGetBalancesResult> {
