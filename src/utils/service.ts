@@ -146,20 +146,7 @@ export async function request<T extends keyof MappedResponseSuccess>(
         throw new Error(`Error in API Namecheap: ${response.statusText}`);
     }
 
-    const xmlData =  `
-<?xml version="1.0" encoding="UTF-8"?>
-<ApiResponse xmlns="http://api.namecheap.com/xml.response" Status="OK">
-  <Errors />
-  <Warnings />
-  <RequestedCommand>namecheap.whoisguard.renew</RequestedCommand>
-   <CommandResponse Type="namecheap.whoisguard.renew">
-      <WhoisguardRenewResult WhoisguardId="38495" Years="1" Renew="true" OrderId="580938" TransactionId="884255" ChargedAmount="6.8000"/>
-   </CommandResponse>
-  <Server>API01</Server>
-  <GMTTimeDifference>--5:00</GMTTimeDifference>
-  <ExecutionTime>0.029</ExecutionTime>
-</ApiResponse>
-    `
+    const xmlData =  await response.text();
 
         // await response.text();
     const parsedValue: { apiResponse: MappedResponseSuccess[T] } = parser.parse(xmlData);

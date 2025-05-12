@@ -1,5 +1,5 @@
 {
-  "name": "namecheap",
+  "name": "@fwgapps/namecheap",
   "type": "module",
   "version": "0.1.0",
   "main": "dist/index.cjs",
