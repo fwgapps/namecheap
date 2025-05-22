@@ -3,13 +3,13 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
-  root: ".", // força a raiz do projeto
+  root: ".",
   test: {
     globals: true,
     environment: "node",
     coverage: {
       provider: "v8",
-      reporter: ["text", "html"],
+      reporter: ["text", "html", "lcov"],
     },
   },
 });

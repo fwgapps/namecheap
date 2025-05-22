@@ -1,6 +1,7 @@
 # @fwgapps/namecheap
 
 ![Build Status](https://img.shields.io/github/actions/workflow/status/fwgapps/namecheap/publish.yml?branch=main)
+[![codecov](https://codecov.io/gh/fwgapps/namecheap/branch/main/graph/badge.svg)](https://codecov.io/gh/fwgapps/namecheap)
 ![npm](https://img.shields.io/npm/v/@fwgapps/namecheap)
 ![npm downloads](https://img.shields.io/npm/dm/@fwgapps/namecheap)
 ![license](https://img.shields.io/npm/l/@fwgapps/namecheap)
