@@ -15,5 +15,8 @@
       "@fwg/types/*": ["src/types/*"]
     }
   },
-  "include": ["src"]
-}
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "vitest.config.ts"
+  ]}

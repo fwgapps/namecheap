@@ -1,4 +1,4 @@
 export interface SetDNSRootHostsParams {
-    SLD: string
-    TLD: string
+  SLD: string;
+  TLD: string;
 }

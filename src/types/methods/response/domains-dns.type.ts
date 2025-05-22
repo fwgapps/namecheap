@@ -1,58 +1,58 @@
 export interface SetDNSDefaultSuccess {
-    domainDnsSetDefaultResult: string
+  domainDnsSetDefaultResult: string;
 }
 
 export interface SetDNSCustomSuccess {
-    domainDNSSetCustomResult: string
+  domainDNSSetCustomResult: string;
 }
 
 export interface DomainDnsGetListResult {
-    nameserver: Array<string>,
-    domain: string,
-    isUsingOurDns: boolean
+  nameserver: Array<string>;
+  domain: string;
+  isUsingOurDns: boolean;
 }
 
 export interface GetDNSListSuccess {
-    domainDnsGetListResult: DomainDnsGetListResult
+  domainDnsGetListResult: DomainDnsGetListResult;
 }
 
 interface Host {
-    hostId: number,
-    name: string,
-    type: string,
-    address: string,
-    mxPref: number,
-    ttl: number
+  hostId: number;
+  name: string;
+  type: string;
+  address: string;
+  mxPref: number;
+  ttl: number;
 }
 
 export interface DomainDnsGetHostsResult {
-    host: Array<Host>,
-    domain: string,
-    isUsingOurDns: boolean
+  host: Array<Host>;
+  domain: string;
+  isUsingOurDns: boolean;
 }
 
 export interface GetDNSHostsSuccess {
-    domainDnsGetHostsResult: DomainDnsGetHostsResult
+  domainDnsGetHostsResult: DomainDnsGetHostsResult;
 }
 
 interface Forward {
-    value: string,
-    mailbox: string
+  value: string;
+  mailbox: string;
 }
 
 export interface DomainDnsGetEmailForwardingResult {
-    forward: Array<Forward>,
-    domain: string
+  forward: Array<Forward>;
+  domain: string;
 }
 
 export interface GetDNSEmailForwardingSuccess {
-    domainDnsGetEmailForwardingResult: DomainDnsGetEmailForwardingResult
+  domainDnsGetEmailForwardingResult: DomainDnsGetEmailForwardingResult;
 }
 
 export interface SetDNSEmailForwardingSuccess {
-    domainDnsSetEmailForwardingResult: string
+  domainDnsSetEmailForwardingResult: string;
 }
 
 export interface SetDNSHostsSuccess {
-    domainDnsSetHostsResult: string
+  domainDnsSetHostsResult: Array<string>;
 }

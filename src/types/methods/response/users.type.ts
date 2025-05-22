@@ -1,79 +1,83 @@
 export interface Product {
-    duration: number,
-    durationType: string,
-    price: number,
-    regularPrice: number,
-    yourPrice: number,
-    currency: string
+  duration: number;
+  durationType: string;
+  price: number;
+  regularPrice: number;
+  yourPrice: number;
+  currency: string;
 }
 
 export interface ProductCategory {
-    product: Array<Product>,
-    name: string
+  product: Array<Product>;
+  name: string;
 }
 
 export interface UserGetPricingResult {
-    productCategory: Array<ProductCategory>
-    name: string
+  productCategory: Array<ProductCategory>;
+  name: string;
 }
 
 export interface UserGetPricingBaseResult {
-    userGetPricingResult: UserGetPricingResult
+  userGetPricingResult: UserGetPricingResult;
 }
 
 export interface UserGetBalancesResult {
-    currency: string,
-    availableBalance: number,
-    accountBalance: number,
-    earnedAmount: number,
-    withdrawableAmount: number,
-    fundsRequiredForAutoRenew: number
+  currency: string;
+  availableBalance: number;
+  accountBalance: number;
+  earnedAmount: number;
+  withdrawableAmount: number;
+  fundsRequiredForAutoRenew: number;
 }
 
 export interface UserGetBalancesBaseResult {
-    userGetBalancesResult: UserGetBalancesResult
+  userGetBalancesResult: UserGetBalancesResult;
 }
 
 export interface UserChangePasswordBaseResult {
-    userChangePasswordResult: string
+  userChangePasswordResult: string;
 }
 
 export interface UserUpdateBaseResult {
-    userUpdateResult: string
+  userUpdateResult: string;
 }
 
 export interface UserCreateAddFundsRequest {
-    tokenId: string,
-    returnUrl: string,
-    redirectUrl: string
+  tokenId: string;
+  returnUrl: string;
+  redirectUrl: string;
 }
 
 export interface UserCreateAddFundsRequestBaseResult {
-    createaddfundsrequestresult: UserCreateAddFundsRequest
+  createaddfundsrequestresult: UserCreateAddFundsRequest;
 }
 
 export enum GetAddFundsStatus {
-    Created = "CREATED",
-    Submitted = "SUBMITTED",
-    Completed = "COMPLETED",
-    Failed = "FAILED",
-    Expired = "EXPIRED"
+  Created = "CREATED",
+  Submitted = "SUBMITTED",
+  Completed = "COMPLETED",
+  Failed = "FAILED",
+  Expired = "EXPIRED",
 }
 
-export interface GetAddFundsStatusResult { transactionId: number, amount: number, status: GetAddFundsStatus }
+export interface GetAddFundsStatusResult {
+  transactionId: number;
+  amount: number;
+  status: GetAddFundsStatus;
+}
 
 export interface UserGetAddFundsStatusBaseResult {
-    getAddFundsStatusResult: GetAddFundsStatusResult
+  getAddFundsStatusResult: GetAddFundsStatusResult;
 }
 
 export interface UserCreateBaseResult {
-    userCreateResult: number
+  userCreateResult: number;
 }
 
 export interface UserLoginBaseResult {
-    userLoginResult: string
+  userLoginResult: string;
 }
 
 export interface UserResetPasswordBaseResult {
-    userResetPasswordResult: string,
+  userResetPasswordResult: string;
 }
