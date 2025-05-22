@@ -16,7 +16,6 @@ import {
 import type {
   ContactDomainParams,
   CreateDomainParams,
-  GetInfoParams,
   GetListParams,
   ReactivateDomainParams,
   RenewDomainParams,
@@ -138,13 +137,10 @@ export class Domains {
     return response.commandResponse.domainSetRegistrarLockResult;
   }
 
-  async getInfo(
-    domain: string,
-    params: Omit<GetInfoParams, "domainName"> = {},
-  ): Promise<DomainGetInfoResult> {
+  async getInfo(domain: string, hostName?: string): Promise<DomainGetInfoResult> {
     const response = await request(this.config, CommandsDomain.GetInfo, {
-      ...params,
       domainName: domain,
+      hostName,
     });
 
     return response.commandResponse.domainGetInfoResult;

@@ -1,0 +1,13 @@
+# examples
+examples/
+
+# modules
+node_modules/
+
+# build
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/

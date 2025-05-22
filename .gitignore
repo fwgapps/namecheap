@@ -43,6 +43,3 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
-
-# Ignore example folder if used for samples/temp files
-example/
