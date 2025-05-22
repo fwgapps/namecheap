@@ -1,50 +1,48 @@
-# Node.js
+# Node.js dependencies
 node_modules/
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
-# Builds
+# Build output folders
 dist/
 lib/
 out/
 build/
 
-# Logs
-*.log
+# TypeScript build info files
 *.tsbuildinfo
 
-# TypeScript
+# TypeScript generated files
 *.d.ts
 *.js
 *.js.map
 
-# Jest
+# Jest testing
 coverage/
 .cache/
 *.snap
 
-# IDEs
+# IDEs and editors
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# SO
+# Operating system files
 .DS_Store
 Thumbs.db
 
-# ts-node/ts-node-dev
+# Temporary files from ts-node or ts-node-dev
 *.tmp
 
-# env
+# Environment variable files
 .env
 .env.local
 .env.*.local
 
-# Lock
-package-lock.json
-yarn.lock
-
-# Temp
+# Ignore example folder if used for samples/temp files
 example/

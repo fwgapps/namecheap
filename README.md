@@ -1,11 +1,19 @@
 # @fwgapps/namecheap
 
+<!-- STATUS -->
 ![Build Status](https://img.shields.io/github/actions/workflow/status/fwgapps/namecheap/publish.yml?branch=main)
-[![codecov](https://codecov.io/gh/fwgapps/namecheap/branch/main/graph/badge.svg)](https://codecov.io/gh/fwgapps/namecheap)
-![npm](https://img.shields.io/npm/v/@fwgapps/namecheap)
+[![Codecov](https://codecov.io/gh/fwgapps/namecheap/branch/main/graph/badge.svg)](https://codecov.io/gh/fwgapps/namecheap)
+![Maintenance](https://img.shields.io/maintenance/yes/2025)
+
+<!-- NPM -->
+[![npm](https://img.shields.io/npm/v/@fwgapps/namecheap)](https://www.npmjs.com/package/@fwgapps/namecheap)
 ![npm downloads](https://img.shields.io/npm/dm/@fwgapps/namecheap)
+[![bundlephobia](https://img.shields.io/bundlephobia/minzip/@fwgapps/namecheap)](https://bundlephobia.com/result?p=@fwgapps/namecheap)
+[![dependencies](https://img.shields.io/librariesio/release/npm/@fwgapps/namecheap)](https://libraries.io/npm/@fwgapps/namecheap)
+
+<!-- META -->
 ![license](https://img.shields.io/npm/l/@fwgapps/namecheap)
-![typescript](https://img.shields.io/badge/typescript-%233178C6.svg?logo=typescript)
+![TypeScript](https://img.shields.io/badge/typescript-%233178C6.svg?logo=typescript)
 ![issues](https://img.shields.io/github/issues/fwgapps/namecheap)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
