@@ -1,5 +1,13 @@
 # @fwgapps/namecheap
 
+![Build Status](https://img.shields.io/github/actions/workflow/status/fwgapps/namecheap/publish.yml?branch=main)
+![npm](https://img.shields.io/npm/v/@fwgapps/namecheap)
+![npm downloads](https://img.shields.io/npm/dm/@fwgapps/namecheap)
+![license](https://img.shields.io/npm/l/@fwgapps/namecheap)
+![typescript](https://img.shields.io/badge/typescript-%233178C6.svg?logo=typescript)
+![issues](https://img.shields.io/github/issues/fwgapps/namecheap)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+
 A simple and efficient TypeScript library for interacting with the Namecheap API, returning structured JSON responses.
 
 ## Table of Contents
