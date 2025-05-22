@@ -1,7 +1,7 @@
 # @fwgapps/namecheap
 
 <!-- STATUS -->
-![Build Status](https://img.shields.io/github/actions/workflow/status/fwgapps/namecheap/publish.yml?branch=main)
+[![CI/CD Pipeline](https://github.com/fwgapps/namecheap/actions/workflows/publish.yml/badge.svg)](https://github.com/fwgapps/namecheap/actions/workflows/publish.yml)
 [![Codecov](https://codecov.io/gh/fwgapps/namecheap/branch/main/graph/badge.svg)](https://codecov.io/gh/fwgapps/namecheap)
 ![Maintenance](https://img.shields.io/maintenance/yes/2025)
 
