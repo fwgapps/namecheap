@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   root: ".",
   test: {
+    exclude: ["example/**/*", "node_modules", "dist"],
     globals: true,
     environment: "node",
     coverage: {
