@@ -5,7 +5,6 @@ import * as service from "../../../src/utils/service";
 import type { NamecheapProps } from "../../../src/types/config.type";
 import {
   Host,
-  RecordType,
   SetDNSEmailForwardingParams,
   SetDNSHostsParams,
 } from "../../../src/types/methods/params/domains-dns-params.type";
@@ -19,6 +18,7 @@ import {
   SetDNSEmailForwardingSuccess,
   SetDNSHostsSuccess,
 } from "../../../src/types/methods/response/domains-dns.type";
+import { RecordType } from "../../../src/types/enum";
 
 const mockConfig = {
   apiUser: "testuser",
