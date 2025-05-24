@@ -279,3 +279,10 @@ export const GetAddFundsStatus = {
   Expired: "EXPIRED",
 } as const;
 export type GetAddFundsStatus = (typeof GetAddFundsStatus)[keyof typeof GetAddFundsStatus];
+
+export const DomainDnsTag = {
+  Issue: "issue",
+  IssueWild: "issuewild",
+  IODEF: "iodef",
+};
+export type DomainDnsTag = (typeof DomainDnsTag)[keyof typeof DomainDnsTag];

@@ -1,4 +1,4 @@
-import type { EmailType, RecordType } from "@fwg/types/enum";
+import type { DomainDnsTag, EmailType, RecordType } from "@fwg/types/enum";
 
 export type SetDNSDefaultParams = DNSGenericParams;
 export type GetDNSListParams = DNSGenericParams;
@@ -36,7 +36,7 @@ export interface SetDNSHostsParams {
   tld: string;
   emailType?: EmailType;
   flag?: number;
-  tag?: string;
+  tag?: DomainDnsTag;
   hostname: Array<string>;
   ttl: Array<number>;
   address: Array<string>;
