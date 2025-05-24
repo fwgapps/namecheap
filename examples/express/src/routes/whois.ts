@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ListType } from "@fwgapps/namecheap";
+import { WhoIsListType } from "@fwgapps/namecheap";
 
 import namecheap from "../services/namecheap";
 
@@ -46,7 +46,7 @@ router.get("/", async (req, res) => {
     const { listType, page, pageSize } = req.query;
 
     const response = await namecheap.domainPrivacy.getList({
-      listType: listType as ListType,
+      listType: listType as WhoIsListType,
       page: +(page ?? 1),
       pageSize: +(pageSize ?? 10),
     });

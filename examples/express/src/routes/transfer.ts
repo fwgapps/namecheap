@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ListType, SortBy } from "@fwgapps/namecheap";
+import { DomainTransferListType, DomainTransferSortBy } from "@fwgapps/namecheap";
 
 import namecheap from "../services/namecheap";
 
@@ -44,10 +44,10 @@ router.get("/", async (req, res) => {
     const { listType, page, pageSize, sortBy } = req.query;
 
     const response = await namecheap.domainsTransfer.getList({
-      listType: listType as ListType,
+      listType: listType as DomainTransferListType,
       page: +(page || 1),
       pageSize: +(pageSize || 10),
-      sortBy: sortBy as SortBy,
+      sortBy: sortBy as DomainTransferSortBy,
     });
 
     res.json(response);

@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
   },
   "dependencies": {
-    "@fwgapps/namecheap": "0.2.1",
+    "@fwgapps/namecheap": "0.3.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0"
   },

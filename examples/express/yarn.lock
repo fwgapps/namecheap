@@ -9,10 +9,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@fwgapps/namecheap@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@fwgapps/namecheap/-/namecheap-0.2.1.tgz#fdf6108b17b0cada3434bd65c86c9ba5125a3f43"
-  integrity sha512-a5mLrzKGsi6GVL3FIl+D6V4T/TjwyY+Fr6+K9tQXKIS1/BL1gVrylNfKkoSa7zZwucVYgue+E1lIL3+POQJufw==
+"@fwgapps/namecheap@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@fwgapps/namecheap/-/namecheap-0.3.0.tgz#126413336f8d066e46e73f961c487ac50a30d9a1"
+  integrity sha512-xpHH4CCirmaq3Ahug+e8EplppNqqij+Wzy7lYFZxU1g9iTZjwxZcWnmYXozae7NSEf+kswChTeHqyWMlsIWiuQ==
   dependencies:
     change-case-all "^2.1.0"
     fast-xml-parser "^5.0.9"

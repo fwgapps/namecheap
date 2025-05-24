@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ListType, SortBy, SSLType } from "@fwgapps/namecheap";
+import { SSLListType, SSLListSortBy, SSLType } from "@fwgapps/namecheap";
 
 import namecheap from "../services/namecheap";
 
@@ -21,10 +21,10 @@ router.get("/", async (req, res) => {
     const { listType, page, pageSize, sortBy } = req.query;
 
     const response = await namecheap.ssl.getList({
-      listType: listType as ListType,
+      listType: listType as SSLListType,
       page: +(page || 1),
       pageSize: +(pageSize || 10),
-      sortBy: sortBy as SortBy,
+      sortBy: sortBy as SSLListSortBy,
     });
 
     res.json(response);

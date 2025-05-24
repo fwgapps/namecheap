@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ProductType } from "@fwgapps/namecheap";
+import { UserProductType } from "@fwgapps/namecheap";
 
 import namecheap from "../services/namecheap";
 
@@ -12,7 +12,7 @@ router.get("/pricing/:productType", async (req, res) => {
 
     const response = await namecheap.users.getPricing({
       ...params,
-      productType: productType as ProductType,
+      productType: productType as UserProductType,
     });
 
     res.json(response);
