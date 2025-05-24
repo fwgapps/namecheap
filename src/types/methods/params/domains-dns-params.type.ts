@@ -1,16 +1,17 @@
+import type { EmailType, RecordType } from "@fwg/types/enum";
+
+export type SetDNSDefaultParams = DNSGenericParams;
+export type GetDNSListParams = DNSGenericParams;
+export type GetDNSHostsParams = DNSGenericParams;
+
 export interface DNSGenericParams {
   sld: string;
   tld: string;
 }
 
-export type SetDNSDefaultParams = DNSGenericParams;
-
 export interface SetDNSCustomParams extends DNSGenericParams {
   nameservers: Array<string>;
 }
-
-export type GetDNSListParams = DNSGenericParams;
-export type GetDNSHostsParams = DNSGenericParams;
 
 export interface GetDNSEmailForwardingParams {
   domainName: string;
@@ -20,28 +21,6 @@ export interface SetDNSEmailForwardingParams {
   domainName: string;
   mailBox: Array<string>;
   forwardTo: Array<string>;
-}
-
-export enum RecordType {
-  A = "A",
-  AAAA = "AAAA",
-  ALIAS = "ALIAS",
-  CAA = "CAA",
-  CNAME = "CNAME",
-  MX = "MX",
-  MXE = "MXE",
-  NS = "NS",
-  TXT = "TXT",
-  URL = "URL",
-  URL301 = "URL301",
-  FRAME = "FRAME",
-}
-
-export enum EmailType {
-  MXE = "MXE",
-  MX = "MX",
-  FWD = "FWD",
-  OX = "OX",
 }
 
 export interface Host {

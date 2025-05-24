@@ -8,10 +8,10 @@ import { request, requestPost } from "@fwg/utils/service";
 import { CommandsDomainDNS } from "@fwg/utils/commands";
 import {
   Host,
-  RecordType,
   SetDNSEmailForwardingParams,
   SetDNSHostsParams,
 } from "@fwg/types/methods/params/domains-dns-params.type";
+import { RecordType } from "@fwg/types/enum";
 
 export class DomainsDNS {
   private readonly config: NamecheapProps;

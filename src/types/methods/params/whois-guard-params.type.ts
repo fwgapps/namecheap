@@ -1,3 +1,5 @@
+import type { WhoIsListType } from "@fwg/types/enum";
+
 export interface ChangeEmailAddressParams {
   whoIsGuardId: number;
 }
@@ -11,15 +13,8 @@ export interface DisableParams {
   whoIsGuardId: number;
 }
 
-export enum ListType {
-  All = "ALL",
-  Alloted = "ALLOTED",
-  Free = "FREE",
-  Discard = "DISCARD",
-}
-
 export interface GetListParams {
-  listType?: ListType;
+  listType?: WhoIsListType;
   page?: number;
   pageSize?: number;
 }

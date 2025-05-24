@@ -4,8 +4,6 @@ import { CommandsDomainTransfer } from "@fwg/utils/commands";
 import {
   CreateTransferParams,
   GetListTransferParams,
-  ListType,
-  SortBy,
 } from "@fwg/types/methods/params/domains-transfer-params.type";
 import {
   DomainTransferCreateResult,
@@ -13,6 +11,7 @@ import {
   TransferGetResult,
 } from "@fwg/types/methods/response/domains-transfer.type";
 import { Paging } from "@fwg/types/methods/base.type";
+import { DomainTransferListType, DomainTransferSortBy } from "@fwg/types/enum";
 
 export class DomainsTransfer {
   private readonly config: NamecheapProps;
@@ -51,10 +50,10 @@ export class DomainsTransfer {
 
   async getList(
     params: GetListTransferParams = {
-      listType: ListType.ALL,
+      listType: DomainTransferListType.All,
       page: 1,
       pageSize: 10,
-      sortBy: SortBy.DomainName,
+      sortBy: DomainTransferSortBy.DomainName,
     },
   ): Promise<{
     data: Array<TransferGetResult>;

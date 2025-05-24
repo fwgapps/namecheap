@@ -1,135 +1,12 @@
 import type { ContactDetail, Contacts } from "../response/domains.type";
-
-export type IdnCode =
-  | "afr"
-  | "alb"
-  | "ara"
-  | "arg"
-  | "arm"
-  | "asm"
-  | "ast"
-  | "ave"
-  | "awa"
-  | "aze"
-  | "bak"
-  | "bal"
-  | "ban"
-  | "baq"
-  | "bas"
-  | "bel"
-  | "ben"
-  | "bho"
-  | "bos"
-  | "bul"
-  | "bur"
-  | "car"
-  | "cat"
-  | "che"
-  | "chi"
-  | "chv"
-  | "cop"
-  | "cos"
-  | "cze"
-  | "dan"
-  | "div"
-  | "doi"
-  | "dut"
-  | "eng"
-  | "est"
-  | "fao"
-  | "fij"
-  | "fin"
-  | "fre"
-  | "fry"
-  | "geo"
-  | "ger"
-  | "gla"
-  | "gle"
-  | "gon"
-  | "gre"
-  | "guj"
-  | "heb"
-  | "hin"
-  | "hun"
-  | "inc"
-  | "ind"
-  | "inh"
-  | "isl"
-  | "ita"
-  | "jav"
-  | "jpn"
-  | "kas"
-  | "kaz"
-  | "khm"
-  | "kir"
-  | "kor"
-  | "kur"
-  | "lao"
-  | "lav"
-  | "lit"
-  | "ltz"
-  | "mal"
-  | "mkd"
-  | "mlt"
-  | "mol"
-  | "mon"
-  | "mri"
-  | "msa"
-  | "nep"
-  | "nor"
-  | "ori"
-  | "oss"
-  | "pan"
-  | "per"
-  | "pol"
-  | "por"
-  | "pus"
-  | "raj"
-  | "rum"
-  | "rus"
-  | "san"
-  | "scr"
-  | "sin"
-  | "slo"
-  | "slv"
-  | "smo"
-  | "snd"
-  | "som"
-  | "spa"
-  | "srd"
-  | "srp"
-  | "swa"
-  | "swe"
-  | "syr"
-  | "tam"
-  | "tel"
-  | "tgk"
-  | "tha"
-  | "tib"
-  | "tur"
-  | "ukr"
-  | "urd"
-  | "uzb"
-  | "vie"
-  | "wel"
-  | "yid";
-
-export type ListType = "ALL" | "EXPIRING" | "EXPIRED";
-
-export type SortBy =
-  | "NAME"
-  | "NAME_DESC"
-  | "EXPIREDATE"
-  | "EXPIREDATE_DESC"
-  | "CREATEDATE"
-  | "CREATEDATE_DESC";
+import type { IdnCode, DomainListType, LockAction, DomainListSortBy } from "@fwg/types/enum";
 
 export interface GetListParams {
-  listType?: ListType;
+  listType?: DomainListType;
   searchTerm?: string;
   page?: number;
   pageSize?: number;
-  sortBy?: SortBy;
+  sortBy?: DomainListSortBy;
 }
 
 export interface GetContactParams {
@@ -171,8 +48,6 @@ export interface RenewDomainParams {
   isPremiumDomain?: boolean;
   premiumPrice?: number;
 }
-
-export type LockAction = "LOCK" | "UNLOCK";
 
 export interface SetRegistrarLockParams {
   domainName: string;

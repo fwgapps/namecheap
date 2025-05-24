@@ -1,3 +1,5 @@
+import type { GetAddFundsStatus } from "@fwg/types/enum";
+
 export interface Product {
   duration: number;
   durationType: string;
@@ -50,14 +52,6 @@ export interface UserCreateAddFundsRequest {
 
 export interface UserCreateAddFundsRequestBaseResult {
   createaddfundsrequestresult: UserCreateAddFundsRequest;
-}
-
-export enum GetAddFundsStatus {
-  Created = "CREATED",
-  Submitted = "SUBMITTED",
-  Completed = "COMPLETED",
-  Failed = "FAILED",
-  Expired = "EXPIRED",
 }
 
 export interface GetAddFundsStatusResult {

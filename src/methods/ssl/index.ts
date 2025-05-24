@@ -6,7 +6,6 @@ import {
   GetListSSLParams,
   ReissueSSLParams,
   RenewSSLParams,
-  SSLType,
 } from "@fwg/types/methods/params/ssl-params.type";
 import { request, requestPost } from "@fwg/utils/service";
 import { CommandsSSL } from "@fwg/utils/commands";
@@ -21,6 +20,7 @@ import {
   SSLRenewResult,
   SSLResult,
 } from "@fwg/types/methods/response/ssl.type";
+import { SSLType } from "@fwg/types/enum";
 
 export class SSL {
   private readonly config: NamecheapProps;

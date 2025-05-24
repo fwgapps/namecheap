@@ -1,57 +1,20 @@
-export enum SSLType {
-  PositiveSSL = "PositiveSSL",
-  EssentialSSL = "EssentialSSL",
-  InstantSSL = "InstantSSL",
-  InstantSSLPro = "InstantSSL Pro",
-  PremiumSSL = "PremiumSSL",
-  EVSSL = "EV SSL",
-  PositiveSSLWildcard = "PositiveSSL Wildcard",
-  EssentialSSLWildcard = "EssentialSSL Wildcard",
-  PremiumSSLWildcard = "PremiumSSL Wildcard",
-  PositiveSSLMultiDomain = "PositiveSSL Multi Domain",
-  MultiDomainSSL = "Multi Domain SSL",
-  UnifiedCommunications = "Unified Communications",
-  EVMultiDomainSSL = "EV Multi Domain SSL",
-}
+import type { SSLListSortBy, SSLListType, SSLType } from "@fwg/types/enum";
+
+type CreateSSLYearLimit = 1 | 2 | 3 | 4 | 5;
 
 export interface CreateSSLParams {
-  year: 1 | 2 | 3 | 4 | 5;
+  year: CreateSSLYearLimit;
   type: SSLType;
   sansToADD?: number;
   promotionCode?: string;
 }
 
-export enum ListType {
-  ALL = "ALL",
-  Processing = "Processing",
-  EmailSent = "EmailSent",
-  TechnicalProblem = "TechnicalProblem",
-  InProgress = "InProgress",
-  Completed = "Completed",
-  Deactivated = "Deactivated",
-  Active = "Active",
-  Cancelled = "Cancelled",
-  NewPurchase = "NewPurchase",
-  NewRenewal = "NewRenewal",
-}
-
-export enum SortBy {
-  PurchaseDate = "PURCHASEDATE",
-  PurchaseDateDesc = "PURCHASEDATE_DESC",
-  SSLType = "SSLTYPE",
-  SSLTypeDesc = "SSLTYPE_DESC",
-  ExpireDateTime = "EXPIREDATETIME",
-  ExpireDateTimeDesc = "EXPIREDATETIME_DESC",
-  Hostname = "Host_Name",
-  HostnameDesc = "Host_Name_DESC",
-}
-
 export interface GetListSSLParams {
-  listType?: ListType;
+  listType?: SSLListType;
   searchTerm?: string;
   page?: number;
   pageSize?: number;
-  sortBy?: SortBy;
+  sortBy?: SSLListSortBy;
 }
 
 export interface ParseCSRSSLParams {

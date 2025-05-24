@@ -1,32 +1,18 @@
-export enum ProductType {
-  Domain = "DOMAIN",
-  SslCertificate = "SSLCERTIFICATE",
-}
-
-export enum ProductCategory {
-  Domains = "DOMAINS",
-  Comodo = "COMODO",
-}
-
-export enum ActionName {
-  Register = "REGISTER",
-  Renew = "RENEW",
-  Reactivate = "REACTIVATE",
-  Transfer = "TRANSFER",
-  Purchase = "PURCHASE",
-}
-
-export enum ProductName {
-  COM = "COM",
-  InstantSsl = "INSTANTSSL",
-}
+import type {
+  UserActionName,
+  UserListFindBy,
+  UserPaymentType,
+  UserProductCategory,
+  UserProductName,
+  UserProductType,
+} from "@fwg/types/enum";
 
 export interface GetPricingUserParams {
-  productType: ProductType;
-  productCategory?: ProductCategory;
+  productType: UserProductType;
+  productCategory?: UserProductCategory;
   promotionCode?: string;
-  actionName?: ActionName;
-  productName?: ProductName;
+  actionName?: UserActionName;
+  productName?: UserProductName;
 }
 
 export interface ChangePasswordParams {
@@ -51,11 +37,9 @@ export interface UpdateParams {
   fax?: string;
 }
 
-export type PaymentType = "Creditcard";
-
 export interface CreateAddFundsRequestParams {
   username: string;
-  paymentType: PaymentType;
+  paymentType: typeof UserPaymentType.CreditCard;
   amount: number;
   returnUrl: string;
 }
@@ -90,14 +74,8 @@ export interface LoginUserParams {
   password: string;
 }
 
-export enum FindBy {
-  EmailAddress = "EMAILADDRESS",
-  DomainName = "DOMAINNAME",
-  Username = "USERNAME",
-}
-
 export interface ResetPasswordParams {
-  findBy: FindBy;
+  findBy: UserListFindBy;
   findByValue: string;
   emailFromName?: string;
   emailFrom?: string;

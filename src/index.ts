@@ -60,3 +60,5 @@ export default class Namecheap {
     };
   }
 }
+
+export * from "./types/enum";

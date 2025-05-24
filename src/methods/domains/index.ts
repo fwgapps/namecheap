@@ -22,6 +22,7 @@ import type {
   SetRegistrarLockParams,
 } from "@fwg/types/methods/params/domains-params.type";
 import { Paging } from "@fwg/types/methods/base.type";
+import { DomainListType, LockAction } from "@fwg/types/enum";
 
 export class Domains {
   private readonly config: NamecheapProps;
@@ -32,7 +33,7 @@ export class Domains {
 
   async getList(
     params: GetListParams = {
-      listType: "ALL",
+      listType: DomainListType.All,
       page: 1,
       pageSize: 20,
     },
@@ -126,7 +127,7 @@ export class Domains {
   async setRegistrarLock(
     domain: string,
     params: Omit<SetRegistrarLockParams, "domainName"> = {
-      lockAction: "LOCK",
+      lockAction: LockAction.Lock,
     },
   ): Promise<DomainSetRegistrarLockResult> {
     const response = await request(this.config, CommandsDomain.SetRegistrarLock, {

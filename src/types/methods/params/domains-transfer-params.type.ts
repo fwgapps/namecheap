@@ -1,18 +1,4 @@
-export enum ListType {
-  ALL = "ALL",
-  InProgress = "INPROGRESS",
-  Cancelled = "CANCELLED",
-  Completed = "COMPLETED",
-}
-
-export enum SortBy {
-  DomainName = "DOMAINNAME",
-  DomainNameDesc = "DOMAINNAME_DESC",
-  TransferDate = "TRANSFERDATE",
-  TransferDateDesc = "TRANSFERDATE_DESC",
-  StatusDate = "STATUSDATE",
-  StatusDateDesc = "STATUSDATE_DESC",
-}
+import type { DomainTransferListType, DomainTransferSortBy } from "@fwg/types/enum";
 
 export interface CreateTransferParams {
   domainName: string;
@@ -24,9 +10,9 @@ export interface CreateTransferParams {
 }
 
 export interface GetListTransferParams {
-  listType?: ListType;
+  listType?: DomainTransferListType;
   searchTerm?: string;
   page?: number;
   pageSize?: number;
-  sortBy?: SortBy;
+  sortBy?: DomainTransferSortBy;
 }
