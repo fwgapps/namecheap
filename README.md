@@ -16,6 +16,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-%233178C6.svg?logo=typescript)
 ![issues](https://img.shields.io/github/issues/fwgapps/namecheap)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 A simple and efficient TypeScript library for interacting with the Namecheap API, returning structured JSON responses.
 
