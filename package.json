@@ -14,7 +14,7 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",
     "prepublishOnly": "yarn build",
     "prepare": "husky install",
-    "cm": "cz"
+    "commit": "cz"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
