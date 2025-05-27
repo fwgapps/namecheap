@@ -112,6 +112,7 @@ export class DomainsDNS {
    *    mailBox: ["example@namecheap.com"],
    *    forwardTo: ["example:example@gmail.com"]
    *  })
+   *  @returns Return email affected
    */
   async setEmailForwarding(
     domain: string,
@@ -165,6 +166,7 @@ export class DomainsDNS {
    *    - IP address
    *  - mxpref?: MX preference for host. Applicable for MX records only.
    *  - ttl?: Time to live for all record types.
+   *  @returns Return host list affected
    */
   async setHosts(
     sld: string,

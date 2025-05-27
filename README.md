@@ -18,7 +18,7 @@
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-A simple and efficient TypeScript library for interacting with the Namecheap API, returning structured JSON responses.
+A clean and simple TypeScript wrapper for the Namecheap API, with strongly typed responses and modern developer ergonomics.
 
 ## Table of Contents
 
@@ -26,27 +26,27 @@ A simple and efficient TypeScript library for interacting with the Namecheap API
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
+- [Examples](#examples)
+- [Running Tests](#running-tests)
+- [Scripts](#scripts)
+- [API Coverage](#api-coverage)
 - [License](#license)
+- [Contributing](#contributing)
 
 ## Description
-
-This library provides a straightforward way to interact with the Namecheap API. It's designed to be easy to use both in **Node.js** and **browser** environments, with TypeScript definitions for type safety. The library helps developers automate domain management tasks via the Namecheap API.
+A lightweight and developer-friendly TypeScript client for the Namecheap API. Designed for both Node.js and browser environments, it provides full type safety with comprehensive TypeScript definitions. This library simplifies and automates domain management tasks, enabling developers to integrate Namecheap's services seamlessly into their applications.
 
 ## Features
-
-- Easy-to-use interface for interacting with the Namecheap API.
-- Supports both **Node.js** and **browser** environments.
-- Returns well-structured **JSON** responses for seamless integration.
-- TypeScript definitions included for better developer experience.
-- Minimal external dependencies for better performance.
+* Fully typed API responses using TypeScript
+* Supports both ESM and CommonJS projects
+* Easy-to-use, object-oriented interface
+* Works in Node.js and modern runtimes
+* Includes real-world usage examples with Express.js
 
 ## Installation
-
 You can install the library via npm or yarn:
 
 ### Using npm
-
 ```bash
 npm install @fwgapps/namecheap
 ```
@@ -59,52 +59,49 @@ yarn add @fwgapps/namecheap
 ## Usage
 ### Example in Node.js
 ```ts
-import Namecheap from '@fwgapps/namecheap';
+import Namecheap from "@fwgapps/namecheap";
 
-const namecheap = new Namecheap('your-api-key', 'your-username');
+const client = new NamecheapClient({
+    apiUser: 'your_user',
+    apiKey: 'your_api_key',
+    username: 'your_username', // optional
+    clientIp: 'your_ip',
+    sandbox: true // set debug env
+});
 
-async function getDomainInfo() {
-  try {
-    const response = await namecheap.domains.getInfo({ DomainName: 'example.com' });
-    console.log(response);
-  } catch (error) {
-    console.error('Error fetching domain info:', error);
-  }
+async function listDomains() {
+    const result = await client.domains.getList();
+    console.log(result);
 }
 
-getDomainInfo();
-```
-### Example in Browser
-You can also use this library directly in the browser:
-```html
-<script type="module">
-  import Namecheap from '@fwgapps/namecheap';
-
-  const namecheap = new Namecheap('your-api-key', 'your-username');
-
-  async function getDomainInfo() {
-    try {
-      const response = await namecheap.domains.getInfo({ DomainName: 'example.com' });
-      console.log(response);
-    } catch (error) {
-      console.error('Error fetching domain info:', error);
-    }
-  }
-
-  getDomainInfo();
-</script>
 ```
 
-## Contributing
-We welcome contributions to this project! If you find a bug or want to suggest a feature, feel free to submit an issue or a pull request.
+## Examples
+The repository contains real examples, including usage with Express.js:
+```bash
+cd examples/express
+yarn
+yarn run dev
+```
 
-### How to contribute
-1. Fork the repository. 
-2. Create a new branch for your feature or bug fix. 
-3. Make the necessary changes and commit them. 
-4. Push your changes to your fork. 
-5. Open a pull request with a description of your changes. 
-6. Before submitting your pull request, ensure your code is linted and tested.
+## Running Tests
+We use Vitest for unit testing:
+```bash
+yarn test
+```
+
+## Scripts
+* `build`: Compile the code using tsup
+* `test`: Run tests with Vitest
+* `lint`: Lint code using ESLint
+* `release`: Release a new version using semantic-release
+
+## API Coverage
+Check the [API Docs](https://www.namecheap.com/support/api/methods) for full endpoint support. This library aims to cover the most-used endpoints first, with plans to expand.
 
 ## License
-This project is licensed under the ISC License. See the [LICENSE](https://github.com/fwgapps/namecheap/LICENSE) file for more information.
+This project is licensed under the [ISC License](./LICENSE).
+
+## Contributing
+Feel free to open an issue or submit a pull request if you'd like to contribute!
+
