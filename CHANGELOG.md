@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/fwgapps/namecheap/compare/v0.4.0...v0.4.1) (2025-05-28)
+
+
+### Bug Fixes
+
+* **readme:** correct import example ([716bf3f](https://github.com/fwgapps/namecheap/commit/716bf3f5300d2536384802e0db84e94426eac790)), closes [#1](https://github.com/fwgapps/namecheap/issues/1)
+
 # [0.4.0](https://github.com/fwgapps/namecheap/compare/v0.3.0...v0.4.0) (2025-05-27)
 
 
