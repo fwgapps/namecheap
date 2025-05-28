@@ -61,7 +61,7 @@ yarn add @fwgapps/namecheap
 ```ts
 import Namecheap from "@fwgapps/namecheap";
 
-const client = new NamecheapClient({
+const client = new Namecheap({
     apiUser: 'your_user',
     apiKey: 'your_api_key',
     username: 'your_username', // optional
@@ -79,6 +79,7 @@ async function listDomains() {
 ## Examples
 The repository contains real examples, including usage with Express.js:
 ```bash
+git clone git@github.com:fwgapps/namecheap.git
 cd examples/express
 yarn
 yarn run dev
