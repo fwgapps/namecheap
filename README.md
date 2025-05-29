@@ -56,24 +56,14 @@ npm install @fwgapps/namecheap
 yarn add @fwgapps/namecheap
 ```
 
-## Usage
-### Example in Node.js
-```ts
-import Namecheap from "@fwgapps/namecheap";
+### Browser / CDN Usage
 
-const client = new Namecheap({
-    apiUser: 'your_user',
-    apiKey: 'your_api_key',
-    username: 'your_username', // optional
-    clientIp: 'your_ip',
-    sandbox: true // set debug env
-});
+You can also use the library directly in the browser via CDN without bundlers or Node.js.
 
-async function listDomains() {
-    const result = await client.domains.getList();
-    console.log(result);
-}
+Just include this script tag in your HTML:
 
+```html
+<script src="https://cdn.jsdelivr.net/npm/@fwgapps/namecheap/dist/index.global.js"></script>
 ```
 
 ## Examples

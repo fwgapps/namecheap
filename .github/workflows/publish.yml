@@ -29,8 +29,24 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-  release:
+  audit:
+    runs-on: ubuntu-latest
     needs: test
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 17
+          registry-url: 'https://registry.npmjs.org/'
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Run yarn audit
+        run: yarn audit --level moderate
+
+  release:
+    needs: audit
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
