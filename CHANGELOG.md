@@ -1,3 +1,15 @@
+# [0.5.0](https://github.com/fwgapps/namecheap/compare/v0.4.1...v0.5.0) (2025-05-29)
+
+
+### Bug Fixes
+
+* **pipeline:** update node version in audit ([b989f49](https://github.com/fwgapps/namecheap/commit/b989f4928200bc73611a482886aa3f54aa3dc6f2))
+
+
+### Features
+
+* added iife support, update all libraries and eslint config ([25bb687](https://github.com/fwgapps/namecheap/commit/25bb68718377dcd3d4031352bd191e1785d842ec))
+
 ## [0.4.1](https://github.com/fwgapps/namecheap/compare/v0.4.0...v0.4.1) (2025-05-28)
 
 
