@@ -10,7 +10,6 @@ import {
   DomainGetRegistrarLockResult,
   DomainReactivateResult,
   DomainRenewResult,
-  DomainSetRegistrarLockResult,
   TLD,
 } from "@fwg/types/methods/response/domains.type";
 import type {
@@ -19,7 +18,6 @@ import type {
   GetListParams,
   ReactivateDomainParams,
   RenewDomainParams,
-  SetRegistrarLockParams,
 } from "@fwg/types/methods/params/domains-params.type";
 import { Paging } from "@fwg/types/methods/base.type";
 import { DomainListType, LockAction } from "@fwg/types/enum";
@@ -31,6 +29,10 @@ export class Domains {
     this.config = config;
   }
 
+  /**
+   * Returns a list of domains for the particular user
+   * @note IMPORTANT: Namecheap API privacy service provider recently changed to WithheldforPrivacy. We want to avoid service interruption for namecheap API users, so please note that in some cases, you may still see Whoisguard in the API parameter names.
+   */
   async getList(
     params: GetListParams = {
       listType: DomainListType.All,
@@ -48,6 +50,10 @@ export class Domains {
     };
   }
 
+  /**
+   * Gets contact information for the requested domain
+   * @note IMPORTANT: Namecheap API privacy service provider recently changed to WithheldforPrivacy. We want to avoid service interruption for our API users, so please note that in some cases, you may still see Whoisguard in the API parameter names.
+   */
   async getContacts(domainName: string): Promise<DomainContactsResult> {
     const response = await request(this.config, CommandsDomain.GetContact, {
       domainName,
@@ -55,6 +61,11 @@ export class Domains {
     return response.commandResponse.domainContactsResult;
   }
 
+  /**
+   * Registers a new domain
+   * @note IMPORTANT: Namecheap API privacy service provider recently changed to WithheldforPrivacy. We want to avoid service interruption for our API users, so please note that in some cases, you may still see Whoisguard in the API parameter names.
+   * @note For successful registration of an IDN domain, you need to send the IdnCode parameter and provide the domain name in the Punycode format (Example: xn--sdkhjsdhfkdh.com), as we do not support native code.
+   */
   async create(
     domain: string,
     params: Omit<CreateDomainParams, "domainName">,
@@ -67,11 +78,20 @@ export class Domains {
     return response.commandResponse.domainCreateResult;
   }
 
+  /**
+   * Returns a list of TLDs
+   * @note IMPORTANT: Namecheap API privacy service provider recently changed to WithheldforPrivacy. We want to avoid service interruption for our API users, so please note that in some cases, you may still see Whoisguard in the API parameter names.
+   * @note We strongly recommend that you cache this API response to avoid repeated calls.
+   *
+   */
   async getTldList(): Promise<Array<TLD>> {
     const response = await request(this.config, CommandsDomain.GetTldList);
     return response.commandResponse.tlds;
   }
 
+  /**
+   * Sets contact information for the requested domain
+   */
   async setContacts(
     domain: string,
     params: Omit<ContactDomainParams, "domainName">,
@@ -84,7 +104,10 @@ export class Domains {
     return response.commandResponse.domainSetContactResult;
   }
 
-  async check(domains: Array<string>): Promise<DomainCheckResult> {
+  /**
+   * Checks the availability of domains
+   */
+  async check(domains: Array<string>): Promise<Array<DomainCheckResult>> {
     const response = await request(this.config, CommandsDomain.Check, {
       domainList: domains.join(),
     });
@@ -92,6 +115,9 @@ export class Domains {
     return response.commandResponse.domainCheckResult;
   }
 
+  /**
+   * Reactivates an expired domain
+   */
   async reactivate(
     domain: string,
     params: Omit<ReactivateDomainParams, "domainName"> = {},
@@ -104,6 +130,9 @@ export class Domains {
     return response.commandResponse.domainReactivateResult;
   }
 
+  /**
+   * Renews an expiring domain
+   */
   async renew(
     domain: string,
     params: Omit<RenewDomainParams, "domainName">,
@@ -116,6 +145,9 @@ export class Domains {
     return response.commandResponse.domainRenewResult;
   }
 
+  /**
+   * Gets the Registrar Lock status for the requested domain
+   */
   async getRegistrarLock(domain: string): Promise<DomainGetRegistrarLockResult> {
     const response = await request(this.config, CommandsDomain.GetRegistrarLock, {
       domainName: domain,
@@ -124,20 +156,25 @@ export class Domains {
     return response.commandResponse.domainGetRegistrarLockResult;
   }
 
+  /**
+   * Sets the Registrar Lock status for a domain
+   */
   async setRegistrarLock(
     domain: string,
-    params: Omit<SetRegistrarLockParams, "domainName"> = {
-      lockAction: LockAction.Lock,
-    },
-  ): Promise<DomainSetRegistrarLockResult> {
+    lockAction: LockAction = LockAction.Lock,
+  ): Promise<string> {
     const response = await request(this.config, CommandsDomain.SetRegistrarLock, {
-      ...params,
       domainName: domain,
+      lockAction,
     });
 
     return response.commandResponse.domainSetRegistrarLockResult;
   }
 
+  /**
+   * Returns information about the requested domain
+   * @note IMPORTANT: Namecheap API privacy service provider recently changed to WithheldforPrivacy. We want to avoid service interruption for Namecheap API users, so please note that in some cases, you may still see Whoisguard in the API parameter names.
+   */
   async getInfo(domain: string, hostName?: string): Promise<DomainGetInfoResult> {
     const response = await request(this.config, CommandsDomain.GetInfo, {
       domainName: domain,

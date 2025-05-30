@@ -21,7 +21,10 @@ export const getNamecheapHost = (isSandbox: boolean): string => {
 };
 
 const checkRequestError = (response: NamecheapXMLParsedBase | NamecheapXMLParsedFail): boolean =>
-  response.status === "ERROR" || Object.hasOwnProperty.call(response, "errors");
+  response.status === "ERROR" ||
+  (Object.hasOwnProperty.call(response, "errors") &&
+    (!!(response as NamecheapXMLParsedFail).errors.number ||
+      !!(response as NamecheapXMLParsedFail).errors.value));
 
 /* eslint-disable */
 const flattenObjectToArray = (
@@ -105,8 +108,6 @@ export async function request<T extends keyof MappedResponseSuccess>(
   }
 
   const xmlData = await response.text();
-
-  // await response.text();
   const parsedValue: { apiResponse: MappedResponseSuccess[T] } = parser.parse(xmlData);
   const json: NamecheapXMLParsedBase = simplifyObject(parsedValue.apiResponse);
 

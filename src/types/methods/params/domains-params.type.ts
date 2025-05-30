@@ -19,18 +19,18 @@ export interface CreateDomainParams extends Contacts {
   promoCode?: string;
   billing?: Partial<ContactDetail>;
   idnCode?: IdnCode;
-  extendedAttributes: string;
+  extendedAttributes?: string;
   nameservers?: string;
   addFreeWhoisguard?: string;
   WGEnabled?: string;
   isPremiumDomain?: boolean;
   premiumPrice?: number;
-  eapPrice?: number;
+  eapFee?: number;
 }
 
 export interface ContactDomainParams extends Contacts {
   domainName: string;
-  extendedAttributes: string;
+  extendedAttributes?: string;
 }
 
 export interface ReactivateDomainParams {

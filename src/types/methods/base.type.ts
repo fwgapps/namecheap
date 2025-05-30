@@ -22,7 +22,7 @@ export interface NamecheapXMLParsedFail extends NamecheapXMLParsedBase {
 }
 
 export interface Paging {
-  totalItem: number;
+  totalItems: number;
   currentPage: number;
   pageSize: number;
   paging: boolean;

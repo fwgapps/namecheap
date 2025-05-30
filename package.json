@@ -11,6 +11,7 @@
     "clean": "rm -rf dist",
     "build": "yarn clean && tsup",
     "test": "vitest",
+    "coverage": "vitest run --coverage",
     "lint": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",

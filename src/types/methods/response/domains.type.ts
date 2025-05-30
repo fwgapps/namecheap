@@ -27,22 +27,22 @@ export interface Contacts {
 }
 
 export interface ContactDetail {
-  organizationName: string;
-  jobTitle: string;
+  organizationName?: string;
+  jobTitle?: string;
   firstName: string;
   lastName: string;
   address1: string;
-  address2: string;
+  address2?: string;
   city: string;
   stateProvince: string;
-  stateProvinceChoice: string;
-  postalCode: number;
+  stateProvinceChoice?: string;
+  postalCode: string | number;
   country: string;
-  phone: number;
-  fax: number;
+  phone: string | number;
+  fax?: number;
   emailAddress: string;
-  phoneExt: number;
-  readOnly: boolean;
+  phoneExt?: number;
+  readOnly?: boolean;
 }
 
 interface CurrentAttributes {
@@ -67,9 +67,9 @@ export interface DomainCreateResult {
   domain: string;
   registered: boolean;
   chargedAmount: number;
-  domainID: number;
-  orderID: number;
-  transactionID: number;
+  domainId: number;
+  orderId: number;
+  transactionId: number;
   whoisguardEnable: boolean;
   nonRealTimeDomain: boolean;
 }
@@ -84,15 +84,16 @@ interface Category {
 }
 
 export interface TLD {
+  value: string;
   name: string;
   nonRealTime: boolean;
   minRegisterYears: number;
   maxRegisterYears: number;
   minRenewYears: number;
   maxRenewYears: number;
-  renewalMinDays: number;
-  renewalMaxDays: number;
-  reactivateMaxDays: number;
+  renewalMinDays?: number;
+  renewalMaxDays?: number;
+  reactivateMaxDays?: number;
   minTransferYears: number;
   maxTransferYears: number;
   isApiRegisterable: boolean;
@@ -100,21 +101,21 @@ export interface TLD {
   isApiTransferable: boolean;
   isEppRequired: boolean;
   isDisableModContact: boolean;
-  isDisableWGAllot: boolean;
+  isDisableWgAllot: boolean;
   isIncludeInExtendedSearchOnly: boolean;
   sequenceNumber: number;
   type: string;
-  subType: string;
-  isSupportsIDN: boolean;
+  subType?: string;
+  isSupportsIdn: boolean;
   category: string;
-  supportsRegistrarLock: boolean;
-  addGracePeriodDays: number;
-  whoisVerification: boolean;
-  providerApiDelete: boolean;
-  tldState: string;
-  searchGroup: string;
-  registry: string;
-  categories: Array<Category>;
+  supportsRegistrarLock?: boolean;
+  addGracePeriodDays?: number;
+  whoisVerification?: boolean;
+  providerApiDelete?: boolean;
+  tldState?: string;
+  searchGroup?: string;
+  registry?: string;
+  categories?: Array<Category>;
 }
 
 export interface GetTldListSuccess {
@@ -139,7 +140,7 @@ export interface DomainCheckResult {
 }
 
 export interface CheckSuccess {
-  domainCheckResult: DomainCheckResult;
+  domainCheckResult: Array<DomainCheckResult>;
 }
 
 export interface DomainReactivateResult {
@@ -175,38 +176,32 @@ export interface RenewSuccess {
 export interface DomainGetRegistrarLockResult {
   domain: string;
   registrarLockStatus: boolean;
-  isClientUpdateProhibited: boolean;
-  isClientDeleteProhibited: boolean;
-  isClientHold: boolean;
+  isClientUpdateProhibited?: boolean;
+  isClientDeleteProhibited?: boolean;
+  isClientHold?: boolean;
 }
 
 export interface GetRegistrarLockSuccess {
   domainGetRegistrarLockResult: DomainGetRegistrarLockResult;
 }
 
-export interface DomainSetRegistrarLockResult {
-  domain: string;
-  isSuccess: boolean;
-  registrarLockStatus: boolean;
-  isRegistrarLockStatusUpdated: boolean;
-  isClientUpdateProhibitedUpdated: boolean;
-  isClientDeleteProhibitedUpdated: boolean;
-  isClientHoldUpdated: boolean;
-}
-
 export interface SetRegistrarLockSuccess {
-  domainSetRegistrarLockResult: DomainSetRegistrarLockResult;
+  domainSetRegistrarLockResult: string;
 }
 
 export interface DomainGetInfoResult {
   domainDetails: {
     createdDate: string;
     expiredDate: string;
-    numYears: number;
+    numYears?: number;
     domainDetails: boolean;
   };
-  whoisguard: { id: number; enabled: string };
-  premiumDnsSubscription: {
+  whoisguard: {
+    id: number;
+    expiredDate: string;
+    enabled: string;
+  };
+  premiumDnsSubscription?: {
     useAutoRenew: boolean;
     subscriptionId: number;
     createdDate: string;
@@ -215,13 +210,13 @@ export interface DomainGetInfoResult {
     premiumDnsSubscription: boolean;
   };
   dnsDetails: {
-    nameserver: Array<string>;
+    nameserver?: Array<string>;
     providerType: string;
-    isUsingOurDns: boolean;
-    hostCount: number;
-    emailType: string;
-    dynamicDnsStatus: boolean;
-    isFailover: boolean;
+    isUsingOurDns?: boolean;
+    hostCount?: number;
+    emailType?: string;
+    dynamicDnsStatus?: boolean;
+    isFailover?: boolean;
   };
   modificationrights: { all: boolean };
   status: string;

@@ -1,7 +1,14 @@
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-const ignorePaths = ["" + "examples/**/*", "node_modules", "dist", "vitest.config.ts"];
+const ignorePaths = [
+  "examples/**/*",
+  "node_modules",
+  "dist",
+  "vitest.config.ts",
+  "eslint.config.ts",
+  "tsup.config.ts",
+];
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
