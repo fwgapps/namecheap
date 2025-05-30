@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/fwgapps/namecheap/compare/v0.5.0...v0.6.0) (2025-05-30)
+
+
+### Features
+
+* added new tests, commentaries and changed some types ([62e197d](https://github.com/fwgapps/namecheap/commit/62e197d6aceae36ed06ebc64b8cac8c8dd7d4fb8))
+
 # [0.5.0](https://github.com/fwgapps/namecheap/compare/v0.4.1...v0.5.0) (2025-05-29)
 
 
