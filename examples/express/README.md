@@ -19,6 +19,8 @@ cd examples/express
 yarn install
 ```
 
+After rebuilding the library (`yarn build` at the root), rerun `yarn install --force` in the example: Yarn copies `file:` dependencies instead of linking them, so the example keeps the old copy otherwise.
+
 Create a `.env` file in `examples/express`:
 
 ```dotenv
@@ -104,9 +106,9 @@ Reads use `GET` with path/query parameters, writes use `POST`/`PUT`/`DELETE` wit
 | DELETE | `/usersAddress/:id` | `usersAddress.delete` |
 | GET | `/whois` | `whoisGuard.getList` (query: `listType`, `page`, `pageSize`) |
 | PUT | `/whois/email` | `whoisGuard.changeEmailAddress` (`{ whoisguardID }`) |
-| PUT | `/whois/enable/:id` | `whoisGuard.enable` (`{ forwardedToEmail }`) |
+| PUT | `/whois/enable/:id` | `whoisGuard.enable` (`{ forwardedToEmail }`, required) |
 | DELETE | `/whois/disable/:id` | `whoisGuard.disable` |
-| POST | `/whois/renew/:id` | `whoisGuard.renew` (`{ years, promotionCode? }`) |
+| POST | `/whois/renew/:id` | `whoisGuard.renew` (`{ years, promotionCode? }`; `years` is required, billed call) |
 
 Passwords and reset codes are only accepted in the JSON body, never in the query string.
 
@@ -117,8 +119,9 @@ A single error middleware (`src/middleware/errors.ts`) answers every failure wit
 | Error | Status | Notes |
 | --- | --- | --- |
 | `NamecheapError` (API answered `ERROR`) | 400 | `code` is the Namecheap error code |
-| missing/invalid route parameter (`BadRequestError`, defined by this example) | 400 | no `code` |
+| missing/invalid route parameter or body field (`BadRequestError`, defined by this example); ids, pages and years must be positive integers | 400 | no `code` |
+| errors with a 4xx `status` from Express/body-parser (malformed JSON, body too large, wrong content type) | that status (400/413/415) | fixed message; only the error name and status are logged, never the message (it can quote the request body) |
 | `NamecheapParseError`, `NamecheapHttpError` | 502 | upstream unreachable or unreadable |
-| anything else | 500 | generic message; the real `name: message` is logged server-side |
+| anything else, including a `TypeError` thrown by the SDK's own parameter validation that the route did not catch first | 500 | generic message; the real `name: message` is logged server-side |
 
 Responses never include the request URL, request body or the API key. Unknown routes answer 404 with the same JSON shape.

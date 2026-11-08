@@ -1,13 +1,27 @@
 import { Router } from "express";
 import type { UsersAddressCreateParams, UsersAddressUpdateParams } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
-import { numericParam } from "../lib/params";
+import { bodyNumber, bodyOf, numericParam } from "../util/params";
 
 const router = Router();
 
 router.post("/", async (req, res, next) => {
   try {
-    res.json(await namecheap.usersAddress.create(req.body as UsersAddressCreateParams));
+    res.json(
+      await namecheap.usersAddress.create(
+        bodyOf<UsersAddressCreateParams>(req, [
+          "addressName",
+          "emailAddress",
+          "firstName",
+          "lastName",
+          "city",
+          "stateProvince",
+          "zip",
+          "country",
+          "phone",
+        ]),
+      ),
+    );
   } catch (error) {
     next(error);
   }
@@ -24,7 +38,7 @@ router.get("/", async (_req, res, next) => {
 // Body: { "addressId": 123 }
 router.post("/default", async (req, res, next) => {
   try {
-    const addressId = numericParam(String(req.body?.addressId), "addressId");
+    const addressId = bodyNumber(req, "addressId");
     res.json(await namecheap.usersAddress.setDefault({ addressId }));
   } catch (error) {
     next(error);
@@ -43,7 +57,17 @@ router.get("/:id", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   try {
     const addressId = numericParam(req.params.id, "id");
-    const body = req.body as Omit<UsersAddressUpdateParams, "addressId">;
+    const body = bodyOf<Omit<UsersAddressUpdateParams, "addressId">>(req, [
+      "addressName",
+      "emailAddress",
+      "firstName",
+      "lastName",
+      "city",
+      "stateProvince",
+      "zip",
+      "country",
+      "phone",
+    ]);
     res.json(await namecheap.usersAddress.update({ ...body, addressId }));
   } catch (error) {
     next(error);

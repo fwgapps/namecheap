@@ -8,7 +8,8 @@ import type {
   UsersUpdateParams,
 } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
-import { pickQuery, requiredString } from "../lib/params";
+import { BadRequestError } from "../middleware/errors";
+import { bodyObject, bodyOf, pickQuery } from "../util/params";
 
 const router = Router();
 
@@ -46,7 +47,9 @@ router.get("/addFundsStatus/:tokenId", async (req, res, next) => {
 router.post("/addFundsRequest", async (req, res, next) => {
   try {
     res.json(
-      await namecheap.users.createAddFundsRequest(req.body as UsersCreateAddFundsRequestParams),
+      await namecheap.users.createAddFundsRequest(
+        bodyOf<UsersCreateAddFundsRequestParams>(req, ["paymentType", "amount", "returnUrl"]),
+      ),
     );
   } catch (error) {
     next(error);
@@ -55,7 +58,21 @@ router.post("/addFundsRequest", async (req, res, next) => {
 
 router.put("/", async (req, res, next) => {
   try {
-    res.json(await namecheap.users.update(req.body as UsersUpdateParams));
+    res.json(
+      await namecheap.users.update(
+        bodyOf<UsersUpdateParams>(req, [
+          "firstName",
+          "lastName",
+          "address1",
+          "city",
+          "stateProvince",
+          "zip",
+          "country",
+          "emailAddress",
+          "phone",
+        ]),
+      ),
+    );
   } catch (error) {
     next(error);
   }
@@ -65,7 +82,12 @@ router.put("/", async (req, res, next) => {
 // Body: { "oldPassword", "newPassword" } or { "resetCode", "newPassword" }
 router.put("/password", async (req, res, next) => {
   try {
-    res.json(await namecheap.users.changePassword(req.body as UsersChangePasswordParams));
+    const body = bodyOf<UsersChangePasswordParams>(req, ["newPassword"]);
+    const raw = bodyObject(req);
+    if (!raw.oldPassword && !raw.resetCode) {
+      throw new BadRequestError("Missing body field: oldPassword or resetCode");
+    }
+    res.json(await namecheap.users.changePassword(body));
   } catch (error) {
     next(error);
   }
@@ -73,7 +95,23 @@ router.put("/password", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    res.json(await namecheap.users.create(req.body as UsersCreateParams));
+    res.json(
+      await namecheap.users.create(
+        bodyOf<UsersCreateParams>(req, [
+          "newUserName",
+          "newUserPassword",
+          "emailAddress",
+          "firstName",
+          "lastName",
+          "acceptTerms",
+          "city",
+          "stateProvince",
+          "zip",
+          "country",
+          "phone",
+        ]),
+      ),
+    );
   } catch (error) {
     next(error);
   }
@@ -82,7 +120,7 @@ router.post("/", async (req, res, next) => {
 // Body: { "password" }
 router.post("/login", async (req, res, next) => {
   try {
-    res.json(await namecheap.users.login(req.body as UsersLoginParams));
+    res.json(await namecheap.users.login(bodyOf<UsersLoginParams>(req, ["password"])));
   } catch (error) {
     next(error);
   }
@@ -90,7 +128,11 @@ router.post("/login", async (req, res, next) => {
 
 router.post("/resetPassword", async (req, res, next) => {
   try {
-    res.json(await namecheap.users.resetPassword(req.body as UsersResetPasswordParams));
+    res.json(
+      await namecheap.users.resetPassword(
+        bodyOf<UsersResetPasswordParams>(req, ["findBy", "findByValue"]),
+      ),
+    );
   } catch (error) {
     next(error);
   }

@@ -9,6 +9,22 @@ export class BadRequestError extends Error {
   }
 }
 
+const CLIENT_MESSAGES: Record<number, string> = {
+  400: "Invalid request body",
+  413: "Request body too large",
+  415: "Unsupported media type",
+};
+
+function clientErrorStatus(error: unknown): number | undefined {
+  if (typeof error !== "object" || error === null) return undefined;
+  const { status, statusCode } = error as { status?: unknown; statusCode?: unknown };
+  for (const value of [status, statusCode]) {
+    if (typeof value === "number" && Number.isInteger(value) && value >= 400 && value <= 499)
+      return value;
+  }
+  return undefined;
+}
+
 export const notFound: RequestHandler = (_req, res) => {
   res.status(404).json({ error: { message: "Not found" } });
 };
@@ -28,6 +44,15 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
 
   if (error instanceof BadRequestError) {
     res.status(400).json({ error: { message: error.message } });
+    return;
+  }
+
+  // Errors raised by Express/body-parser (malformed JSON, body too large, wrong content type).
+  // Fixed messages only: the original message can quote a fragment of the request body.
+  const status = clientErrorStatus(error);
+  if (status !== undefined) {
+    console.error(`Client error: ${(error as Error).name} (${status})`);
+    res.status(status).json({ error: { message: CLIENT_MESSAGES[status] ?? "Invalid request" } });
     return;
   }
 

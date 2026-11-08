@@ -1,6 +1,6 @@
 import { Router } from "express";
 import namecheap from "../services/namecheap";
-import { numericParam, pickQuery } from "../lib/params";
+import { bodyNumber, bodyObject, bodyString, numericParam, pickQuery } from "../util/params";
 
 const router = Router();
 
@@ -16,7 +16,7 @@ router.get("/", async (req, res, next) => {
 // Body: { "whoisguardID": 123 }
 router.put("/email", async (req, res, next) => {
   try {
-    const whoisguardID = numericParam(String(req.body?.whoisguardID), "whoisguardID");
+    const whoisguardID = bodyNumber(req, "whoisguardID");
     res.json(await namecheap.whoisGuard.changeEmailAddress({ whoisguardID }));
   } catch (error) {
     next(error);
@@ -27,7 +27,7 @@ router.put("/email", async (req, res, next) => {
 router.put("/enable/:id", async (req, res, next) => {
   try {
     const whoisguardID = numericParam(req.params.id, "id");
-    const forwardedToEmail = String(req.body?.forwardedToEmail ?? "");
+    const forwardedToEmail = bodyString(req, "forwardedToEmail");
     res.json(await namecheap.whoisGuard.enable({ whoisguardID, forwardedToEmail }));
   } catch (error) {
     next(error);
@@ -43,17 +43,17 @@ router.delete("/disable/:id", async (req, res, next) => {
   }
 });
 
-// Body: { "years": 1, "promotionCode": "optional" }
+// Billed call. Body: { "years": 1, "promotionCode": "optional" }; years is required.
 router.post("/renew/:id", async (req, res, next) => {
   try {
     const whoisguardID = numericParam(req.params.id, "id");
-    const years = numericParam(String(req.body?.years ?? 1), "years");
-    const promotionCode = req.body?.promotionCode;
+    const years = bodyNumber(req, "years");
+    const promotionCode = bodyObject(req).promotionCode;
     res.json(
       await namecheap.whoisGuard.renew({
         whoisguardID,
         years,
-        ...(typeof promotionCode === "string" ? { promotionCode } : {}),
+        ...(typeof promotionCode === "string" && promotionCode !== "" ? { promotionCode } : {}),
       }),
     );
   } catch (error) {

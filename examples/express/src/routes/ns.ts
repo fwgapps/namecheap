@@ -1,13 +1,15 @@
 import { Router } from "express";
 import type { NsCreateParams, NsUpdateParams } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
-import { requiredString } from "../lib/params";
+import { requiredString, bodyOf } from "../util/params";
 
 const router = Router();
 
 router.post("/", async (req, res, next) => {
   try {
-    res.json(await namecheap.ns.create(req.body as NsCreateParams));
+    res.json(
+      await namecheap.ns.create(bodyOf<NsCreateParams>(req, ["sld", "tld", "nameserver", "ip"])),
+    );
   } catch (error) {
     next(error);
   }
@@ -27,7 +29,11 @@ router.get("/", async (req, res, next) => {
 // Body: { "sld", "tld", "nameserver", "oldIP", "ip" }
 router.put("/", async (req, res, next) => {
   try {
-    res.json(await namecheap.ns.update(req.body as NsUpdateParams));
+    res.json(
+      await namecheap.ns.update(
+        bodyOf<NsUpdateParams>(req, ["sld", "tld", "nameserver", "oldIP", "ip"]),
+      ),
+    );
   } catch (error) {
     next(error);
   }

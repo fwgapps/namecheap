@@ -6,13 +6,13 @@ import type {
   DnsSetHostsParams,
 } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
-import { requiredString } from "../lib/params";
+import { bodyObjectArray, bodyOf, requiredString } from "../util/params";
 
 const router = Router();
 
 router.post("/default", async (req, res, next) => {
   try {
-    res.json(await namecheap.dns.setDefault(req.body as DnsSetDefaultParams));
+    res.json(await namecheap.dns.setDefault(bodyOf<DnsSetDefaultParams>(req, ["sld", "tld"])));
   } catch (error) {
     next(error);
   }
@@ -21,7 +21,9 @@ router.post("/default", async (req, res, next) => {
 // Body: { "sld", "tld", "nameservers": "ns1.example.com,ns2.example.com" }
 router.post("/custom", async (req, res, next) => {
   try {
-    res.json(await namecheap.dns.setCustom(req.body as DnsSetCustomParams));
+    res.json(
+      await namecheap.dns.setCustom(bodyOf<DnsSetCustomParams>(req, ["sld", "tld", "nameservers"])),
+    );
   } catch (error) {
     next(error);
   }
@@ -50,7 +52,8 @@ router.get("/hosts", async (req, res, next) => {
 // Replaces the whole zone: records that are not listed are deleted.
 router.post("/hosts", async (req, res, next) => {
   try {
-    res.json(await namecheap.dns.setHosts(req.body as DnsSetHostsParams));
+    bodyObjectArray(req, "hosts");
+    res.json(await namecheap.dns.setHosts(bodyOf<DnsSetHostsParams>(req, ["sld", "tld", "hosts"])));
   } catch (error) {
     next(error);
   }
@@ -68,7 +71,12 @@ router.get("/emailForwarding", async (req, res, next) => {
 // Body: { "domainName", "forwards": [{ "mailBox", "forwardTo" }] }
 router.post("/emailForwarding", async (req, res, next) => {
   try {
-    res.json(await namecheap.dns.setEmailForwarding(req.body as DnsSetEmailForwardingParams));
+    bodyObjectArray(req, "forwards", true);
+    res.json(
+      await namecheap.dns.setEmailForwarding(
+        bodyOf<DnsSetEmailForwardingParams>(req, ["domainName", "forwards"]),
+      ),
+    );
   } catch (error) {
     next(error);
   }

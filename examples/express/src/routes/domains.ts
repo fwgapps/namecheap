@@ -8,7 +8,7 @@ import type {
   DomainsSetRegistrarLockParams,
 } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
-import { pickQuery } from "../lib/params";
+import { pickQuery, bodyOf } from "../util/params";
 
 const router = Router();
 
@@ -39,7 +39,17 @@ router.get("/contacts/:domainName", async (req, res, next) => {
 
 router.post("/contacts", async (req, res, next) => {
   try {
-    res.json(await namecheap.domains.setContacts(req.body as DomainsSetContactsParams));
+    res.json(
+      await namecheap.domains.setContacts(
+        bodyOf<DomainsSetContactsParams>(req, [
+          "domainName",
+          "registrant",
+          "tech",
+          "admin",
+          "auxBilling",
+        ]),
+      ),
+    );
   } catch (error) {
     next(error);
   }
@@ -57,7 +67,7 @@ router.get("/info/:domainName", async (req, res, next) => {
 // Body: { "domainList": "example.com,example.net" }
 router.post("/check", async (req, res, next) => {
   try {
-    res.json(await namecheap.domains.check(req.body as DomainsCheckParams));
+    res.json(await namecheap.domains.check(bodyOf<DomainsCheckParams>(req, ["domainList"])));
   } catch (error) {
     next(error);
   }
@@ -65,7 +75,18 @@ router.post("/check", async (req, res, next) => {
 
 router.post("/create", async (req, res, next) => {
   try {
-    res.json(await namecheap.domains.create(req.body as DomainsCreateParams));
+    res.json(
+      await namecheap.domains.create(
+        bodyOf<DomainsCreateParams>(req, [
+          "domainName",
+          "years",
+          "registrant",
+          "tech",
+          "admin",
+          "auxBilling",
+        ]),
+      ),
+    );
   } catch (error) {
     next(error);
   }
@@ -73,7 +94,9 @@ router.post("/create", async (req, res, next) => {
 
 router.post("/reactivate", async (req, res, next) => {
   try {
-    res.json(await namecheap.domains.reactivate(req.body as DomainsReactivateParams));
+    res.json(
+      await namecheap.domains.reactivate(bodyOf<DomainsReactivateParams>(req, ["domainName"])),
+    );
   } catch (error) {
     next(error);
   }
@@ -81,7 +104,9 @@ router.post("/reactivate", async (req, res, next) => {
 
 router.post("/renew", async (req, res, next) => {
   try {
-    res.json(await namecheap.domains.renew(req.body as DomainsRenewParams));
+    res.json(
+      await namecheap.domains.renew(bodyOf<DomainsRenewParams>(req, ["domainName", "years"])),
+    );
   } catch (error) {
     next(error);
   }
@@ -97,7 +122,11 @@ router.get("/registrarLock/:domainName", async (req, res, next) => {
 
 router.post("/registrarLock", async (req, res, next) => {
   try {
-    res.json(await namecheap.domains.setRegistrarLock(req.body as DomainsSetRegistrarLockParams));
+    res.json(
+      await namecheap.domains.setRegistrarLock(
+        bodyOf<DomainsSetRegistrarLockParams>(req, ["domainName"]),
+      ),
+    );
   } catch (error) {
     next(error);
   }
