@@ -1,4 +1,4 @@
-export const ACRONYMS: readonly string[] = ["SLD", "TLD", "IP", "ID", "DNS"];
+export const ACRONYMS: readonly string[] = ["SLD", "TLD", "IP", "ID", "DNS", "WG"];
 
 export type ArrayStyle = "bracket" | "suffix";
 

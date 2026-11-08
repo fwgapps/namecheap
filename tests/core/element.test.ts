@@ -141,3 +141,24 @@ describe("El", () => {
     expect(d.string("A")).toBe("1");
   });
 });
+
+describe("El text accessors", () => {
+  it("numberText parses plain decimal element text", () => {
+    expect(el("<A>42</A>").numberText()).toBe(42);
+    expect(el("<A>-1</A>").numberText()).toBe(-1);
+    expect(el("<A>1.50</A>").numberText()).toBe(1.5);
+  });
+
+  it("numberText rejects non-numeric text without echoing it", () => {
+    for (const text of ["", "abc", "1e3", "0x10"]) {
+      expect(() => el(`<A>${text}</A>`).numberText()).toThrow(NamecheapParseError);
+    }
+    expect(() => el("<A>secret</A>").numberText()).toThrow("A: text is not a number");
+  });
+
+  it("booleanText parses true and false case-insensitively and rejects anything else", () => {
+    expect(el("<A>true</A>").booleanText()).toBe(true);
+    expect(el("<A>False</A>").booleanText()).toBe(false);
+    expect(() => el("<A>yes</A>").booleanText()).toThrow(NamecheapParseError);
+  });
+});

@@ -16,6 +16,7 @@ describe("toParamName", () => {
     expect(toParamName("domainID")).toBe("DomainID");
     expect(toParamName("ipAddress")).toBe("IPAddress");
     expect(toParamName("IPAddress")).toBe("IPAddress");
+    expect(toParamName("wgEnabled")).toBe("WGEnabled");
   });
 
   it("leaves the rest of non-acronym words as written", () => {
@@ -24,7 +25,7 @@ describe("toParamName", () => {
   });
 
   it("exposes the acronym list", () => {
-    expect(ACRONYMS).toEqual(["SLD", "TLD", "IP", "ID", "DNS"]);
+    expect(ACRONYMS).toEqual(["SLD", "TLD", "IP", "ID", "DNS", "WG"]);
   });
 });
 

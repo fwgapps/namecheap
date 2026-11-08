@@ -62,22 +62,32 @@ export class El {
     return value === undefined ? undefined : this.parseBoolean(attr, value);
   }
 
+  /** Element text as a plain decimal number (for numeric child elements). */
+  numberText(): number {
+    return this.parseNumber(`text`, this.text(), `${this.name}: text is not a number`);
+  }
+
+  /** Element text as `true`/`false` (for boolean child elements). */
+  booleanText(): boolean {
+    return this.parseBoolean(`text`, this.text(), `${this.name}: text is not a boolean`);
+  }
+
   attributes(): Record<string, string> {
     return { ...this.node.attrs };
   }
 
-  private parseNumber(attr: string, value: string): number {
+  private parseNumber(attr: string, value: string, message?: string): number {
     const parsed = PLAIN_DECIMAL.test(value) ? Number(value) : Number.NaN;
     if (!Number.isFinite(parsed)) {
-      throw new NamecheapParseError(`${this.name}: attribute "${attr}" is not a number`);
+      throw new NamecheapParseError(message ?? `${this.name}: attribute "${attr}" is not a number`);
     }
     return parsed;
   }
 
-  private parseBoolean(attr: string, value: string): boolean {
+  private parseBoolean(attr: string, value: string, message?: string): boolean {
     const lower = value.toLowerCase();
     if (lower === "true") return true;
     if (lower === "false") return false;
-    throw new NamecheapParseError(`${this.name}: attribute "${attr}" is not a boolean`);
+    throw new NamecheapParseError(message ?? `${this.name}: attribute "${attr}" is not a boolean`);
   }
 }
