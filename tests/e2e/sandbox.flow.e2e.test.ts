@@ -228,7 +228,7 @@ describe.skipIf(!hasCredentials)("sandbox e2e flows (writes)", { timeout: 120_00
 
   describe("ssl", () => {
     it("create, getList, getInfo, getApproverEmailList", async () => {
-      const created = await nc.ssl.create({ years: 1, type: "PositiveSSL" });
+      const created = await nc.ssl.create({ years: 1, type: "Standard SSL SSLcom" });
       const certificateID = created.certificateID;
       expect(certificateID).toBeGreaterThan(0);
       const list = await nc.ssl.getList();
@@ -237,7 +237,7 @@ describe.skipIf(!hasCredentials)("sandbox e2e flows (writes)", { timeout: 120_00
       expect(
         await nc.ssl.getApproverEmailList({
           domainName: "example.com",
-          certificateType: "PositiveSSL",
+          certificateType: "Standard SSL SSLcom",
         }),
       ).toBeTypeOf("object");
     });
@@ -248,33 +248,82 @@ describe.skipIf(!hasCredentials)("sandbox e2e flows (writes)", { timeout: 120_00
       expect(await nc.ssl.parseCSR({ csr: CSR })).toBeTypeOf("object");
     });
 
-    it("activate, reissue, DCV, resend, renew, SANs and revoke on a real certificate", async () => {
-      const created = await nc.ssl.create({ years: 1, type: "PositiveSSL" });
-      const certificateID = created.certificateID ?? 0;
-      expect(certificateID).toBeGreaterThan(0);
-      await tolerant("ssl.activate", () =>
-        nc.ssl.activate({ certificateID, csr: CSR, adminEmailAddress: "admin@example.com" }),
-      );
-      await tolerant("ssl.editDCVMethod", () =>
-        nc.ssl.editDCVMethod({ certificateID, dcvMethod: "admin@example.com" }),
-      );
-      await tolerant("ssl.reissue", () =>
-        nc.ssl.reissue({ certificateID, csr: CSR, adminEmailAddress: "admin@example.com" }),
-      );
+    it("activates with approver e-mail, HTTP and DNS validation, then edits and reissues", async () => {
+      const type = "Standard SSL SSLcom";
+      const activation = {
+        csr: CSR,
+        adminEmailAddress: "admin@example.com",
+        webServerType: "apacheopenssl",
+      };
+      const newId = async () => (await nc.ssl.create({ years: 1, type })).certificateID ?? 0;
+
+      const byEmail = await newId();
+      const emailResult = await nc.ssl.activate({
+        certificateID: byEmail,
+        ...activation,
+        approverEmail: "admin@example.com",
+      });
+      expect(emailResult.isSuccess).toBe(true);
+
+      const byHttp = await newId();
+      const httpResult = await nc.ssl.activate({
+        certificateID: byHttp,
+        ...activation,
+        httpDcValidation: true,
+      });
+      expect(httpResult.httpDCValidation?.valueAvailable).toBe(true);
+      expect(httpResult.httpDCValidation?.fileName).toMatch(/.txt$/);
+      expect(httpResult.httpDCValidation?.fileContent).toBeTruthy();
+
+      const byDns = await newId();
+      const dnsResult = await nc.ssl.activate({
+        certificateID: byDns,
+        ...activation,
+        dnsDcValidation: true,
+      });
+      expect(dnsResult.dnsDCValidation?.valueAvailable).toBe(true);
+      expect(dnsResult.dnsDCValidation?.hostName).toBeTruthy();
+      expect(dnsResult.dnsDCValidation?.target).toBeTruthy();
+
+      const edited = await nc.ssl.editDCVMethod({
+        certificateID: byHttp,
+        dcvMethod: "admin@example.com",
+      });
+      expect(edited.isSuccess).toBe(true);
+      const reissued = await nc.ssl.reissue({
+        certificateID: byEmail,
+        csr: CSR,
+        approverEmail: "admin@example.com",
+      });
+      expect(reissued.isSuccess).toBe(true);
+
+      // These need a certificate the CA has issued, which the sandbox never does.
       await tolerant("ssl.resendApproverEmail", () =>
-        nc.ssl.resendApproverEmail({ certificateID }),
+        nc.ssl.resendApproverEmail({ certificateID: byEmail }),
       );
       await tolerant("ssl.resendFulfillmentEmail", () =>
-        nc.ssl.resendFulfillmentEmail({ certificateID }),
-      );
-      await tolerant("ssl.purchaseMoreSans", () =>
-        nc.ssl.purchaseMoreSans({ certificateID, numberOfSansToAdd: 1 }),
+        nc.ssl.resendFulfillmentEmail({ certificateID: byEmail }),
       );
       await tolerant("ssl.renew", () =>
-        nc.ssl.renew({ certificateID, years: 1, sslType: "PositiveSSL" }),
+        nc.ssl.renew({ certificateID: byEmail, years: 1, sslType: type }),
       );
       await tolerant("ssl.revokeCertificate", () =>
-        nc.ssl.revokeCertificate({ certificateID, certificateType: "PositiveSSL" }),
+        nc.ssl.revokeCertificate({ certificateID: byEmail, certificateType: type }),
+      );
+    });
+
+    it("purchaseMoreSans on a multi-domain certificate", async () => {
+      const created = await nc.ssl.create({
+        years: 1,
+        type: "SAN Certificate SSL SSLcom",
+        sansToAdd: 1,
+      });
+      expect(created.certificateID).toBeGreaterThan(0);
+      await tolerant("ssl.purchaseMoreSans", () =>
+        nc.ssl.purchaseMoreSans({
+          certificateID: created.certificateID ?? 0,
+          numberOfSansToAdd: 1,
+        }),
       );
     });
   });
@@ -343,6 +392,36 @@ describe.skipIf(!hasCredentials)("sandbox e2e flows (writes)", { timeout: 120_00
       if (!created) return ctx.skip();
       const child = createSandboxClient(newUser);
       expect((await child.users.login({ password })).loginSuccess).toBe(true);
+    });
+
+    it("update, createAddFundsRequest, getAddFundsStatus and resetPassword on the E2E account", async (ctx) => {
+      if (!created) return ctx.skip();
+      const child = createSandboxClient(newUser);
+      const updated = await child.users.update({
+        firstName: "Test",
+        lastName: "Sandbox",
+        address1: "1 Test Street",
+        city: "Los Angeles",
+        stateProvince: "CA",
+        zip: "90001",
+        country: "US",
+        emailAddress: "e2e-test@example.com",
+        phone: "+1.3105551234",
+      });
+      expect(updated.success).toBe(true);
+      // The API wants at least US$ 5.00 per request.
+      const request = await child.users.createAddFundsRequest({
+        paymentType: "Creditcard",
+        amount: 5,
+        returnUrl: "https://example.com/",
+      });
+      expect(request.tokenID).not.toBe("");
+      const status = await child.users.getAddFundsStatus({ tokenId: request.tokenID });
+      expect(status.status).toMatch(/CREATED|SUBMITTED|COMPLETED|FAILED|EXPIRED/);
+      // Only sends the reset link by e-mail; it does not change the password.
+      expect(
+        await child.users.resetPassword({ findBy: "USERNAME", findByValue: newUser }),
+      ).toBeTypeOf("object");
     });
 
     // Namecheap refuses to reuse an old password, so the password cannot be changed back. The

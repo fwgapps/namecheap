@@ -14,7 +14,13 @@ import type { Paging } from "../core/paging";
 export interface SslCreateParams {
   /** Number of years for the certificate. Allowed values: 1 to 5. */
   years: number;
-  /** SSL product name. */
+  /**
+   * SSL product name. Since July 11, 2026 use one of: `Standard SSL SSLcom`,
+   * `Standard Wildcard SSL SSLcom`, `SAN Certificate SSL SSLcom`, `High Assurance SSL SSLcom`,
+   * `OV Wildcard SSL SSLcom`, `OV Multi-domain SSL SSLcom`, `EV SSL SSLcom`,
+   * `EV Multi Domain SSL SSLcom`. Older names (`PositiveSSL`, `InstantSSL`, ...) are deprecated:
+   * the API still accepts them and issues an equivalent new type.
+   */
   type: string;
   /** Number of add-on domains for multi-domain certificates. Sent as `SANStoADD`. */
   sansToAdd?: number;
@@ -224,20 +230,70 @@ const getApproverEmailList = /* @__PURE__ */ defineCommand<
 // Shared: HTTP DCV block and the { id, isSuccess } result
 // ---------------------------------------------------------------------------
 
+/** File to publish on the domain for HTTP domain control validation. */
+export interface SslHttpDcEntry {
+  domain?: string;
+  fileName?: string;
+  fileContent?: string;
+}
+
 export interface SslHttpDcValidation {
   /** True when HTTP_CSR_HASH was set for at least one domain. */
   valueAvailable: boolean;
+  /** From the first entry; the live API nests them in a `<DNS domain>` element per domain. */
   fileName?: string;
   fileContent?: string;
+  /** One entry per domain, when the response lists them. */
+  entries?: SslHttpDcEntry[];
+}
+
+/** DNS record to create for DNS domain control validation. */
+export interface SslDnsDcEntry {
+  domain?: string;
+  hostName?: string;
+  target?: string;
+}
+
+export interface SslDnsDcValidation {
+  valueAvailable: boolean;
+  hostName?: string;
+  target?: string;
+  entries?: SslDnsDcEntry[];
 }
 
 function parseHttpDcValidation(result: El): SslHttpDcValidation | undefined {
   const validation = result.optional("HttpDCValidation");
   if (validation === undefined) return undefined;
+  const entries = validation.all("DNS").map((entry) => ({
+    ...optionalField("domain", entry.optionalString("domain")),
+    ...optionalField("fileName", entry.optionalText("FileName")),
+    ...optionalField("fileContent", entry.optionalText("FileContent")),
+  }));
+  const fileName = validation.optionalText("FileName") ?? entries[0]?.fileName;
+  const fileContent = validation.optionalText("FileContent") ?? entries[0]?.fileContent;
   return {
     valueAvailable: validation.boolean("ValueAvailable"),
-    ...optionalField("fileName", validation.optionalText("FileName")),
-    ...optionalField("fileContent", validation.optionalText("FileContent")),
+    ...optionalField("fileName", fileName),
+    ...optionalField("fileContent", fileContent),
+    ...(entries.length > 0 ? { entries } : {}),
+  };
+}
+
+function parseDnsDcValidation(result: El): SslDnsDcValidation | undefined {
+  const validation = result.optional("DNSDCValidation");
+  if (validation === undefined) return undefined;
+  const entries = validation.all("DNS").map((entry) => ({
+    ...optionalField("domain", entry.optionalString("domain")),
+    ...optionalField("hostName", entry.optionalText("HostName")),
+    ...optionalField("target", entry.optionalText("Target")),
+  }));
+  const hostName = validation.optionalText("HostName") ?? entries[0]?.hostName;
+  const target = validation.optionalText("Target") ?? entries[0]?.target;
+  return {
+    valueAvailable: validation.boolean("ValueAvailable"),
+    ...optionalField("hostName", hostName),
+    ...optionalField("target", target),
+    ...(entries.length > 0 ? { entries } : {}),
   };
 }
 
@@ -254,6 +310,12 @@ export interface SslActivateParams {
   /** Server software type, e.g. `apacheopenssl`, `nginx`, `iis`. */
   webServerType?: string;
   uniqueValue?: string;
+  /** Email address that approves the request (e-mail domain control validation). Sent as `ApproverEmail`. */
+  approverEmail?: string;
+  /** Validate by publishing a file over HTTP. Sent as `HTTPDCValidation`. */
+  httpDcValidation?: boolean;
+  /** Validate by creating a DNS record. Sent as `DNSDCValidation`. */
+  dnsDcValidation?: boolean;
 }
 
 export interface SslActivateResult {
@@ -261,6 +323,8 @@ export interface SslActivateResult {
   isSuccess: boolean;
   /** Present when the response carries an HTTP DCV block. */
   httpDCValidation?: SslHttpDcValidation;
+  /** Present when the response carries a DNS DCV block. */
+  dnsDCValidation?: SslDnsDcValidation;
 }
 
 function parseActivation(result: El): SslActivateResult {
@@ -268,11 +332,17 @@ function parseActivation(result: El): SslActivateResult {
     id: result.number("ID"),
     isSuccess: result.boolean("IsSuccess"),
     ...optionalField("httpDCValidation", parseHttpDcValidation(result)),
+    ...optionalField("dnsDCValidation", parseDnsDcValidation(result)),
   };
 }
 
 const activate = /* @__PURE__ */ defineCommand<SslActivateParams, SslActivateResult>({
   name: "namecheap.ssl.activate",
+  keys: {
+    approverEmail: "ApproverEmail",
+    httpDcValidation: "HTTPDCValidation",
+    dnsDcValidation: "DNSDCValidation",
+  },
   parse: (cr) => parseActivation(cr.one("SSLActivateResult")),
 });
 
@@ -316,12 +386,23 @@ export interface SslReissueParams {
   adminEmailAddress?: string;
   webServerType?: string;
   uniqueValue?: string;
+  /** Email address that approves the request (e-mail domain control validation). Sent as `ApproverEmail`. */
+  approverEmail?: string;
+  /** Validate by publishing a file over HTTP. Sent as `HTTPDCValidation`. */
+  httpDcValidation?: boolean;
+  /** Validate by creating a DNS record. Sent as `DNSDCValidation`. */
+  dnsDcValidation?: boolean;
 }
 
 export type SslReissueResult = SslActivateResult;
 
 const reissue = /* @__PURE__ */ defineCommand<SslReissueParams, SslReissueResult>({
   name: "namecheap.ssl.reissue",
+  keys: {
+    approverEmail: "ApproverEmail",
+    httpDcValidation: "HTTPDCValidation",
+    dnsDcValidation: "DNSDCValidation",
+  },
   parse: (cr) => parseActivation(cr.one("SSLReissueResult")),
 });
 
@@ -413,7 +494,10 @@ const getInfo = /* @__PURE__ */ defineCommand<SslGetInfoParams, SslGetInfoResult
       status: result.string("Status"),
       ...optionalField("type", result.optionalString("Type")),
       ...optionalField("commonName", result.optionalString("CommonName")),
-      ...optionalField("provider", result.optionalString("Provider")),
+      ...optionalField(
+        "provider",
+        result.optionalString("Provider") ?? result.optional("Provider")?.optionalText("Name"),
+      ),
       ...optionalField("issuedOn", result.optionalString("IssuedOn")),
       ...optionalField("expires", result.optionalString("Expires")),
     };

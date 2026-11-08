@@ -462,4 +462,46 @@ describe("ssl.getApproverEmailList with groups absent", () => {
     expect(result.commonName).toBe("a.example.com");
     expect(result).not.toHaveProperty("organisationUnit");
   });
+
+  it("activate sends the DCV parameters and reads the nested HTTP validation", async () => {
+    const { client, calls } = createTestClient(
+      okEnvelope(
+        `<SSLActivateResult ID="5" IsSuccess="true"><HttpDCValidation ValueAvailable="true"><DNS domain="a.example.com"><FileName><![CDATA[x.txt]]></FileName><FileContent><![CDATA[hash]]></FileContent></DNS></HttpDCValidation><DNSDCValidation ValueAvailable="false"/></SSLActivateResult>`,
+        "namecheap.ssl.activate",
+      ),
+    );
+    const result = await client.ssl.activate({
+      certificateID: 5,
+      csr: "csr",
+      adminEmailAddress: "a@example.com",
+      approverEmail: "approver@example.com",
+      httpDcValidation: true,
+    });
+    expect(calls[0]?.body.get("ApproverEmail")).toBe("approver@example.com");
+    expect(calls[0]?.body.get("HTTPDCValidation")).toBe("true");
+    expect(result.httpDCValidation).toEqual({
+      valueAvailable: true,
+      fileName: "x.txt",
+      fileContent: "hash",
+      entries: [{ domain: "a.example.com", fileName: "x.txt", fileContent: "hash" }],
+    });
+    expect(result.dnsDCValidation).toEqual({ valueAvailable: false });
+  });
+
+  it("reissue reads the nested DNS validation record", async () => {
+    const { client, calls } = createTestClient(
+      okEnvelope(
+        `<SSLReissueResult ID="6" IsSuccess="true"><HttpDCValidation ValueAvailable="false"/><DNSDCValidation ValueAvailable="true"><DNS domain="a.example.com"><HostName><![CDATA[_h.a.example.com]]></HostName><Target><![CDATA[dcv.ssl.com]]></Target></DNS></DNSDCValidation></SSLReissueResult>`,
+        "namecheap.ssl.reissue",
+      ),
+    );
+    const result = await client.ssl.reissue({
+      certificateID: 6,
+      csr: "csr",
+      dnsDcValidation: true,
+    });
+    expect(calls[0]?.body.get("DNSDCValidation")).toBe("true");
+    expect(result.dnsDCValidation?.hostName).toBe("_h.a.example.com");
+    expect(result.dnsDCValidation?.target).toBe("dcv.ssl.com");
+  });
 });

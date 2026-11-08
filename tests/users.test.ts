@@ -495,4 +495,35 @@ describe("users", () => {
       bare.client.users.changePassword({ oldPassword: "a", newPassword: "b" }),
     ).resolves.toEqual({ success: true });
   });
+
+  it("createAddFundsRequest and getAddFundsStatus read the lower-case elements the API sends", async () => {
+    const created = createTestClient(
+      okEnvelope(
+        `<Createaddfundsrequestresult TokenID="t1" ReturnURL="https://r.example/" RedirectURL="https://p.example/" />`,
+        "namecheap.users.createAddfundsRequest",
+      ),
+    );
+    await expect(
+      created.client.users.createAddFundsRequest({
+        paymentType: "Creditcard",
+        amount: 5,
+        returnUrl: "https://r.example/",
+      }),
+    ).resolves.toEqual({
+      tokenID: "t1",
+      redirectURL: "https://p.example/",
+      returnURL: "https://r.example/",
+    });
+    const status = createTestClient(
+      okEnvelope(
+        `<Getaddfundsstatusresult TransactionID="7" Amount="5.00" Status="CREATED" />`,
+        "namecheap.users.getAddFundsStatus",
+      ),
+    );
+    await expect(status.client.users.getAddFundsStatus({ tokenId: "t1" })).resolves.toEqual({
+      transactionID: 7,
+      amount: "5.00",
+      status: "CREATED",
+    });
+  });
 });
