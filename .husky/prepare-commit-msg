@@ -1,8 +1,6 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Skip in CI environments
+# Commitizen prompt only for a plain `git commit` (no -m/-F/merge/squash source),
+# and never in CI.
 [ -z "$CI" ] || exit 0
+[ -z "$2" ] || exit 0
 
-# Your commit hook logic
 npx cz --hook || true

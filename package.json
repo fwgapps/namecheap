@@ -14,15 +14,14 @@
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,mts,ts}' --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,mts,ts}'",
     "prepublishOnly": "yarn build",
-    "prepare": "husky install",
+    "prepare": "husky",
     "commit": "cz",
     "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,mts}": [
       "eslint --fix",
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "files": [
