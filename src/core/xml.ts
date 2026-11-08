@@ -53,7 +53,7 @@ function decodeEntities(raw: string, position: number): string {
     } else if (body.startsWith("#")) {
       decoded = codePoint(body.slice(1), 10);
     } else {
-      decoded = NAMED_ENTITIES[body];
+      decoded = Object.hasOwn(NAMED_ENTITIES, body) ? NAMED_ENTITIES[body] : undefined;
     }
     if (decoded === undefined) fail(`unknown entity &${body};`, position + amp);
     out += decoded;

@@ -72,6 +72,15 @@ describe("parseXml", () => {
   });
 
   it.each([
+    ["constructor in text", "<A>&constructor;</A>"],
+    ["toString in text", "<A>&toString;</A>"],
+    ["__proto__ in text", "<A>&__proto__;</A>"],
+    ["valueOf in an attribute", '<A v="&valueOf;"/>'],
+  ])("rejects prototype names as entities: %s", (_label, input) => {
+    expect(() => parseXml(input)).toThrow(NamecheapParseError);
+  });
+
+  it.each([
     ["empty string", ""],
     ["unterminated markup", "<html><body>blocked</body></html"],
     ["mismatched tags", "<A><B></A>"],
