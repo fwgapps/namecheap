@@ -131,12 +131,30 @@ describe("serializeParams", () => {
   it("numbers object array elements by position and skips undefined and null fields", () => {
     expect(
       serializeParams({
-        hosts: [{ hostName: "a", ttl: undefined }, null, { hostName: "c", ttl: null, mxPref: 0 }],
+        hosts: [
+          { hostName: "a", ttl: undefined },
+          { hostName: "b" },
+          { hostName: "c", ttl: null, mxPref: 0 },
+        ],
       }),
     ).toEqual([
       ["HostName1", "a"],
+      ["HostName2", "b"],
       ["HostName3", "c"],
       ["MXPref3", "0"],
+    ]);
+  });
+
+  it("throws a TypeError naming the key for null or undefined elements of a record array", () => {
+    expect(() => serializeParams({ hosts: [null, { hostName: "b" }] })).toThrow(TypeError);
+    expect(() => serializeParams({ hosts: [null, { hostName: "b" }] })).toThrow(/hosts/);
+    expect(() => serializeParams({ hosts: [{ hostName: "a" }, undefined] })).toThrow(/hosts/);
+  });
+
+  it("keeps skipping null elements of scalar arrays and renumbers", () => {
+    expect(serializeParams({ ns: ["a", null, "b"] })).toEqual([
+      ["Ns[1]", "a"],
+      ["Ns[2]", "b"],
     ]);
   });
 

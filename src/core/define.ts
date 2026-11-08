@@ -4,14 +4,14 @@ import { serializeParams } from "./serialize";
 import type { ArrayStyle } from "./serialize";
 import type { Send } from "./transport";
 
-// `P` is unused here by design: it only carries the params type into `Command`.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface CommandDef<P, R> {
   /** Namecheap command name, e.g. `namecheap.domains.check`. */
   name: string;
   arrayStyle?: ArrayStyle;
   /** Maps a dotted camelCase path to an exact parameter name. */
   keys?: Readonly<Record<string, string>>;
+  /** Runs before serializing; throw to reject the call without sending anything. */
+  validate?: (params: P) => void;
   /** Receives the CommandResponse element returned by `send`. */
   parse: (cr: El) => R;
 }
@@ -41,6 +41,7 @@ export function group<C extends Record<string, Command<any, any>>>(
   const out: Record<string, (params?: object) => Promise<unknown>> = {};
   for (const [key, def] of Object.entries(commands)) {
     out[key] = async (params) => {
+      def.validate?.((params ?? {}) as never);
       const options: { arrayStyle?: ArrayStyle; keys?: Readonly<Record<string, string>> } = {};
       if (def.arrayStyle !== undefined) options.arrayStyle = def.arrayStyle;
       if (def.keys !== undefined) options.keys = def.keys;

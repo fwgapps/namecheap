@@ -59,7 +59,11 @@ export function serializeParams(
           // Records: element i (1-based, by position) field f becomes `<Field><i>`; the
           // array's own name is not part of the wire name.
           value.forEach((item, position) => {
-            if (item === undefined || item === null) return;
+            if (item === undefined || item === null) {
+              throw new TypeError(
+                `Array parameter "${dotted}" cannot contain null or undefined records`,
+              );
+            }
             if (!isPlainObject(item)) {
               throw new TypeError(`Array parameter "${dotted}" cannot mix objects and scalars`);
             }

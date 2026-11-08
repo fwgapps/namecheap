@@ -27,6 +27,36 @@ describe("group", () => {
     });
   });
 
+  it("calls validate with the params before sending", async () => {
+    const send = makeSend();
+    const validate = vi.fn<(p: { a: string }) => void>();
+    const api = group(
+      { run: defineCommand<{ a: string }, null>({ name: "n", validate, parse: () => null }) },
+      send,
+    );
+    await api.run({ a: "x" });
+    expect(validate).toHaveBeenCalledWith({ a: "x" });
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects without sending when validate throws", async () => {
+    const send = makeSend();
+    const api = group(
+      {
+        run: defineCommand<{ a: string }, null>({
+          name: "n",
+          validate: () => {
+            throw new TypeError("bad params");
+          },
+          parse: () => null,
+        }),
+      },
+      send,
+    );
+    await expect(api.run({ a: "x" })).rejects.toThrow(TypeError);
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("passes the response element to parse", async () => {
     const parse = vi.fn<(cr: El) => number>(() => 1);
     const api = group(

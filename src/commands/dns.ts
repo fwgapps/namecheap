@@ -1,10 +1,6 @@
 import { defineCommand } from "../core/define";
 import type { El } from "../core/element";
-
-/** Spreads `{ [key]: value }` only when the value is present. */
-function optionalField<K extends string, V>(key: K, value: V | undefined): { [P in K]?: V } {
-  return value === undefined ? {} : ({ [key]: value } as { [P in K]?: V });
-}
+import { optionalField } from "../core/fields";
 
 // ---------------------------------------------------------------------------
 // namecheap.domains.dns.setDefault
@@ -199,6 +195,7 @@ export interface DnsEmailForwardRecord {
 
 export interface DnsSetEmailForwardingParams {
   domainName: string;
+  /** An empty list is allowed and clears the domain's email forwarding. */
   forwards: DnsEmailForwardRecord[];
 }
 
@@ -253,8 +250,8 @@ export interface DnsSetHostsParams {
   tld: string;
   /** Omitted keeps the zone's current mode. */
   emailType?: DnsEmailType;
-  /** Replaces the whole zone: records not listed are deleted. */
-  hosts: DnsHostRecord[];
+  /** Replaces the whole zone: records not listed are deleted, so at least one is required. */
+  hosts: [DnsHostRecord, ...DnsHostRecord[]];
 }
 
 export interface DnsSetHostsResult {
@@ -266,6 +263,13 @@ export interface DnsSetHostsResult {
 
 const setHosts = defineCommand<DnsSetHostsParams, DnsSetHostsResult>({
   name: "namecheap.domains.dns.setHosts",
+  validate: (params) => {
+    if (!params.hosts.some((host) => host !== undefined && host !== null)) {
+      throw new TypeError(
+        "dns.setHosts requires at least one host record: it replaces the whole zone, so an empty list would delete every record",
+      );
+    }
+  },
   parse: (cr) => {
     const result = cr.one("DomainDNSSetHostsResult");
     return {

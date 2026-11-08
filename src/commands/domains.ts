@@ -1,12 +1,8 @@
 import { defineCommand } from "../core/define";
 import type { El } from "../core/element";
+import { optionalField } from "../core/fields";
 import { parsePaging } from "../core/paging";
 import type { Paging } from "../core/paging";
-
-/** Spreads `{ [key]: value }` only when the value is present. */
-function optionalField<K extends string, V>(key: K, value: V | undefined): { [P in K]?: V } {
-  return value === undefined ? {} : ({ [key]: value } as { [P in K]?: V });
-}
 
 // ---------------------------------------------------------------------------
 // namecheap.domains.getList

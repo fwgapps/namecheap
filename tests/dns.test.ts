@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NamecheapError } from "../src";
 import { dnsCommands } from "../src/commands/dns";
+import type { DnsHostRecord } from "../src/commands/dns";
 import { createTestClient, loadFixture } from "./helpers";
 
 describe("dns", () => {
@@ -245,8 +246,35 @@ describe("dns", () => {
   </CommandResponse>
 </ApiResponse>`;
     const { client } = createTestClient(xml);
-    const result = await client.dns.setHosts({ sld: "domain", tld: "net", hosts: [] });
+    const result = await client.dns.setHosts({
+      sld: "domain",
+      tld: "net",
+      hosts: [{ hostName: "@", recordType: "A", address: "1.2.3.4" }],
+    });
     expect(result).toEqual({ domain: "domain.net", isSuccess: true });
+  });
+
+  it("setHosts rejects an empty or all-null host list without sending anything", async () => {
+    const { client, calls } = createTestClient(loadFixture("dns", "setHosts"));
+    // @ts-expect-error hosts must be a non-empty list
+    const empty = client.dns.setHosts({ sld: "domain", tld: "net", hosts: [] });
+    await expect(empty).rejects.toThrow(TypeError);
+    await expect(empty).rejects.toThrow(/setHosts.*whole zone/);
+    const nulls = client.dns.setHosts({
+      sld: "domain",
+      tld: "net",
+      hosts: [null, undefined] as unknown as [DnsHostRecord],
+    });
+    await expect(nulls).rejects.toThrow(/setHosts/);
+    expect(calls).toHaveLength(0);
+  });
+
+  it("setEmailForwarding with an empty list is allowed and sends no record fields", async () => {
+    const { client, calls } = createTestClient(loadFixture("dns", "setEmailForwarding"));
+    await client.dns.setEmailForwarding({ domainName: "example.com", forwards: [] });
+    const names = [...(calls[0]?.body.keys() ?? [])];
+    expect(calls[0]?.body.get("DomainName")).toBe("example.com");
+    expect(names.some((k) => /^(MailBox|ForwardTo)/.test(k))).toBe(false);
   });
 
   it("rejects with NamecheapError carrying the code and message of an error response", async () => {
