@@ -1,5 +1,5 @@
 <!-- source: docs -->
-<!-- derived from tests/fixtures/ns/error.xml: command name changed, error text for an invalid EPP code -->
+<!-- derived from tests/fixtures/ns/error.xml: command name changed, error text for an invalid EPP code; error code 2030280 is a placeholder, not from any source -->
 <?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
 	<Errors>

@@ -269,6 +269,13 @@ describe("dns", () => {
     expect(calls).toHaveLength(0);
   });
 
+  it("setHosts without a hosts property gets the friendly message, not a raw TypeError", async () => {
+    const { client, calls } = createTestClient(loadFixture("dns", "setHosts"));
+    const missing = client.dns.setHosts({ sld: "domain", tld: "net" } as never);
+    await expect(missing).rejects.toThrow(/requires at least one host record/);
+    expect(calls).toHaveLength(0);
+  });
+
   it("setEmailForwarding with an empty list is allowed and sends no record fields", async () => {
     const { client, calls } = createTestClient(loadFixture("dns", "setEmailForwarding"));
     await client.dns.setEmailForwarding({ domainName: "example.com", forwards: [] });

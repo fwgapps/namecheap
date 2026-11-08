@@ -55,7 +55,10 @@ function decodeEntities(raw: string, position: number): string {
     } else {
       decoded = Object.hasOwn(NAMED_ENTITIES, body) ? NAMED_ENTITIES[body] : undefined;
     }
-    if (decoded === undefined) fail(`unknown entity &${body};`, position + amp);
+    if (decoded === undefined) {
+      const shown = body.length > 32 ? `${body.slice(0, 32)}…` : body;
+      fail(`unknown entity &${shown};`, position + amp);
+    }
     out += decoded;
     i = semi + 1;
   }

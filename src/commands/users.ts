@@ -180,6 +180,8 @@ export type UsersPaymentType = "Creditcard";
 /**
  * The documented `Username` parameter is not exposed: the transport always sends
  * the configured account as `UserName`.
+ *
+ * @remarks Billed: this command creates a request to add money to your Namecheap account balance.
  */
 export interface UsersCreateAddFundsRequestParams {
   paymentType: UsersPaymentType;

@@ -80,6 +80,20 @@ describe("parseXml", () => {
     expect(() => parseXml(input)).toThrow(NamecheapParseError);
   });
 
+  it("truncates a huge unknown entity name in the error message", () => {
+    const name = "x".repeat(500);
+    let message = "";
+    try {
+      parseXml(`<A>&${name};</A>`);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toContain("unknown entity");
+    expect(message).toContain("…");
+    expect(message.length).toBeLessThan(100);
+    expect(message).not.toContain("x".repeat(33));
+  });
+
   it.each([
     ["empty string", ""],
     ["unterminated markup", "<html><body>blocked</body></html"],

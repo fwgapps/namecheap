@@ -163,6 +163,13 @@ describe("users-address", () => {
       const { client } = createTestClient(envelope(""));
       expect(await client.usersAddress.getList()).toEqual([]);
     });
+
+    it("returns an empty array for an empty CommandResponse", async () => {
+      const xml =
+        '<?xml version="1.0"?><ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response"><Errors /><CommandResponse Type="x" /></ApiResponse>';
+      const { client } = createTestClient(xml);
+      expect(await client.usersAddress.getList()).toEqual([]);
+    });
   });
 
   it("update omits unset optional params from the request", async () => {

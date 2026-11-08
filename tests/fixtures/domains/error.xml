@@ -1,4 +1,5 @@
 <!-- source: docs -->
+<!-- derived from namecheap/go-namecheap-sdk namecheap/domains_ns_create_test.go (Apache-2.0): error shape and code 2019166 -->
 <?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
 	<Errors>

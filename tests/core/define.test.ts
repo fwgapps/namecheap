@@ -106,6 +106,40 @@ describe("group", () => {
   });
 });
 
+describe("group reserved names", () => {
+  it.each(["apiUser", "apiKey", "userName", "clientIp", "command", "APIKEY"])(
+    "rejects the param %s without sending and without leaking its value",
+    async (name) => {
+      const send = makeSend();
+      const api = group(
+        { run: defineCommand<Record<string, string>, null>({ name: "n", parse: () => null }) },
+        send,
+      );
+      const error = await api.run({ [name]: "S3CR3T-VALUE" }).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(TypeError);
+      expect((error as TypeError).message).toMatch(new RegExp(name, "i"));
+      expect((error as TypeError).message).not.toContain("S3CR3T-VALUE");
+      expect(send).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects a reserved wire name set through a keys map", async () => {
+    const send = makeSend();
+    const api = group(
+      {
+        run: defineCommand<{ x: string }, null>({
+          name: "n",
+          keys: { x: "ApiKey" },
+          parse: () => null,
+        }),
+      },
+      send,
+    );
+    await expect(api.run({ x: "v" })).rejects.toThrow(/ApiKey/);
+    expect(send).not.toHaveBeenCalled();
+  });
+});
+
 describe("group parse failures", () => {
   it("wraps a parse error with a may-have-happened message and keeps the cause", async () => {
     const original = new NamecheapParseError('X: missing element "secret-ish"');

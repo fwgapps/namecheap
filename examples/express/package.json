@@ -2,7 +2,7 @@
   "name": "@fwgapps/namecheap-express-example",
   "description": "This is only an example of use",
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "ISC",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc --noEmit",

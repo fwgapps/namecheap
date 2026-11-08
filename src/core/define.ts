@@ -5,6 +5,9 @@ import { serializeParams } from "./serialize";
 import type { ArrayStyle } from "./serialize";
 import type { Send } from "./transport";
 
+/** Wire names the transport sets itself; a caller must never add a second copy. */
+const RESERVED_NAMES = new Set(["apiuser", "apikey", "username", "clientip", "command"]);
+
 export interface CommandDef<P, R> {
   /** Namecheap command name, e.g. `namecheap.domains.check`. */
   name: string;
@@ -46,10 +49,13 @@ export function group<C extends Record<string, Command<any, any>>>(
       const options: { arrayStyle?: ArrayStyle; keys?: Readonly<Record<string, string>> } = {};
       if (def.arrayStyle !== undefined) options.arrayStyle = def.arrayStyle;
       if (def.keys !== undefined) options.keys = def.keys;
-      const el = await send({
-        command: def.name,
-        params: serializeParams(params ?? {}, options),
-      });
+      const serialized = serializeParams(params ?? {}, options);
+      for (const [name] of serialized) {
+        if (RESERVED_NAMES.has(name.toLowerCase())) {
+          throw new TypeError(`Parameter "${name}" is reserved: the client sets it itself`);
+        }
+      }
+      const el = await send({ command: def.name, params: serialized });
       try {
         return def.parse(el);
       } catch (error) {

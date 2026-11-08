@@ -8,6 +8,9 @@ import type { Paging } from "../core/paging";
 // namecheap.ssl.create
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface SslCreateParams {
   /** Number of years for the certificate. Allowed values: 1 to 5. */
   years: number;
@@ -375,7 +378,12 @@ export type SslReturnType = "Individual" | "PKCS7";
 
 export interface SslGetInfoParams {
   certificateID: number;
-  /** Flag for returning the certificate in the response. Sent as `Returncertificate`. */
+  /**
+   * Flag for returning the certificate in the response. Sent as `Returncertificate`.
+   *
+   * @remarks The response shape for the certificate body is undocumented, so 1.0 does
+   * not parse it: the result never contains the certificate.
+   */
   returnCertificate?: string;
   /** Format of the returned certificate. Sent as `Returntype`. */
   returnType?: SslReturnType;
@@ -414,6 +422,9 @@ const getInfo = defineCommand<SslGetInfoParams, SslGetInfoResult>({
 // namecheap.ssl.renew
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface SslRenewParams {
   certificateID: number;
   /** Allowed values: 1 to 5. */
@@ -454,6 +465,9 @@ const renew = defineCommand<SslRenewParams, SslRenewResult>({
 // namecheap.ssl.purchasemoresans
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface SslPurchaseMoreSansParams {
   certificateID: number;
   /** Number of add-on domains to order. Sent as `NumberOfSANSToAdd`. */
@@ -497,6 +511,9 @@ const purchaseMoreSans = defineCommand<SslPurchaseMoreSansParams, SslPurchaseMor
 // namecheap.ssl.revokecertificate
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Irreversible: a revoked certificate cannot be restored.
+ */
 export interface SslRevokeCertificateParams {
   certificateID: number;
   certificateType: string;

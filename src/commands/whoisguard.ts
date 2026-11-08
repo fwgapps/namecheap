@@ -1,6 +1,6 @@
 import { defineCommand } from "../core/define";
 import type { El } from "../core/element";
-import { optionalField } from "../core/fields";
+import { firstLenientNumber, optionalField } from "../core/fields";
 import { parsePaging } from "../core/paging";
 import type { Paging } from "../core/paging";
 
@@ -150,6 +150,9 @@ const getList = defineCommand<WhoisguardGetListParams, WhoisguardGetListResult>(
 // namecheap.whoisguard.renew
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface WhoisguardRenewParams {
   /** Domain privacy ID to renew. Sent as `WhoisguardID`. */
   whoisguardID: number;
@@ -164,12 +167,12 @@ export interface WhoisguardRenewParams {
 // through: it reads the first child element, whatever its name, and returns only
 // the attributes it finds and can read (never throwing on a present but unexpected value). The spellings below are guesses.
 export interface WhoisguardRenewResult {
-  whoisguardId?: number;
+  whoisguardID?: number;
   years?: number;
   /** Omitted when the attribute is absent or not `true`/`false`. */
   renew?: boolean;
-  orderId?: number;
-  transactionId?: number;
+  orderID?: number;
+  transactionID?: number;
   chargedAmount?: number;
 }
 
@@ -178,11 +181,17 @@ const renew = defineCommand<WhoisguardRenewParams, WhoisguardRenewResult>({
   parse: (cr) => {
     const result = cr.children()[0];
     return {
-      ...optionalField("whoisguardId", result?.lenientNumber("WhoisguardId")),
+      ...optionalField(
+        "whoisguardID",
+        result && firstLenientNumber(result, "WhoisguardID", "WhoisguardId"),
+      ),
       ...optionalField("years", result?.lenientNumber("Years")),
       ...optionalField("renew", result?.lenientBoolean("Renew")),
-      ...optionalField("orderId", result?.lenientNumber("OrderId")),
-      ...optionalField("transactionId", result?.lenientNumber("TransactionId")),
+      ...optionalField("orderID", result && firstLenientNumber(result, "OrderID", "OrderId")),
+      ...optionalField(
+        "transactionID",
+        result && firstLenientNumber(result, "TransactionID", "TransactionId"),
+      ),
       ...optionalField("chargedAmount", result?.lenientNumber("ChargedAmount")),
     };
   },

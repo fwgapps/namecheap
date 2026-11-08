@@ -164,14 +164,11 @@ export type UsersAddressGetListResult = UsersAddressListItem[];
 const getList = defineCommand<Record<string, never>, UsersAddressGetListResult>({
   name: "namecheap.users.address.getList",
   parse: (cr) =>
-    cr
-      .one("AddressGetListResult")
-      .all("List")
-      .map((item) => ({
-        addressId: item.number("AddressId"),
-        addressName: item.string("AddressName"),
-        isDefault: item.boolean("IsDefault"),
-      })),
+    (cr.optional("AddressGetListResult")?.all("List") ?? []).map((item) => ({
+      addressId: item.number("AddressId"),
+      addressName: item.string("AddressName"),
+      isDefault: item.boolean("IsDefault"),
+    })),
 });
 
 // ---------------------------------------------------------------------------

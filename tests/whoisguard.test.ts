@@ -104,11 +104,11 @@ describe("whoisguard", () => {
     expect(calls[0]?.body.get("Years")).toBe("1");
     expect(calls[0]?.body.get("PromotionCode")).toBe("PROMO");
     expect(result).toEqual({
-      whoisguardId: 53536,
+      whoisguardID: 53536,
       years: 1,
       renew: true,
-      orderId: 3666910,
-      transactionId: 26781219,
+      orderID: 3666910,
+      transactionID: 26781219,
       chargedAmount: 2.9,
     });
   });
@@ -123,7 +123,23 @@ describe("whoisguard", () => {
 </ApiResponse>`;
     const { client } = createTestClient(xml);
     const result = await client.whoisGuard.renew({ whoisguardID: 1, years: 1 });
-    expect(result).toEqual({ orderId: 77, chargedAmount: 2.5 });
+    expect(result).toEqual({ orderID: 77, chargedAmount: 2.5 });
+  });
+
+  it("renew also reads the OrderID/TransactionID/WhoisguardID spellings, first present wins", async () => {
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<CommandResponse Type="namecheap.whoisguard.renew">
+		<R WhoisguardID="5" OrderID="7" OrderId="8" TransactionID="9" />
+	</CommandResponse>
+</ApiResponse>`;
+    const { client } = createTestClient(xml);
+    expect(await client.whoisGuard.renew({ whoisguardID: 5, years: 1 })).toEqual({
+      whoisguardID: 5,
+      orderID: 7,
+      transactionID: 9,
+    });
   });
 
   it("renew never throws on unacceptable attribute values and reads Renew case-insensitively", async () => {
@@ -136,11 +152,11 @@ describe("whoisguard", () => {
 </ApiResponse>`;
     const first = createTestClient(bad);
     expect(await first.client.whoisGuard.renew({ whoisguardID: 1, years: 1 })).toEqual({
-      transactionId: 9,
+      transactionID: 9,
     });
     const second = createTestClient(bad.replace('Renew="maybe"', 'Renew="True"'));
     expect(await second.client.whoisGuard.renew({ whoisguardID: 1, years: 1 })).toEqual({
-      transactionId: 9,
+      transactionID: 9,
       renew: true,
     });
   });

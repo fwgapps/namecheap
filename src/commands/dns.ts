@@ -66,7 +66,7 @@ export interface DnsGetListResult {
   isPremiumDNS?: boolean;
   /** Present in recorded responses, not in the reference. */
   isUsingFreeDNS?: boolean;
-  /** Present in recorded responses, not in the reference. */
+  /** Taken from the recorded responses (not in the reference's response table); empty when none are listed. */
   nameservers: string[];
 }
 
@@ -248,7 +248,13 @@ export interface DnsHostRecord {
 export interface DnsSetHostsParams {
   sld: string;
   tld: string;
-  /** Omitted keeps the zone's current mode. */
+  /**
+   * Omitted keeps the zone's current mode.
+   *
+   * @remarks The reference warns that MX records are silently discarded unless the
+   * resulting email mode is `MX`. `setHosts` replaces the whole zone, so a call that
+   * lists MX hosts under another mode loses the mail routing.
+   */
   emailType?: DnsEmailType;
   /** Replaces the whole zone: records not listed are deleted, so at least one is required. */
   hosts: [DnsHostRecord, ...DnsHostRecord[]];
@@ -264,7 +270,7 @@ export interface DnsSetHostsResult {
 const setHosts = defineCommand<DnsSetHostsParams, DnsSetHostsResult>({
   name: "namecheap.domains.dns.setHosts",
   validate: (params) => {
-    if (!params.hosts.some((host) => host !== undefined && host !== null)) {
+    if (!params.hosts?.some((host) => host !== undefined && host !== null)) {
       throw new TypeError(
         "dns.setHosts requires at least one host record: it replaces the whole zone, so an empty list would delete every record",
       );

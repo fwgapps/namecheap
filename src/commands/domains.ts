@@ -171,6 +171,9 @@ const setRegistrarLock = defineCommand<
 // namecheap.domains.reactivate
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface DomainsReactivateParams {
   domainName: string;
   promotionCode?: string;
@@ -207,6 +210,9 @@ const reactivate = defineCommand<DomainsReactivateParams, DomainsReactivateResul
 // namecheap.domains.renew
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface DomainsRenewParams {
   domainName: string;
   years: number;
@@ -299,6 +305,9 @@ const setContacts = defineCommand<DomainsSetContactsParams, DomainsSetContactsRe
 // namecheap.domains.create
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface DomainsCreateParams {
   domainName: string;
   years: number;

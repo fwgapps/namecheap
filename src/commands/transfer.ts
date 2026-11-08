@@ -7,6 +7,9 @@ import type { Paging } from "../core/paging";
 // namecheap.domains.transfer.create
 // ---------------------------------------------------------------------------
 
+/**
+ * @remarks Billed: this command charges your Namecheap account.
+ */
 export interface TransferCreateParams {
   /** Domain name to transfer. */
   domainName: string;

@@ -52,6 +52,9 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
+      # Intentionally a no-op while the package has no runtime dependencies: the
+      # `dependencies` group is empty, so nothing can fail here. It starts gating
+      # as soon as a runtime dependency is added.
       - name: Audit runtime dependencies (blocking)
         run: yarn audit --groups dependencies --level moderate
 
