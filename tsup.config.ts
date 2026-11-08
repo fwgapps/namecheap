@@ -2,10 +2,9 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/index.ts"],
-  format: ["cjs", "esm", "iife"],
+  format: ["esm", "cjs"],
   dts: true,
   sourcemap: true,
   clean: true,
-  minify: true,
-  globalName: "FWGNamecheap",
+  target: "node20",
 });
