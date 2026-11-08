@@ -15,6 +15,7 @@ A typed, zero-dependency client for the [Namecheap XML API](https://www.namechea
 - [Quick start](#quick-start)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [Using a single command (tree shaking)](#using-a-single-command-tree-shaking)
 - [Error handling](#error-handling)
 - [Safety notes](#safety-notes)
 - [Testing with a fake fetch](#testing-with-a-fake-fetch)
@@ -29,6 +30,7 @@ A typed, zero-dependency client for the [Namecheap XML API](https://www.namechea
 - Fully typed parameters and results for 59 Namecheap commands.
 - Zero runtime dependencies: the XML parser is built in (no DTD or external entity support).
 - ESM and CommonJS builds with bundled type declarations.
+- Tree-shakeable: import just the commands you use (see [Using a single command](#using-a-single-command-tree-shaking)).
 - Node.js >= 20 and edge runtimes that provide `fetch` (Cloudflare Workers, Deno, Bun, ...).
 - No automatic retries and no logging.
 - **No browser support, on purpose.** The API key must never reach a browser, and Namecheap only accepts requests from an allow-listed server IP. Call this library from your backend.
@@ -206,6 +208,31 @@ if (subscription) {
   await nc.whoisGuard.disable({ whoisguardID: subscription.id });
 }
 ```
+
+## Using a single command (tree shaking)
+
+`new Namecheap(...)` is the convenient entry point, but it carries all 59 commands, because the client object exposes every group. If you only need a few commands (a serverless function, an edge worker), import them one by one and run them with `run`. A bundler then keeps only what you use:
+
+```ts
+import { createTransport, domainsCheck, run } from "@fwgapps/namecheap";
+
+const send = createTransport({ apiUser: "user", apiKey: "key", clientIp: "203.0.113.10", sandbox: true });
+
+const result = await run(domainsCheck, send, { domainList: "example.com,example.net" });
+```
+
+Every command is also exported on its own, named `<group><Method>`: `domainsCheck`, `dnsSetHosts`, `nsDelete`, `transferGetList`, `sslGetList`, `sslParseCSR`, `usersGetBalances`, `usersAddressCreate`, `whoisGuardRenew`, and so on (the group is the same name you use on the client, with the method capitalized). `run` behaves exactly like the client methods: same validation, same errors, same typing of the parameters.
+
+Approximate sizes of a minified bundle (esbuild, measured on this package):
+
+| What you import                                | Minified | Gzip   |
+| ---------------------------------------------- | -------: | -----: |
+| only the error classes                         |  ~0.3 KB | ~0.2 KB |
+| `createTransport` + one command + `run`        |  ~9.4 KB | ~3.8 KB |
+| `createTransport` + two commands + `run`       |  ~9.9 KB | ~4.0 KB |
+| the `Namecheap` class (any use of it)          | ~29.6 KB | ~8.4 KB |
+
+The package declares `"sideEffects": false`, and a test in this repository bundles a single-command consumer to make sure the other commands stay out of the bundle.
 
 ## Error handling
 

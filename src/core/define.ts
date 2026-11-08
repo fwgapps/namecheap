@@ -37,37 +37,51 @@ export type Group<C> = {
     : never;
 };
 
+/**
+ * Runs one command: validates, serializes, sends and parses.
+ *
+ * This is the tree-shakeable entry point: importing only `createTransport`, one
+ * standalone command (for example `domainsCheck`) and `run` bundles just those, not the
+ * whole command catalog that `new Namecheap(...)` carries.
+ */
+export async function run<P, R>(
+  command: Command<P, R>,
+  send: Send,
+  ...args: {} extends P ? [params?: P] : [params: P]
+): Promise<R> {
+  const params = (args[0] ?? {}) as P & object;
+  command.validate?.(params);
+  const options: { arrayStyle?: ArrayStyle; keys?: Readonly<Record<string, string>> } = {};
+  if (command.arrayStyle !== undefined) options.arrayStyle = command.arrayStyle;
+  if (command.keys !== undefined) options.keys = command.keys;
+  const serialized = serializeParams(params, options);
+  for (const [name] of serialized) {
+    if (RESERVED_NAMES.has(name.toLowerCase())) {
+      throw new TypeError(`Parameter "${name}" is reserved: the client sets it itself`);
+    }
+  }
+  const el = await send({ command: command.name, params: serialized });
+  try {
+    return command.parse(el);
+  } catch (error) {
+    if (error instanceof NamecheapParseError) {
+      throw new NamecheapParseError(
+        `${command.name}: Namecheap reported success but the response could not be read; the action may have been performed, verify before retrying`,
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function group<C extends Record<string, Command<any, any>>>(
   commands: C,
   send: Send,
 ): Group<C> {
   const out: Record<string, (params?: object) => Promise<unknown>> = {};
-  for (const [key, def] of Object.entries(commands)) {
-    out[key] = async (params) => {
-      def.validate?.((params ?? {}) as never);
-      const options: { arrayStyle?: ArrayStyle; keys?: Readonly<Record<string, string>> } = {};
-      if (def.arrayStyle !== undefined) options.arrayStyle = def.arrayStyle;
-      if (def.keys !== undefined) options.keys = def.keys;
-      const serialized = serializeParams(params ?? {}, options);
-      for (const [name] of serialized) {
-        if (RESERVED_NAMES.has(name.toLowerCase())) {
-          throw new TypeError(`Parameter "${name}" is reserved: the client sets it itself`);
-        }
-      }
-      const el = await send({ command: def.name, params: serialized });
-      try {
-        return def.parse(el);
-      } catch (error) {
-        if (error instanceof NamecheapParseError) {
-          throw new NamecheapParseError(
-            `${def.name}: Namecheap reported success but the response could not be read; the action may have been performed, verify before retrying`,
-            { cause: error },
-          );
-        }
-        throw error;
-      }
-    };
+  for (const [key, command] of Object.entries(commands)) {
+    out[key] = (params) => run(command, send, params as never);
   }
   return out as Group<C>;
 }

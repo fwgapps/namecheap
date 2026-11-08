@@ -33,7 +33,7 @@ export interface TransferCreateResult {
   chargedAmount: number;
 }
 
-const create = defineCommand<TransferCreateParams, TransferCreateResult>({
+const create = /* @__PURE__ */ defineCommand<TransferCreateParams, TransferCreateResult>({
   name: "namecheap.domains.transfer.create",
   keys: { wgEnable: "WGenable" },
   parse: (cr) => {
@@ -63,7 +63,7 @@ export interface TransferGetStatusResult {
   status: string;
 }
 
-const getStatus = defineCommand<TransferGetStatusParams, TransferGetStatusResult>({
+const getStatus = /* @__PURE__ */ defineCommand<TransferGetStatusParams, TransferGetStatusResult>({
   name: "namecheap.domains.transfer.getStatus",
   parse: (cr) => {
     const result = cr.one("DomainTransferGetStatusResult");
@@ -90,7 +90,10 @@ export interface TransferUpdateStatusResult {
   resubmit: boolean;
 }
 
-const updateStatus = defineCommand<TransferUpdateStatusParams, TransferUpdateStatusResult>({
+const updateStatus = /* @__PURE__ */ defineCommand<
+  TransferUpdateStatusParams,
+  TransferUpdateStatusResult
+>({
   name: "namecheap.domains.transfer.updateStatus",
   parse: (cr) => {
     const result = cr.one("DomainTransferUpdateStatusResult");
@@ -154,7 +157,7 @@ function parseListItem(transfer: El): TransferListItem {
   };
 }
 
-const getList = defineCommand<TransferGetListParams, TransferGetListResult>({
+const getList = /* @__PURE__ */ defineCommand<TransferGetListParams, TransferGetListResult>({
   name: "namecheap.domains.transfer.getList",
   parse: (cr) => ({
     transfers: (cr.optional("TransferGetListResult")?.all("Transfer") ?? []).map(parseListItem),
@@ -167,3 +170,14 @@ const getList = defineCommand<TransferGetListParams, TransferGetListResult>({
  * integrations and is not covered by semver stability.
  */
 export const transferCommands = { create, getStatus, updateStatus, getList };
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  create as transferCreate,
+  getStatus as transferGetStatus,
+  updateStatus as transferUpdateStatus,
+  getList as transferGetList,
+};

@@ -39,7 +39,7 @@ export interface UsersAddressCreateResult {
   addressName: string;
 }
 
-const create = defineCommand<UsersAddressCreateParams, UsersAddressCreateResult>({
+const create = /* @__PURE__ */ defineCommand<UsersAddressCreateParams, UsersAddressCreateResult>({
   name: "namecheap.users.address.create",
   parse: (cr) => {
     const result = cr.one("AddressCreateResult");
@@ -68,7 +68,10 @@ export interface UsersAddressDeleteResult {
   username?: string;
 }
 
-const deleteAddress = defineCommand<UsersAddressDeleteParams, UsersAddressDeleteResult>({
+const deleteAddress = /* @__PURE__ */ defineCommand<
+  UsersAddressDeleteParams,
+  UsersAddressDeleteResult
+>({
   name: "namecheap.users.address.delete",
   keys: { addressId: "AddressId" },
   parse: (cr) => {
@@ -117,34 +120,36 @@ export interface UsersAddressGetInfoResult {
 
 /** Text of an optional child element. */
 
-const getInfo = defineCommand<UsersAddressGetInfoParams, UsersAddressGetInfoResult>({
-  name: "namecheap.users.address.getInfo",
-  keys: { addressId: "AddressId" },
-  parse: (cr) => {
-    const result = cr.one("GetAddressInfoResult");
-    return {
-      addressId: result.one("AddressId").numberText(),
-      userName: result.one("UserName").text(),
-      addressName: result.one("AddressName").text(),
-      defaultYN: result.one("Default_YN").booleanText(),
-      firstName: result.one("FirstName").text(),
-      lastName: result.one("LastName").text(),
-      ...optionalField("jobTitle", result.optionalText("JobTitle")),
-      ...optionalField("organization", result.optionalText("Organization")),
-      address1: result.one("Address1").text(),
-      ...optionalField("address2", result.optionalText("Address2")),
-      city: result.one("City").text(),
-      stateProvince: result.one("StateProvince").text(),
-      stateProvinceChoice: result.one("StateProvinceChoice").text(),
-      zip: result.one("Zip").text(),
-      country: result.one("Country").text(),
-      phone: result.one("Phone").text(),
-      ...optionalField("phoneExt", result.optionalText("PhoneExt")),
-      ...optionalField("fax", result.optionalText("Fax")),
-      emailAddress: result.one("EmailAddress").text(),
-    };
+const getInfo = /* @__PURE__ */ defineCommand<UsersAddressGetInfoParams, UsersAddressGetInfoResult>(
+  {
+    name: "namecheap.users.address.getInfo",
+    keys: { addressId: "AddressId" },
+    parse: (cr) => {
+      const result = cr.one("GetAddressInfoResult");
+      return {
+        addressId: result.one("AddressId").numberText(),
+        userName: result.one("UserName").text(),
+        addressName: result.one("AddressName").text(),
+        defaultYN: result.one("Default_YN").booleanText(),
+        firstName: result.one("FirstName").text(),
+        lastName: result.one("LastName").text(),
+        ...optionalField("jobTitle", result.optionalText("JobTitle")),
+        ...optionalField("organization", result.optionalText("Organization")),
+        address1: result.one("Address1").text(),
+        ...optionalField("address2", result.optionalText("Address2")),
+        city: result.one("City").text(),
+        stateProvince: result.one("StateProvince").text(),
+        stateProvinceChoice: result.one("StateProvinceChoice").text(),
+        zip: result.one("Zip").text(),
+        country: result.one("Country").text(),
+        phone: result.one("Phone").text(),
+        ...optionalField("phoneExt", result.optionalText("PhoneExt")),
+        ...optionalField("fax", result.optionalText("Fax")),
+        emailAddress: result.one("EmailAddress").text(),
+      };
+    },
   },
-});
+);
 
 // ---------------------------------------------------------------------------
 // namecheap.users.address.getList
@@ -159,7 +164,7 @@ export interface UsersAddressListItem {
 /** The response has no `Paging` element, so the result is a bare array (empty when there are no `List` elements). */
 export type UsersAddressGetListResult = UsersAddressListItem[];
 
-const getList = defineCommand<Record<string, never>, UsersAddressGetListResult>({
+const getList = /* @__PURE__ */ defineCommand<Record<string, never>, UsersAddressGetListResult>({
   name: "namecheap.users.address.getList",
   parse: (cr) =>
     (cr.optional("AddressGetListResult")?.all("List") ?? []).map((item) => ({
@@ -183,7 +188,10 @@ export interface UsersAddressSetDefaultResult {
   addressId: number;
 }
 
-const setDefault = defineCommand<UsersAddressSetDefaultParams, UsersAddressSetDefaultResult>({
+const setDefault = /* @__PURE__ */ defineCommand<
+  UsersAddressSetDefaultParams,
+  UsersAddressSetDefaultResult
+>({
   name: "namecheap.users.address.setDefault",
   keys: { addressId: "AddressId" },
   parse: (cr) => {
@@ -208,7 +216,7 @@ export interface UsersAddressUpdateResult {
   addressName: string;
 }
 
-const update = defineCommand<UsersAddressUpdateParams, UsersAddressUpdateResult>({
+const update = /* @__PURE__ */ defineCommand<UsersAddressUpdateParams, UsersAddressUpdateResult>({
   name: "namecheap.users.address.update",
   keys: { addressId: "AddressId" },
   parse: (cr) => {
@@ -232,4 +240,17 @@ export const usersAddressCommands = {
   getList,
   setDefault,
   update,
+};
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  create as usersAddressCreate,
+  deleteAddress as usersAddressDelete,
+  getInfo as usersAddressGetInfo,
+  getList as usersAddressGetList,
+  setDefault as usersAddressSetDefault,
+  update as usersAddressUpdate,
 };

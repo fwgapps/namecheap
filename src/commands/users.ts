@@ -17,7 +17,7 @@ export interface UsersGetBalancesResult {
   fundsRequiredForAutoRenew: string;
 }
 
-const getBalances = defineCommand<Record<string, never>, UsersGetBalancesResult>({
+const getBalances = /* @__PURE__ */ defineCommand<Record<string, never>, UsersGetBalancesResult>({
   name: "namecheap.users.getBalances",
   parse: (cr) => {
     const result = cr.one("UserGetBalancesResult");
@@ -83,7 +83,7 @@ export interface UsersGetPricingResult {
   productTypes: PricingProductType[];
 }
 
-const getPricing = defineCommand<UsersGetPricingParams, UsersGetPricingResult>({
+const getPricing = /* @__PURE__ */ defineCommand<UsersGetPricingParams, UsersGetPricingResult>({
   name: "namecheap.users.getPricing",
   parse: (cr) => ({
     productTypes: cr
@@ -131,7 +131,10 @@ export interface UsersChangePasswordResult {
   userID: number;
 }
 
-const changePassword = defineCommand<UsersChangePasswordParams, UsersChangePasswordResult>({
+const changePassword = /* @__PURE__ */ defineCommand<
+  UsersChangePasswordParams,
+  UsersChangePasswordResult
+>({
   name: "namecheap.users.changePassword",
   parse: (cr) => {
     const result = cr.one("UserChangePasswordResult");
@@ -166,7 +169,7 @@ export interface UsersUpdateResult {
   success: boolean;
 }
 
-const update = defineCommand<UsersUpdateParams, UsersUpdateResult>({
+const update = /* @__PURE__ */ defineCommand<UsersUpdateParams, UsersUpdateResult>({
   name: "namecheap.users.update",
   parse: (cr) => ({ success: cr.one("UserUpdateResult").boolean("Success") }),
 });
@@ -197,7 +200,7 @@ export interface UsersCreateAddFundsRequestResult {
   returnURL: string;
 }
 
-const createAddFundsRequest = defineCommand<
+const createAddFundsRequest = /* @__PURE__ */ defineCommand<
   UsersCreateAddFundsRequestParams,
   UsersCreateAddFundsRequestResult
 >({
@@ -227,20 +230,21 @@ export interface UsersGetAddFundsStatusResult {
   status: string;
 }
 
-const getAddFundsStatus = defineCommand<UsersGetAddFundsStatusParams, UsersGetAddFundsStatusResult>(
-  {
-    name: "namecheap.users.getAddFundsStatus",
-    keys: { tokenId: "TokenId" },
-    parse: (cr) => {
-      const result = cr.one("GetAddFundsStatusResult");
-      return {
-        transactionID: result.number("TransactionID"),
-        amount: result.string("Amount"),
-        status: result.string("Status"),
-      };
-    },
+const getAddFundsStatus = /* @__PURE__ */ defineCommand<
+  UsersGetAddFundsStatusParams,
+  UsersGetAddFundsStatusResult
+>({
+  name: "namecheap.users.getAddFundsStatus",
+  keys: { tokenId: "TokenId" },
+  parse: (cr) => {
+    const result = cr.one("GetAddFundsStatusResult");
+    return {
+      transactionID: result.number("TransactionID"),
+      amount: result.string("Amount"),
+      status: result.string("Status"),
+    };
   },
-);
+});
 // ---------------------------------------------------------------------------
 // namecheap.users.create
 // ---------------------------------------------------------------------------
@@ -280,7 +284,7 @@ export interface UsersCreateParams {
  */
 export type UsersCreateResult = Record<string, string>;
 
-const create = defineCommand<UsersCreateParams, UsersCreateResult>({
+const create = /* @__PURE__ */ defineCommand<UsersCreateParams, UsersCreateResult>({
   name: "namecheap.users.create",
   parse: (cr) => cr.children()[0]?.attributes() ?? {},
 });
@@ -306,7 +310,7 @@ export interface UsersLoginResult {
   loginSuccess?: boolean;
 }
 
-const login = defineCommand<UsersLoginParams, UsersLoginResult>({
+const login = /* @__PURE__ */ defineCommand<UsersLoginParams, UsersLoginResult>({
   name: "namecheap.users.login",
   parse: (cr) => {
     const result = cr.children()[0];
@@ -340,7 +344,10 @@ export interface UsersResetPasswordResult {
   success?: boolean;
 }
 
-const resetPassword = defineCommand<UsersResetPasswordParams, UsersResetPasswordResult>({
+const resetPassword = /* @__PURE__ */ defineCommand<
+  UsersResetPasswordParams,
+  UsersResetPasswordResult
+>({
   name: "namecheap.users.resetPassword",
   keys: { urlPattern: "URLPattern" },
   parse: (cr) => ({
@@ -361,4 +368,20 @@ export const usersCommands = {
   create,
   login,
   resetPassword,
+};
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  getBalances as usersGetBalances,
+  getPricing as usersGetPricing,
+  changePassword as usersChangePassword,
+  update as usersUpdate,
+  createAddFundsRequest as usersCreateAddFundsRequest,
+  getAddFundsStatus as usersGetAddFundsStatus,
+  create as usersCreate,
+  login as usersLogin,
+  resetPassword as usersResetPassword,
 };

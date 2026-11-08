@@ -18,7 +18,7 @@ export interface DnsSetDefaultResult {
   updated: boolean;
 }
 
-const setDefault = defineCommand<DnsSetDefaultParams, DnsSetDefaultResult>({
+const setDefault = /* @__PURE__ */ defineCommand<DnsSetDefaultParams, DnsSetDefaultResult>({
   name: "namecheap.domains.dns.setDefault",
   parse: (cr) => {
     const result = cr.one("DomainDNSSetDefaultResult");
@@ -42,7 +42,7 @@ export interface DnsSetCustomResult {
   updated: boolean;
 }
 
-const setCustom = defineCommand<DnsSetCustomParams, DnsSetCustomResult>({
+const setCustom = /* @__PURE__ */ defineCommand<DnsSetCustomParams, DnsSetCustomResult>({
   name: "namecheap.domains.dns.setCustom",
   parse: (cr) => {
     const result = cr.one("DomainDNSSetCustomResult");
@@ -70,7 +70,7 @@ export interface DnsGetListResult {
   nameservers: string[];
 }
 
-const getList = defineCommand<DnsGetListParams, DnsGetListResult>({
+const getList = /* @__PURE__ */ defineCommand<DnsGetListParams, DnsGetListResult>({
   name: "namecheap.domains.dns.getList",
   parse: (cr) => {
     const result = cr.one("DomainDNSGetListResult");
@@ -134,7 +134,7 @@ function parseHost(host: El): DnsHost {
   };
 }
 
-const getHosts = defineCommand<DnsGetHostsParams, DnsGetHostsResult>({
+const getHosts = /* @__PURE__ */ defineCommand<DnsGetHostsParams, DnsGetHostsResult>({
   name: "namecheap.domains.dns.getHosts",
   parse: (cr) => {
     const result = cr.one("DomainDNSGetHostsResult");
@@ -167,7 +167,10 @@ export interface DnsGetEmailForwardingResult {
   forwards: DnsEmailForward[];
 }
 
-const getEmailForwarding = defineCommand<DnsGetEmailForwardingParams, DnsGetEmailForwardingResult>({
+const getEmailForwarding = /* @__PURE__ */ defineCommand<
+  DnsGetEmailForwardingParams,
+  DnsGetEmailForwardingResult
+>({
   name: "namecheap.domains.dns.getEmailForwarding",
   parse: (cr) => {
     const result = cr.one("DomainEmailForwardingResult");
@@ -204,7 +207,10 @@ export interface DnsSetEmailForwardingResult {
   isSuccess: boolean;
 }
 
-const setEmailForwarding = defineCommand<DnsSetEmailForwardingParams, DnsSetEmailForwardingResult>({
+const setEmailForwarding = /* @__PURE__ */ defineCommand<
+  DnsSetEmailForwardingParams,
+  DnsSetEmailForwardingResult
+>({
   name: "namecheap.domains.dns.setEmailForwarding",
   parse: (cr) => {
     const result = cr.one("DomainEmailForwardingResult");
@@ -267,7 +273,7 @@ export interface DnsSetHostsResult {
   isSuccess: boolean;
 }
 
-const setHosts = defineCommand<DnsSetHostsParams, DnsSetHostsResult>({
+const setHosts = /* @__PURE__ */ defineCommand<DnsSetHostsParams, DnsSetHostsResult>({
   name: "namecheap.domains.dns.setHosts",
   validate: (params) => {
     if (!params.hosts?.some((host) => host !== undefined && host !== null)) {
@@ -298,4 +304,18 @@ export const dnsCommands = {
   getEmailForwarding,
   setEmailForwarding,
   setHosts,
+};
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  setDefault as dnsSetDefault,
+  setCustom as dnsSetCustom,
+  getList as dnsGetList,
+  getHosts as dnsGetHosts,
+  getEmailForwarding as dnsGetEmailForwarding,
+  setEmailForwarding as dnsSetEmailForwarding,
+  setHosts as dnsSetHosts,
 };

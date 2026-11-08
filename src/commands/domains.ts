@@ -63,7 +63,7 @@ function parseListItem(domain: El): DomainsListItem {
   };
 }
 
-const getList = defineCommand<DomainsGetListParams, DomainsGetListResult>({
+const getList = /* @__PURE__ */ defineCommand<DomainsGetListParams, DomainsGetListResult>({
   name: "namecheap.domains.getList",
   parse: (cr) => ({
     domains: (cr.optional("DomainGetListResult")?.all("Domain") ?? []).map(parseListItem),
@@ -98,7 +98,7 @@ export interface DomainsCheckItem {
 
 export type DomainsCheckResult = DomainsCheckItem[];
 
-const check = defineCommand<DomainsCheckParams, DomainsCheckResult>({
+const check = /* @__PURE__ */ defineCommand<DomainsCheckParams, DomainsCheckResult>({
   name: "namecheap.domains.check",
   parse: (cr) =>
     cr.all("DomainCheckResult").map((item) => ({
@@ -129,7 +129,7 @@ export interface DomainsGetRegistrarLockResult {
   registrarLockStatus: boolean;
 }
 
-const getRegistrarLock = defineCommand<
+const getRegistrarLock = /* @__PURE__ */ defineCommand<
   DomainsGetRegistrarLockParams,
   DomainsGetRegistrarLockResult
 >({
@@ -156,7 +156,7 @@ export interface DomainsSetRegistrarLockResult {
   isSuccess: boolean;
 }
 
-const setRegistrarLock = defineCommand<
+const setRegistrarLock = /* @__PURE__ */ defineCommand<
   DomainsSetRegistrarLockParams,
   DomainsSetRegistrarLockResult
 >({
@@ -192,7 +192,7 @@ export interface DomainsReactivateResult {
   transactionID: number;
 }
 
-const reactivate = defineCommand<DomainsReactivateParams, DomainsReactivateResult>({
+const reactivate = /* @__PURE__ */ defineCommand<DomainsReactivateParams, DomainsReactivateResult>({
   name: "namecheap.domains.reactivate",
   parse: (cr) => {
     const result = cr.one("DomainReactivateResult");
@@ -236,7 +236,7 @@ export interface DomainsRenewResult {
   };
 }
 
-const renew = defineCommand<DomainsRenewParams, DomainsRenewResult>({
+const renew = /* @__PURE__ */ defineCommand<DomainsRenewParams, DomainsRenewResult>({
   name: "namecheap.domains.renew",
   parse: (cr) => {
     const result = cr.one("DomainRenewResult");
@@ -293,7 +293,10 @@ export interface DomainsSetContactsResult {
   isSuccess: boolean;
 }
 
-const setContacts = defineCommand<DomainsSetContactsParams, DomainsSetContactsResult>({
+const setContacts = /* @__PURE__ */ defineCommand<
+  DomainsSetContactsParams,
+  DomainsSetContactsResult
+>({
   name: "namecheap.domains.setContacts",
   parse: (cr) => {
     const result = cr.one("DomainSetContactResult");
@@ -342,7 +345,7 @@ export interface DomainsCreateResult {
   nonRealTimeDomain?: boolean;
 }
 
-const create = defineCommand<DomainsCreateParams, DomainsCreateResult>({
+const create = /* @__PURE__ */ defineCommand<DomainsCreateParams, DomainsCreateResult>({
   name: "namecheap.domains.create",
   parse: (cr) => {
     const result = cr.one("DomainCreateResult");
@@ -382,7 +385,7 @@ export interface DomainsTld {
 
 export type DomainsGetTldListResult = DomainsTld[];
 
-const getTldList = defineCommand<Record<string, never>, DomainsGetTldListResult>({
+const getTldList = /* @__PURE__ */ defineCommand<Record<string, never>, DomainsGetTldListResult>({
   name: "namecheap.domains.getTldList",
   parse: (cr) =>
     (cr.optional("Tlds")?.all("Tld") ?? []).map((tld) => ({
@@ -455,7 +458,10 @@ function parseContact(contact: El): DomainsContact {
   };
 }
 
-const getContacts = defineCommand<DomainsGetContactsParams, DomainsGetContactsResult>({
+const getContacts = /* @__PURE__ */ defineCommand<
+  DomainsGetContactsParams,
+  DomainsGetContactsResult
+>({
   name: "namecheap.domains.getContacts",
   parse: (cr) => {
     const result = cr.one("DomainContactsResult");
@@ -557,7 +563,7 @@ function parseWhoisguard(whoisguard: El): DomainsGetInfoResult["whoisguard"] {
   };
 }
 
-const getInfo = defineCommand<DomainsGetInfoParams, DomainsGetInfoResult>({
+const getInfo = /* @__PURE__ */ defineCommand<DomainsGetInfoParams, DomainsGetInfoResult>({
   name: "namecheap.domains.getInfo",
   parse: (cr) => {
     const result = cr.one("DomainGetInfoResult");
@@ -621,4 +627,22 @@ export const domainsCommands = {
   getTldList,
   getContacts,
   getInfo,
+};
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  getList as domainsGetList,
+  check as domainsCheck,
+  getRegistrarLock as domainsGetRegistrarLock,
+  setRegistrarLock as domainsSetRegistrarLock,
+  reactivate as domainsReactivate,
+  renew as domainsRenew,
+  setContacts as domainsSetContacts,
+  create as domainsCreate,
+  getTldList as domainsGetTldList,
+  getContacts as domainsGetContacts,
+  getInfo as domainsGetInfo,
 };

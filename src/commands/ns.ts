@@ -23,7 +23,7 @@ export interface NsCreateResult {
   isSuccess: boolean;
 }
 
-const create = defineCommand<NsCreateParams, NsCreateResult>({
+const create = /* @__PURE__ */ defineCommand<NsCreateParams, NsCreateResult>({
   name: "namecheap.domains.ns.create",
   parse: (cr) => {
     const result = cr.one("DomainNSCreateResult");
@@ -55,7 +55,7 @@ export interface NsDeleteResult {
 
 // No `validate`: this removes exactly the one named nameserver (targeted delete,
 // not replace-all), and all three params are required by the type.
-const deleteNs = defineCommand<NsDeleteParams, NsDeleteResult>({
+const deleteNs = /* @__PURE__ */ defineCommand<NsDeleteParams, NsDeleteResult>({
   name: "namecheap.domains.ns.delete",
   parse: (cr) => {
     const result = cr.one("DomainNSDeleteResult");
@@ -86,7 +86,7 @@ export interface NsGetInfoResult {
   nameserverStatuses?: string[];
 }
 
-const getInfo = defineCommand<NsGetInfoParams, NsGetInfoResult>({
+const getInfo = /* @__PURE__ */ defineCommand<NsGetInfoParams, NsGetInfoResult>({
   name: "namecheap.domains.ns.getInfo",
   parse: (cr) => {
     const result = cr.one("DomainNSInfoResult");
@@ -124,7 +124,7 @@ export interface NsUpdateResult {
   isSuccess: boolean;
 }
 
-const update = defineCommand<NsUpdateParams, NsUpdateResult>({
+const update = /* @__PURE__ */ defineCommand<NsUpdateParams, NsUpdateResult>({
   name: "namecheap.domains.ns.update",
   parse: (cr) => {
     const result = cr.one("DomainNSUpdateResult");
@@ -141,3 +141,9 @@ const update = defineCommand<NsUpdateParams, NsUpdateResult>({
  * integrations and is not covered by semver stability.
  */
 export const nsCommands = { create, delete: deleteNs, getInfo, update };
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export { create as nsCreate, deleteNs as nsDelete, getInfo as nsGetInfo, update as nsUpdate };

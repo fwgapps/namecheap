@@ -26,7 +26,7 @@ export interface WhoisguardChangeEmailAddressResult {
   wgOldEmail: string;
 }
 
-const changeEmailAddress = defineCommand<
+const changeEmailAddress = /* @__PURE__ */ defineCommand<
   WhoisguardChangeEmailAddressParams,
   WhoisguardChangeEmailAddressResult
 >({
@@ -58,7 +58,7 @@ export interface WhoisguardEnableResult {
   isSuccess: boolean;
 }
 
-const enable = defineCommand<WhoisguardEnableParams, WhoisguardEnableResult>({
+const enable = /* @__PURE__ */ defineCommand<WhoisguardEnableParams, WhoisguardEnableResult>({
   name: "namecheap.whoisguard.enable",
   parse: (cr) => {
     const result = cr.one("WhoisguardEnableResult");
@@ -84,7 +84,7 @@ export interface WhoisguardDisableResult {
   isSuccess: boolean;
 }
 
-const disable = defineCommand<WhoisguardDisableParams, WhoisguardDisableResult>({
+const disable = /* @__PURE__ */ defineCommand<WhoisguardDisableParams, WhoisguardDisableResult>({
   name: "namecheap.whoisguard.disable",
   parse: (cr) => {
     const result = cr.one("WhoisguardDisableResult");
@@ -136,7 +136,7 @@ function parseListItem(item: El): WhoisguardListItem {
   };
 }
 
-const getList = defineCommand<WhoisguardGetListParams, WhoisguardGetListResult>({
+const getList = /* @__PURE__ */ defineCommand<WhoisguardGetListParams, WhoisguardGetListResult>({
   name: "namecheap.whoisguard.getlist",
   parse: (cr) => ({
     whoisguards: (cr.optional("WhoisguardGetListResult")?.all("Whoisguard") ?? []).map(
@@ -176,7 +176,7 @@ export interface WhoisguardRenewResult {
   chargedAmount?: number;
 }
 
-const renew = defineCommand<WhoisguardRenewParams, WhoisguardRenewResult>({
+const renew = /* @__PURE__ */ defineCommand<WhoisguardRenewParams, WhoisguardRenewResult>({
   name: "namecheap.whoisguard.renew",
   parse: (cr) => {
     const result = cr.children()[0];
@@ -202,3 +202,15 @@ const renew = defineCommand<WhoisguardRenewParams, WhoisguardRenewResult>({
  * integrations and is not covered by semver stability.
  */
 export const whoisGuardCommands = { changeEmailAddress, enable, disable, getList, renew };
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  changeEmailAddress as whoisGuardChangeEmailAddress,
+  enable as whoisGuardEnable,
+  disable as whoisGuardDisable,
+  getList as whoisGuardGetList,
+  renew as whoisGuardRenew,
+};

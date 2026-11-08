@@ -33,7 +33,7 @@ export interface SslCreateResult {
   status?: string;
 }
 
-const create = defineCommand<SslCreateParams, SslCreateResult>({
+const create = /* @__PURE__ */ defineCommand<SslCreateParams, SslCreateResult>({
   name: "namecheap.ssl.create",
   keys: { sansToAdd: "SANStoADD" },
   parse: (cr) => {
@@ -135,7 +135,7 @@ function parseListItem(ssl: El): SslListItem {
   };
 }
 
-const getList = defineCommand<SslGetListParams, SslGetListResult>({
+const getList = /* @__PURE__ */ defineCommand<SslGetListParams, SslGetListResult>({
   name: "namecheap.ssl.getList",
   parse: (cr) => ({
     certificates: (cr.optional("SSLListResult")?.all("SSL") ?? []).map(parseListItem),
@@ -164,7 +164,7 @@ export interface SslParseCsrResult {
   email: string;
 }
 
-const parseCSR = defineCommand<SslParseCsrParams, SslParseCsrResult>({
+const parseCSR = /* @__PURE__ */ defineCommand<SslParseCsrParams, SslParseCsrResult>({
   name: "namecheap.ssl.parseCSR",
   keys: { csr: "csr" },
   parse: (cr) => {
@@ -204,7 +204,7 @@ function emails(result: El, group: string): string[] {
   return (result.optional(group)?.all("email") ?? []).map((email) => email.text());
 }
 
-const getApproverEmailList = defineCommand<
+const getApproverEmailList = /* @__PURE__ */ defineCommand<
   SslGetApproverEmailListParams,
   SslGetApproverEmailListResult
 >({
@@ -270,7 +270,7 @@ function parseActivation(result: El): SslActivateResult {
   };
 }
 
-const activate = defineCommand<SslActivateParams, SslActivateResult>({
+const activate = /* @__PURE__ */ defineCommand<SslActivateParams, SslActivateResult>({
   name: "namecheap.ssl.activate",
   parse: (cr) => parseActivation(cr.one("SSLActivateResult")),
 });
@@ -295,7 +295,7 @@ function parseResend(result: El): SslResendResult {
 
 export type SslResendApproverEmailResult = SslResendResult;
 
-const resendApproverEmail = defineCommand<
+const resendApproverEmail = /* @__PURE__ */ defineCommand<
   SslResendApproverEmailParams,
   SslResendApproverEmailResult
 >({
@@ -319,7 +319,7 @@ export interface SslReissueParams {
 
 export type SslReissueResult = SslActivateResult;
 
-const reissue = defineCommand<SslReissueParams, SslReissueResult>({
+const reissue = /* @__PURE__ */ defineCommand<SslReissueParams, SslReissueResult>({
   name: "namecheap.ssl.reissue",
   parse: (cr) => parseActivation(cr.one("SSLReissueResult")),
 });
@@ -334,7 +334,7 @@ export interface SslResendFulfillmentEmailParams {
 
 export type SslResendFulfillmentEmailResult = SslResendResult;
 
-const resendFulfillmentEmail = defineCommand<
+const resendFulfillmentEmail = /* @__PURE__ */ defineCommand<
   SslResendFulfillmentEmailParams,
   SslResendFulfillmentEmailResult
 >({
@@ -363,10 +363,12 @@ export type SslEditDcvMethodParams =
 
 export type SslEditDcvMethodResult = SslActivateResult;
 
-const editDCVMethod = defineCommand<SslEditDcvMethodParams, SslEditDcvMethodResult>({
-  name: "namecheap.ssl.editDCVMethod",
-  parse: (cr) => parseActivation(cr.one("SSLEditDCVMethodResult")),
-});
+const editDCVMethod = /* @__PURE__ */ defineCommand<SslEditDcvMethodParams, SslEditDcvMethodResult>(
+  {
+    name: "namecheap.ssl.editDCVMethod",
+    parse: (cr) => parseActivation(cr.one("SSLEditDCVMethodResult")),
+  },
+);
 
 // ---------------------------------------------------------------------------
 // namecheap.ssl.getInfo
@@ -399,7 +401,7 @@ export interface SslGetInfoResult {
   expires?: string;
 }
 
-const getInfo = defineCommand<SslGetInfoParams, SslGetInfoResult>({
+const getInfo = /* @__PURE__ */ defineCommand<SslGetInfoParams, SslGetInfoResult>({
   name: "namecheap.ssl.getInfo",
   keys: { returnCertificate: "Returncertificate", returnType: "Returntype" },
   parse: (cr) => {
@@ -441,7 +443,7 @@ export interface SslRenewResult {
   chargedAmount?: number;
 }
 
-const renew = defineCommand<SslRenewParams, SslRenewResult>({
+const renew = /* @__PURE__ */ defineCommand<SslRenewParams, SslRenewResult>({
   name: "namecheap.ssl.renew",
   parse: (cr) => {
     const result = cr.optional("SSLRenewResult") ?? cr.children()[0];
@@ -484,7 +486,10 @@ export interface SslPurchaseMoreSansResult {
   sansCount?: number;
 }
 
-const purchaseMoreSans = defineCommand<SslPurchaseMoreSansParams, SslPurchaseMoreSansResult>({
+const purchaseMoreSans = /* @__PURE__ */ defineCommand<
+  SslPurchaseMoreSansParams,
+  SslPurchaseMoreSansResult
+>({
   name: "namecheap.ssl.purchasemoresans",
   keys: { numberOfSansToAdd: "NumberOfSANSToAdd" },
   parse: (cr) => {
@@ -522,7 +527,10 @@ export interface SslRevokeCertificateResult {
   certificateID: number;
 }
 
-const revokeCertificate = defineCommand<SslRevokeCertificateParams, SslRevokeCertificateResult>({
+const revokeCertificate = /* @__PURE__ */ defineCommand<
+  SslRevokeCertificateParams,
+  SslRevokeCertificateResult
+>({
   name: "namecheap.ssl.revokecertificate",
   parse: (cr) => {
     const result = cr.one("SSLRevokeCertificateResult");
@@ -551,4 +559,24 @@ export const sslCommands = {
   renew,
   purchaseMoreSans,
   revokeCertificate,
+};
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  create as sslCreate,
+  getList as sslGetList,
+  parseCSR as sslParseCSR,
+  getApproverEmailList as sslGetApproverEmailList,
+  activate as sslActivate,
+  resendApproverEmail as sslResendApproverEmail,
+  reissue as sslReissue,
+  resendFulfillmentEmail as sslResendFulfillmentEmail,
+  editDCVMethod as sslEditDCVMethod,
+  getInfo as sslGetInfo,
+  renew as sslRenew,
+  purchaseMoreSans as sslPurchaseMoreSans,
+  revokeCertificate as sslRevokeCertificate,
 };
