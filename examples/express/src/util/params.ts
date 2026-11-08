@@ -101,3 +101,13 @@ export function bodyObjectArray(req: Request, name: string, allowEmpty = false):
     );
   }
 }
+
+/** An optional string body field; present but not a non-empty string is rejected. */
+export function optionalBodyString(req: Request, name: string): string | undefined {
+  const value = bodyObject(req)[name];
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || value === "") {
+    throw new BadRequestError(`Invalid body field: ${name}`);
+  }
+  return value;
+}

@@ -120,7 +120,7 @@ A single error middleware (`src/middleware/errors.ts`) answers every failure wit
 | --- | --- | --- |
 | `NamecheapError` (API answered `ERROR`) | 400 | `code` is the Namecheap error code |
 | missing/invalid route parameter or body field (`BadRequestError`, defined by this example); ids, pages and years must be positive integers | 400 | no `code` |
-| errors with a 4xx `status` from Express/body-parser (malformed JSON, body too large, wrong content type) | that status (400/413/415) | fixed message; only the error name and status are logged, never the message (it can quote the request body) |
+| non-Namecheap errors with a 4xx `status` (Express/body-parser; Namecheap errors are never mapped this way, so an upstream 429 is still 502) (malformed JSON, body too large, wrong content type) | that status (400/413/415) | fixed message; only the error name and status are logged, never the message (it can quote the request body) |
 | `NamecheapParseError`, `NamecheapHttpError` | 502 | upstream unreachable or unreadable |
 | anything else, including a `TypeError` thrown by the SDK's own parameter validation that the route did not catch first | 500 | generic message; the real `name: message` is logged server-side |
 
