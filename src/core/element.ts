@@ -24,6 +24,11 @@ export class El {
     return this.node.children.map((child) => new El(child));
   }
 
+  /** Text of the first child element called `name`, or `undefined` when there is none. */
+  optionalText(name: string): string | undefined {
+    return this.optional(name)?.text();
+  }
+
   one(name: string): El {
     const found = this.optional(name);
     if (found === undefined) {

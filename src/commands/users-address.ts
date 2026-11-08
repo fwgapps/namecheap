@@ -1,5 +1,4 @@
 import { defineCommand } from "../core/define";
-import type { El } from "../core/element";
 import { optionalField } from "../core/fields";
 
 // `AddressId` is sent with a lowercase `d` (the reference spelling), while the `ID`
@@ -117,7 +116,6 @@ export interface UsersAddressGetInfoResult {
 }
 
 /** Text of an optional child element. */
-const childText = (el: El, name: string): string | undefined => el.optional(name)?.text();
 
 const getInfo = defineCommand<UsersAddressGetInfoParams, UsersAddressGetInfoResult>({
   name: "namecheap.users.address.getInfo",
@@ -131,18 +129,18 @@ const getInfo = defineCommand<UsersAddressGetInfoParams, UsersAddressGetInfoResu
       defaultYN: result.one("Default_YN").booleanText(),
       firstName: result.one("FirstName").text(),
       lastName: result.one("LastName").text(),
-      ...optionalField("jobTitle", childText(result, "JobTitle")),
-      ...optionalField("organization", childText(result, "Organization")),
+      ...optionalField("jobTitle", result.optionalText("JobTitle")),
+      ...optionalField("organization", result.optionalText("Organization")),
       address1: result.one("Address1").text(),
-      ...optionalField("address2", childText(result, "Address2")),
+      ...optionalField("address2", result.optionalText("Address2")),
       city: result.one("City").text(),
       stateProvince: result.one("StateProvince").text(),
       stateProvinceChoice: result.one("StateProvinceChoice").text(),
       zip: result.one("Zip").text(),
       country: result.one("Country").text(),
       phone: result.one("Phone").text(),
-      ...optionalField("phoneExt", childText(result, "PhoneExt")),
-      ...optionalField("fax", childText(result, "Fax")),
+      ...optionalField("phoneExt", result.optionalText("PhoneExt")),
+      ...optionalField("fax", result.optionalText("Fax")),
       emailAddress: result.one("EmailAddress").text(),
     };
   },

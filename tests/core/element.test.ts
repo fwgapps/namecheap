@@ -149,6 +149,15 @@ describe("El", () => {
 });
 
 describe("El text accessors", () => {
+  it("optionalText returns the text of a named child, or undefined when the child is absent", () => {
+    const root = el("<R><A>hello</A><B/><C>  padded  </C></R>");
+    expect(root.optionalText("A")).toBe("hello");
+    expect(root.optionalText("B")).toBe("");
+    expect(root.optionalText("C")).toBe("padded");
+    expect(root.optionalText("Missing")).toBeUndefined();
+    expect(root.optionalText("toString")).toBeUndefined();
+  });
+
   it("numberText parses plain decimal element text", () => {
     expect(el("<A>42</A>").numberText()).toBe(42);
     expect(el("<A>-1</A>").numberText()).toBe(-1);

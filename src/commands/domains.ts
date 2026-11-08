@@ -438,7 +438,7 @@ export interface DomainsGetContactsResult {
 }
 
 function parseContact(contact: El): DomainsContact {
-  const text = (name: string) => contact.optional(name)?.text();
+  const text = (name: string) => contact.optionalText(name);
   return {
     ...optionalField("organizationName", text("OrganizationName")),
     ...optionalField("jobTitle", text("JobTitle")),
@@ -542,7 +542,7 @@ function parseWhoisguard(whoisguard: El): DomainsGetInfoResult["whoisguard"] {
   return {
     enabled: whoisguard.string("Enabled"),
     id: whoisguard.one("ID").numberText(),
-    ...optionalField("expiredDate", whoisguard.optional("ExpiredDate")?.text()),
+    ...optionalField("expiredDate", whoisguard.optionalText("ExpiredDate")),
     ...optionalField(
       "emailDetails",
       emailDetails === undefined
@@ -573,8 +573,8 @@ const getInfo = defineCommand<DomainsGetInfoParams, DomainsGetInfoResult>({
       isOwner: result.boolean("IsOwner"),
       isPremium: result.boolean("IsPremium"),
       domainDetails: {
-        ...optionalField("createdDate", details.optional("CreatedDate")?.text()),
-        ...optionalField("expiredDate", details.optional("ExpiredDate")?.text()),
+        ...optionalField("createdDate", details.optionalText("CreatedDate")),
+        ...optionalField("expiredDate", details.optionalText("ExpiredDate")),
         numYears: details.one("NumYears").numberText(),
       },
       whoisguard: parseWhoisguard(result.one("Whoisguard")),

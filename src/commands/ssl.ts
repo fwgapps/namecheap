@@ -235,8 +235,8 @@ function parseHttpDcValidation(result: El): SslHttpDcValidation | undefined {
   if (validation === undefined) return undefined;
   return {
     valueAvailable: validation.boolean("ValueAvailable"),
-    ...optionalField("fileName", validation.optional("FileName")?.text()),
-    ...optionalField("fileContent", validation.optional("FileContent")?.text()),
+    ...optionalField("fileName", validation.optionalText("FileName")),
+    ...optionalField("fileContent", validation.optionalText("FileContent")),
   };
 }
 
@@ -283,20 +283,24 @@ export interface SslResendApproverEmailParams {
   certificateID: number;
 }
 
-export interface SslResendApproverEmailResult {
+/** The `{ id, isSuccess }` result shared by the two resend commands. */
+export interface SslResendResult {
   id: number;
   isSuccess: boolean;
 }
+
+function parseResend(result: El): SslResendResult {
+  return { id: result.number("ID"), isSuccess: result.boolean("IsSuccess") };
+}
+
+export type SslResendApproverEmailResult = SslResendResult;
 
 const resendApproverEmail = defineCommand<
   SslResendApproverEmailParams,
   SslResendApproverEmailResult
 >({
   name: "namecheap.ssl.resendApproverEmail",
-  parse: (cr) => {
-    const result = cr.one("SSLResendApproverEmailResult");
-    return { id: result.number("ID"), isSuccess: result.boolean("IsSuccess") };
-  },
+  parse: (cr) => parseResend(cr.one("SSLResendApproverEmailResult")),
 });
 
 // ---------------------------------------------------------------------------
@@ -328,20 +332,14 @@ export interface SslResendFulfillmentEmailParams {
   certificateID: number;
 }
 
-export interface SslResendFulfillmentEmailResult {
-  id: number;
-  isSuccess: boolean;
-}
+export type SslResendFulfillmentEmailResult = SslResendResult;
 
 const resendFulfillmentEmail = defineCommand<
   SslResendFulfillmentEmailParams,
   SslResendFulfillmentEmailResult
 >({
   name: "namecheap.ssl.resendfulfillmentemail",
-  parse: (cr) => {
-    const result = cr.one("SSLResendFulfillmentEmailResult");
-    return { id: result.number("ID"), isSuccess: result.boolean("IsSuccess") };
-  },
+  parse: (cr) => parseResend(cr.one("SSLResendFulfillmentEmailResult")),
 });
 
 // ---------------------------------------------------------------------------
