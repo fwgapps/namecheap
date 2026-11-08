@@ -20,6 +20,13 @@ describe("NamecheapError", () => {
     expect(error.message).toBe("Unknown Namecheap error");
     expect(error.errors).toHaveLength(0);
   });
+
+  it.each(["", "   "])("falls back to the code when the first message is %j", (message) => {
+    const error = new NamecheapError([{ code: 3, message }]);
+    expect(error.message).toBe("Namecheap error 3");
+    expect(error.code).toBe(3);
+    expect(error.errors[0]?.message).toBe(message);
+  });
 });
 
 describe("NamecheapHttpError", () => {

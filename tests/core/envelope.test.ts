@@ -104,4 +104,16 @@ describe("readEnvelope", () => {
       NamecheapParseError,
     );
   });
+
+  it("gives an Error element without text a fallback message", () => {
+    const error = caught(() =>
+      readEnvelope(
+        '<ApiResponse Status="ERROR"><Errors><Error Number="3"/></Errors></ApiResponse>',
+      ),
+    ) as NamecheapError;
+    expect(error).toBeInstanceOf(NamecheapError);
+    expect(error.message).toBe("Namecheap error 3");
+    expect(error.code).toBe(3);
+    expect(error.errors[0]?.message).toBe("");
+  });
 });

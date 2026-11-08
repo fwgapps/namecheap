@@ -7,7 +7,13 @@ export class NamecheapError extends Error {
 
   constructor(errors: readonly ApiErrorItem[]) {
     const first = errors[0];
-    super(first?.message ?? "Unknown Namecheap error");
+    super(
+      first === undefined
+        ? "Unknown Namecheap error"
+        : first.message.trim() === ""
+          ? `Namecheap error ${first.code}`
+          : first.message,
+    );
     this.name = "NamecheapError";
     this.code = first?.code ?? -1;
     this.errors = errors;
