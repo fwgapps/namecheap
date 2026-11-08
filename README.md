@@ -2,9 +2,9 @@
 
 [![CI/CD Pipeline](https://github.com/fwgapps/namecheap/actions/workflows/publish.yml/badge.svg)](https://github.com/fwgapps/namecheap/actions/workflows/publish.yml)
 [![Codecov](https://codecov.io/gh/fwgapps/namecheap/branch/main/graph/badge.svg)](https://codecov.io/gh/fwgapps/namecheap)
-![Maintenance](https://img.shields.io/maintenance/yes/2026)
 [![npm](https://img.shields.io/npm/v/@fwgapps/namecheap)](https://www.npmjs.com/package/@fwgapps/namecheap)
 ![license](https://img.shields.io/npm/l/@fwgapps/namecheap)
+![TypeScript](https://img.shields.io/badge/typescript-%233178C6.svg?logo=typescript)
 
 A typed, zero-dependency client for the [Namecheap XML API](https://www.namecheap.com/support/api/intro/). Every command returns a plain, fully typed object instead of raw XML.
 
