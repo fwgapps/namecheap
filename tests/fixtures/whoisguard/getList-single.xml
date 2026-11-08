@@ -1,0 +1,17 @@
+<!-- source: docs -->
+<!-- derived from namecheap/go-namecheap-sdk namecheaptest/fixtures/whoisguard_getlist.xml (Apache-2.0): kept one subscription, totals adjusted -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<RequestedCommand>namecheap.whoisguard.getlist</RequestedCommand>
+	<CommandResponse Type="namecheap.whoisguard.getlist">
+		<WhoisguardGetListResult>
+			<Whoisguard ID="53536" DomainName="alpha.com" Created="10/22/2023" Expires="10/22/2024" Status="ENABLED" />
+		</WhoisguardGetListResult>
+		<Paging>
+			<TotalItems>1</TotalItems>
+			<CurrentPage>1</CurrentPage>
+			<PageSize>10</PageSize>
+		</Paging>
+	</CommandResponse>
+</ApiResponse>

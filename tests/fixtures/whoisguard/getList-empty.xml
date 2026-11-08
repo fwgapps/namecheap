@@ -1,0 +1,15 @@
+<!-- source: docs -->
+<!-- derived from namecheap/go-namecheap-sdk namecheaptest/fixtures/whoisguard_getlist.xml (Apache-2.0): removed all subscriptions, empty result element, totals zeroed -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<RequestedCommand>namecheap.whoisguard.getlist</RequestedCommand>
+	<CommandResponse Type="namecheap.whoisguard.getlist">
+		<WhoisguardGetListResult />
+		<Paging>
+			<TotalItems>0</TotalItems>
+			<CurrentPage>1</CurrentPage>
+			<PageSize>10</PageSize>
+		</Paging>
+	</CommandResponse>
+</ApiResponse>

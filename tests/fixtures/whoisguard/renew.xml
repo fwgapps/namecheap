@@ -1,0 +1,10 @@
+<!-- source: docs -->
+<!-- derived from the renew response table in docs/namecheap-api-v2.md (no SDK fixture exists; element and attribute spelling follow the Namecheap documented sample, values invented) -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<RequestedCommand>namecheap.whoisguard.renew</RequestedCommand>
+	<CommandResponse Type="namecheap.whoisguard.renew">
+		<WhoisguardRenewResult WhoisguardId="53536" Years="1" Renew="true" OrderId="3666910" TransactionId="26781219" ChargedAmount="2.9000" />
+	</CommandResponse>
+</ApiResponse>
