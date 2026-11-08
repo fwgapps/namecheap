@@ -19,6 +19,7 @@ describe("toParamName", () => {
     expect(toParamName("wgEnabled")).toBe("WGEnabled");
     expect(toParamName("mxPref")).toBe("MXPref");
     expect(toParamName("ttl")).toBe("TTL");
+    expect(toParamName("eppCode")).toBe("EPPCode");
   });
 
   it("leaves the rest of non-acronym words as written", () => {
@@ -27,7 +28,7 @@ describe("toParamName", () => {
   });
 
   it("exposes the acronym list", () => {
-    expect(ACRONYMS).toEqual(["SLD", "TLD", "IP", "ID", "DNS", "WG", "MX", "TTL"]);
+    expect(ACRONYMS).toEqual(["SLD", "TLD", "IP", "ID", "DNS", "WG", "MX", "TTL", "EPP"]);
   });
 });
 
