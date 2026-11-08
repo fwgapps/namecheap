@@ -74,6 +74,41 @@ describe("El", () => {
     expect(d.optionalNumber("Count")).toBe(42);
   });
 
+  it("number accepts only plain decimals", () => {
+    const accepted: [string, number][] = [
+      ["42", 42],
+      ["-1.5", -1.5],
+      ["+7", 7],
+      ["0", 0],
+      ["007", 7],
+      ["10.88", 10.88],
+    ];
+    for (const [raw, expected] of accepted) {
+      const d = new El({ name: "D", attrs: { N: raw }, text: "", children: [] });
+      expect(d.number("N")).toBe(expected);
+      expect(d.optionalNumber("N")).toBe(expected);
+    }
+    const rejected = [
+      "0x10",
+      "0b11",
+      "0o7",
+      " 42 ",
+      "1e3",
+      "Infinity",
+      "NaN",
+      "1e3x",
+      "",
+      "1.",
+      ".5",
+      "9".repeat(400),
+    ];
+    for (const raw of rejected) {
+      const d = new El({ name: "D", attrs: { N: raw }, text: "", children: [] });
+      expect(() => d.number("N"), JSON.stringify(raw)).toThrow(NamecheapParseError);
+      expect(() => d.optionalNumber("N"), JSON.stringify(raw)).toThrow(NamecheapParseError);
+    }
+  });
+
   it("boolean accepts true/false case-insensitively and rejects the rest", () => {
     const d = el('<D A="True" B="false" C="yes" E=""/>');
     expect(d.boolean("A")).toBe(true);

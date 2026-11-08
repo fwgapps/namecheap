@@ -1,6 +1,8 @@
 import { NamecheapParseError } from "./errors";
 import type { XmlNode } from "./xml";
 
+const PLAIN_DECIMAL = /^[+-]?\d+(\.\d+)?$/;
+
 /** Typed, read-only view over an XML node. Error messages never include attribute values. */
 export class El {
   readonly name: string;
@@ -65,7 +67,7 @@ export class El {
   }
 
   private parseNumber(attr: string, value: string): number {
-    const parsed = value.trim() === "" ? Number.NaN : Number(value);
+    const parsed = PLAIN_DECIMAL.test(value) ? Number(value) : Number.NaN;
     if (!Number.isFinite(parsed)) {
       throw new NamecheapParseError(`${this.name}: attribute "${attr}" is not a number`);
     }
