@@ -198,3 +198,12 @@ describe("El text accessors", () => {
     expect(root.lenientBoolean("constructor")).toBeUndefined();
   });
 });
+
+describe("El lenientNumber edge cases", () => {
+  it("returns undefined for a digit string that overflows to Infinity", () => {
+    const root = el(`<R Big="${"9".repeat(400)}" Small="-0" Plus="+7"/>`);
+    expect(root.lenientNumber("Big")).toBeUndefined();
+    expect(root.lenientNumber("Plus")).toBe(7);
+    expect(Object.is(root.lenientNumber("Small"), -0)).toBe(true);
+  });
+});

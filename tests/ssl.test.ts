@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NamecheapError } from "../src";
 import { sslCommands } from "../src/commands/ssl";
-import { createTestClient, loadFixture } from "./helpers";
+import { createTestClient, loadFixture, okEnvelope } from "./helpers";
 
 describe("ssl", () => {
   it("create sends the documented request and parses the fixture", async () => {
@@ -414,5 +414,28 @@ describe("ssl", () => {
     for (const [key, command] of Object.entries(sslCommands)) {
       expect(command.name.split(".").at(-1)?.toLowerCase()).toBe(key.toLowerCase());
     }
+  });
+});
+
+describe("ssl.getApproverEmailList with groups absent", () => {
+  it("returns an empty list for each email group the response does not carry", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<GetApproverEmailListResult>
+           <Domainemails><email>admin@example.com</email></Domainemails>
+         </GetApproverEmailListResult>`,
+        "namecheap.ssl.getApproverEmailList",
+      ),
+    );
+    await expect(
+      client.ssl.getApproverEmailList({
+        domainName: "example.com",
+        certificateType: "PositiveSSL",
+      }),
+    ).resolves.toEqual({
+      domainEmails: ["admin@example.com"],
+      genericEmails: [],
+      manualEmails: [],
+    });
   });
 });

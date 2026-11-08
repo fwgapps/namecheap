@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NamecheapError } from "../src";
 import { transferCommands } from "../src/commands/transfer";
-import { createTestClient, loadFixture } from "./helpers";
+import { createTestClient, loadFixture, okEnvelope } from "./helpers";
 
 describe("transfer", () => {
   it("create sends the documented request and parses the fixture", async () => {
@@ -134,5 +134,20 @@ describe("transfer", () => {
     for (const [key, command] of Object.entries(transferCommands)) {
       expect(command.name.split(".").at(-1)?.toLowerCase()).toBe(key.toLowerCase());
     }
+  });
+});
+
+describe("transfer.getList with the result element absent", () => {
+  it("returns an empty list and still parses the paging", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        "<Paging><TotalItems>0</TotalItems><CurrentPage>1</CurrentPage><PageSize>10</PageSize></Paging>",
+        "namecheap.domains.transfer.getList",
+      ),
+    );
+    await expect(client.transfer.getList()).resolves.toEqual({
+      transfers: [],
+      paging: { totalItems: 0, currentPage: 1, pageSize: 10 },
+    });
   });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NamecheapError } from "../src";
 import { whoisGuardCommands } from "../src/commands/whoisguard";
-import { createTestClient, loadFixture } from "./helpers";
+import { createTestClient, loadFixture, okEnvelope } from "./helpers";
 
 describe("whoisguard", () => {
   it("changeEmailAddress sends the documented request and parses the fixture", async () => {
@@ -185,5 +185,20 @@ describe("whoisguard", () => {
     for (const [key, command] of Object.entries(whoisGuardCommands)) {
       expect(command.name.split(".").at(-1)?.toLowerCase()).toBe(key.toLowerCase());
     }
+  });
+});
+
+describe("whoisGuard.getList with the result element absent", () => {
+  it("returns an empty list and still parses the paging", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        "<Paging><TotalItems>0</TotalItems><CurrentPage>1</CurrentPage><PageSize>10</PageSize></Paging>",
+        "namecheap.whoisguard.getlist",
+      ),
+    );
+    await expect(client.whoisGuard.getList()).resolves.toEqual({
+      whoisguards: [],
+      paging: { totalItems: 0, currentPage: 1, pageSize: 10 },
+    });
   });
 });

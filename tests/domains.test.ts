@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NamecheapError } from "../src";
 import { domainsCommands } from "../src/commands/domains";
-import { createTestClient, loadFixture } from "./helpers";
+import { createTestClient, loadFixture, okEnvelope } from "./helpers";
 
 const CONTACT_FIELDS = [
   "FirstName",
@@ -520,5 +520,43 @@ describe("domains", () => {
       },
     ]);
     expect(Object.keys(result[0] ?? {})).not.toContain("errorNo");
+  });
+});
+
+describe("domains responses with optional elements absent", () => {
+  const PAGING = `<Paging><TotalItems>0</TotalItems><CurrentPage>1</CurrentPage><PageSize>20</PageSize></Paging>`;
+
+  it("getList returns an empty list when the result element is absent", async () => {
+    const { client } = createTestClient(okEnvelope(PAGING, "namecheap.domains.getList"));
+    await expect(client.domains.getList()).resolves.toEqual({
+      domains: [],
+      paging: { totalItems: 0, currentPage: 1, pageSize: 20 },
+    });
+  });
+
+  it("getTldList returns an empty list when the Tlds element is absent", async () => {
+    const { client } = createTestClient(okEnvelope("", "namecheap.domains.getTldList"));
+    await expect(client.domains.getTldList()).resolves.toEqual([]);
+  });
+
+  it("getContacts omits the contact blocks that the response does not carry", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<DomainContactsResult Domain="example.com" domainnameid="7" Readonly="false">
+           <Registrant><FirstName>Ana</FirstName></Registrant>
+         </DomainContactsResult>`,
+        "namecheap.domains.getContacts",
+      ),
+    );
+    const result = await client.domains.getContacts({ domainName: "example.com" });
+    expect(result).toEqual({
+      domain: "example.com",
+      domainnameid: 7,
+      readonly: false,
+      registrant: { firstName: "Ana" },
+    });
+    for (const absent of ["tech", "admin", "auxBilling"]) {
+      expect(result).not.toHaveProperty(absent);
+    }
   });
 });

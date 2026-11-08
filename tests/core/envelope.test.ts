@@ -117,3 +117,15 @@ describe("readEnvelope", () => {
     expect(error.errors[0]?.message).toBe("");
   });
 });
+
+describe("readEnvelope without an Errors element", () => {
+  it("accepts an OK envelope that has no Errors element at all", () => {
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" ${NS}>
+  <CommandResponse Type="namecheap.test"><R/></CommandResponse>
+</ApiResponse>`;
+    const command = readEnvelope(xml);
+    expect(command.name).toBe("CommandResponse");
+    expect(command.children().map((child) => child.name)).toEqual(["R"]);
+  });
+});

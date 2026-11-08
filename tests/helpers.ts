@@ -53,3 +53,16 @@ export function createTestClient(
   });
   return { client, calls };
 }
+
+/** A minimal OK envelope whose CommandResponse holds `inner` (for inline response shapes). */
+export function okEnvelope(inner: string, command = "namecheap.test"): string {
+  return `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+  <Errors />
+  <Warnings />
+  <RequestedCommand>${command}</RequestedCommand>
+  <CommandResponse Type="${command}">
+    ${inner}
+  </CommandResponse>
+</ApiResponse>`;
+}
