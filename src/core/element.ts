@@ -19,6 +19,11 @@ export class El {
     return this.node.children.filter((child) => child.name === name).map((child) => new El(child));
   }
 
+  /** All direct child elements in document order, whatever their names. */
+  children(): El[] {
+    return this.node.children.map((child) => new El(child));
+  }
+
   one(name: string): El {
     const found = this.optional(name);
     if (found === undefined) {

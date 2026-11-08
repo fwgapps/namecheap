@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NamecheapError } from "../src";
+import Namecheap, { NamecheapError, NamecheapHttpError, NamecheapParseError } from "../src";
 import { usersCommands } from "../src/commands/users";
 import { createTestClient, loadFixture } from "./helpers";
 
@@ -263,7 +263,7 @@ describe("users", () => {
     expect(body?.get("Phone")).toBe("+1.5555555555");
     expect(body?.get("PhoneExt")).toBe("12");
     expect(body?.get("Fax")).toBe("+1.5555555556");
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ Success: "true" });
     expect(JSON.stringify(result)).not.toContain("pw-SECRET-create");
   });
 
@@ -305,56 +305,95 @@ describe("users", () => {
     expect((error as NamecheapError).message).toBe("Invalid password");
   });
 
-  it("never leaks supplied passwords, secrets or reset codes into a thrown error", async () => {
-    const secrets = ["pw-SECRET-1", "pw-SECRET-2", "pw-SECRET-3", "code-SECRET-4"];
-    const calls: Array<() => Promise<unknown>> = [
-      () =>
-        createTestClient(loadFixture("users", "error")).client.users.changePassword({
-          oldPassword: secrets[0] as string,
-          newPassword: secrets[1] as string,
-        }),
-      () =>
-        createTestClient(loadFixture("users", "error")).client.users.changePassword({
-          resetCode: secrets[3] as string,
-          newPassword: secrets[2] as string,
-        }),
-      () =>
-        createTestClient(loadFixture("users", "error")).client.users.login({
-          password: secrets[0] as string,
-        }),
-      () =>
-        createTestClient(loadFixture("users", "error")).client.users.create({
-          newUserName: "u",
-          newUserPassword: secrets[1] as string,
-          emailAddress: "a@example.com",
-          firstName: "A",
-          lastName: "B",
-          acceptTerms: 1,
-          address1: "x",
-          city: "x",
-          stateProvince: "x",
-          zip: "1",
-          country: "US",
-          phone: "+1.1",
-        }),
-      () =>
-        createTestClient(loadFixture("users", "error")).client.users.resetPassword({
-          findBy: "USERNAME",
-          findByValue: secrets[3] as string,
-        }),
+  describe("credential leaks", () => {
+    const [pw1, pw2, pw3, code4] = [
+      "pw-SECRET-1",
+      "pw-SECRET-2",
+      "pw-SECRET-3",
+      "code-SECRET-4",
+    ] as [string, string, string, string];
+    const secrets = [pw1, pw2, pw3, code4];
+    const createParams = {
+      newUserName: "u",
+      newUserPassword: pw2,
+      emailAddress: "a@example.com",
+      firstName: "A",
+      lastName: "B",
+      acceptTerms: 1,
+      address1: "x",
+      city: "x",
+      stateProvince: "x",
+      zip: "1",
+      country: "US",
+      phone: "+1.1",
+    };
+    const calls: Array<[string, (c: Namecheap) => Promise<unknown>]> = [
+      [
+        "changePassword (old)",
+        (c) => c.users.changePassword({ oldPassword: pw1, newPassword: pw2 }),
+      ],
+      [
+        "changePassword (code)",
+        (c) => c.users.changePassword({ resetCode: code4, newPassword: pw3 }),
+      ],
+      ["login", (c) => c.users.login({ password: pw1 })],
+      ["create", (c) => c.users.create(createParams)],
+      [
+        "resetPassword",
+        (c) =>
+          c.users.resetPassword({
+            findBy: "USERNAME",
+            findByValue: "u",
+            urlPattern: `https://e.example/${code4}/[RESETCODE]`,
+          }),
+      ],
     ];
-    for (const call of calls) {
-      const error = (await call().catch((e: unknown) => e)) as NamecheapError;
-      expect(error).toBeInstanceOf(NamecheapError);
-      const exposed = [
+
+    const clientFor = (fetchImpl: typeof fetch): Namecheap =>
+      new Namecheap({
+        apiUser: "test-user",
+        apiKey: "SECRET-KEY",
+        clientIp: "127.0.0.1",
+        sandbox: true,
+        fetch: fetchImpl,
+      });
+    const respond = (body: string, status = 200): typeof fetch =>
+      (() => Promise.resolve(new Response(body, { status }))) as typeof fetch;
+
+    function exposed(error: Error): string {
+      const own = Object.getOwnPropertyNames(error)
+        .filter((name) => name !== "stack")
+        .map((name) => JSON.stringify((error as unknown as Record<string, unknown>)[name]));
+      return [
         error.message,
-        ...Object.getOwnPropertyNames(error)
-          .filter(
-            (name) => name !== "stack" && Object.getOwnPropertyDescriptor(error, name)?.enumerable,
-          )
-          .map((name) => JSON.stringify((error as unknown as Record<string, unknown>)[name])),
+        error.stack ?? "",
+        String(error),
+        JSON.stringify(own),
+        String((error as { cause?: unknown }).cause),
+        JSON.stringify(Object.fromEntries(Object.entries(error))),
       ].join("\n");
-      for (const secret of secrets) expect(exposed).not.toContain(secret);
+    }
+
+    const scenarios: Array<[string, typeof fetch, new (...a: never[]) => Error]> = [
+      ["NamecheapError", respond(loadFixture("users", "error")), NamecheapError],
+      ["HTTP 500", respond("server down", 500), NamecheapHttpError],
+      [
+        "rejected fetch",
+        (() => Promise.reject(new Error("socket hang up"))) as typeof fetch,
+        NamecheapHttpError,
+      ],
+      ["unparseable body", respond("<html>x</html>"), NamecheapParseError],
+    ];
+
+    for (const [label, fetchImpl, ErrorClass] of scenarios) {
+      for (const [command, run] of calls) {
+        it(`${command} against ${label} exposes no secret`, async () => {
+          const error = (await run(clientFor(fetchImpl)).catch((e: unknown) => e)) as Error;
+          expect(error).toBeInstanceOf(ErrorClass);
+          const text = exposed(error);
+          for (const secret of secrets) expect(text).not.toContain(secret);
+        });
+      }
     }
   });
 
@@ -364,5 +403,56 @@ describe("users", () => {
       expect(command.name.split(".").at(-1)?.toLowerCase()).toBe(key.toLowerCase());
     }
   });
-  // NEXT
+
+  describe("undocumented responses are parsed tolerantly", () => {
+    const envelope = (inner: string): string =>
+      `<?xml version="1.0"?><ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response"><Errors /><CommandResponse Type="x">${inner}</CommandResponse></ApiResponse>`;
+    const createParams = {
+      newUserName: "u",
+      newUserPassword: "p",
+      emailAddress: "a@example.com",
+      firstName: "A",
+      lastName: "B",
+      acceptTerms: 1,
+      address1: "x",
+      city: "x",
+      stateProvince: "x",
+      zip: "1",
+      country: "US",
+      phone: "+1.1",
+    };
+
+    it("login accepts any result element name and absent attributes", async () => {
+      const named = createTestClient(
+        envelope('<Whatever Username="example-user" LoginSuccess="false" />'),
+      );
+      expect(await named.client.users.login({ password: "p" })).toEqual({
+        username: "example-user",
+        loginSuccess: false,
+      });
+      const empty = createTestClient(envelope(""));
+      expect(await empty.client.users.login({ password: "p" })).toEqual({});
+    });
+
+    it("resetPassword accepts any result element name and absent attributes", async () => {
+      const named = createTestClient(envelope('<Whatever Success="true" />'));
+      expect(
+        await named.client.users.resetPassword({ findBy: "USERNAME", findByValue: "u" }),
+      ).toEqual({ success: true });
+      const empty = createTestClient(envelope(""));
+      expect(
+        await empty.client.users.resetPassword({ findBy: "USERNAME", findByValue: "u" }),
+      ).toEqual({});
+    });
+
+    it("create returns the attributes of any result element, or an empty object", async () => {
+      const named = createTestClient(envelope('<Whatever Success="true" UserId="7" />'));
+      expect(await named.client.users.create(createParams)).toEqual({
+        Success: "true",
+        UserId: "7",
+      });
+      const empty = createTestClient(envelope(""));
+      expect(await empty.client.users.create(createParams)).toEqual({});
+    });
+  });
 });

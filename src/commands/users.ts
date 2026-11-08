@@ -272,17 +272,15 @@ export interface UsersCreateParams {
 }
 
 /**
- * The reference documents no response fields and no sample for this command; the
- * result element `UserCreateResult` follows the naming pattern of the other users
- * commands.
+ * Neither the reference nor the SDK documents a response for this command, so the
+ * attributes of the first element inside `CommandResponse` are returned as-is
+ * (empty when there is none). Parsing never throws: the account may already exist.
  */
-export interface UsersCreateResult {
-  success: boolean;
-}
+export type UsersCreateResult = Record<string, string>;
 
 const create = defineCommand<UsersCreateParams, UsersCreateResult>({
   name: "namecheap.users.create",
-  parse: (cr) => ({ success: cr.one("UserCreateResult").boolean("Success") }),
+  parse: (cr) => cr.children()[0]?.attributes() ?? {},
 });
 // ---------------------------------------------------------------------------
 // namecheap.users.login
@@ -296,19 +294,23 @@ export interface UsersLoginParams {
   password: string;
 }
 
-/** The reference documents no sample; the result element name follows the other users commands. */
+/**
+ * The response shape is not documented anywhere; the documented attributes are read
+ * from the first element inside `CommandResponse`, whatever its name, and left
+ * out when absent.
+ */
 export interface UsersLoginResult {
-  username: string;
-  loginSuccess: boolean;
+  username?: string;
+  loginSuccess?: boolean;
 }
 
 const login = defineCommand<UsersLoginParams, UsersLoginResult>({
   name: "namecheap.users.login",
   parse: (cr) => {
-    const result = cr.one("UserLoginResult");
+    const result = cr.children()[0];
     return {
-      username: result.string("Username"),
-      loginSuccess: result.boolean("LoginSuccess"),
+      ...optionalField("username", result?.optionalString("Username")),
+      ...optionalField("loginSuccess", result?.optionalBoolean("LoginSuccess")),
     };
   },
 });
@@ -331,15 +333,17 @@ export interface UsersResetPasswordParams {
   urlPattern?: string;
 }
 
-/** The reference documents no sample; the result element name follows the other users commands. */
+/** The response shape is not documented anywhere; read tolerantly from the first child of `CommandResponse`. */
 export interface UsersResetPasswordResult {
-  success: boolean;
+  success?: boolean;
 }
 
 const resetPassword = defineCommand<UsersResetPasswordParams, UsersResetPasswordResult>({
   name: "namecheap.users.resetPassword",
   keys: { urlPattern: "URLPattern" },
-  parse: (cr) => ({ success: cr.one("UserResetPasswordResult").boolean("Success") }),
+  parse: (cr) => ({
+    ...optionalField("success", cr.children()[0]?.optionalBoolean("Success")),
+  }),
 });
 export const usersCommands = {
   getBalances,

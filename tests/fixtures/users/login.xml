@@ -1,5 +1,5 @@
 <!-- source: docs -->
-<!-- derived from docs/namecheap-api-v2.md (users.login): the reference documents no sample response; envelope copied from tests/fixtures/users/update.xml, result element named by the UserXxxResult pattern, attributes from the documented response fields -->
+<!-- derived from tests/fixtures/users/update.xml: envelope copied; the response shape of this command is NOT documented anywhere (reference and SDK have no sample), so the result element name and attributes are illustrative only -->
 <?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
 	<Errors />

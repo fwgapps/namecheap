@@ -1,5 +1,5 @@
 <!-- source: docs -->
-<!-- derived from tests/fixtures/ssl/error.xml: command name changed, error text for a rejected password change -->
+<!-- derived from tests/fixtures/ssl/error.xml: command name changed; error code 2010302 is a placeholder, not from any source -->
 <?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
 	<Errors>

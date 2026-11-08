@@ -133,6 +133,12 @@ describe("El", () => {
     expect(message).not.toContain("s3cret");
   });
 
+  it("children returns every direct child element in document order", () => {
+    const root = el("<R><A/><B><C/></B><A/></R>");
+    expect(root.children().map((child) => child.name)).toEqual(["A", "B", "A"]);
+    expect(el("<R/>").children()).toEqual([]);
+  });
+
   it("attributes returns a copy of own entries", () => {
     const d = el('<D A="1" B="2"/>');
     const attrs = d.attributes();
