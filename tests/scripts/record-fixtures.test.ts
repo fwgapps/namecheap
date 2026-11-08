@@ -136,6 +136,11 @@ describe("withSourceHeader", () => {
     const input = "<!-- source: derived from docs -->\n<!-- source: manual -->\n<ApiResponse/>";
     expect(withSourceHeader(input)).toBe(`${header}\n<ApiResponse/>`);
   });
+  it("replaces leading `derived from` comment lines", () => {
+    const input = "<!-- derived from the Namecheap docs -->\n<!-- source: x -->\n<ApiResponse/>";
+    expect(withSourceHeader(input)).toBe(`${header}\n<ApiResponse/>`);
+    expect(withSourceHeader("<!-- derived from docs -->\n<a/>")).toBe(`${header}\n<a/>`);
+  });
   it("keeps other comments and the XML declaration after the header", () => {
     const input = '<?xml version="1.0"?>\n<!-- note -->\n<ApiResponse/>';
     expect(withSourceHeader(input)).toBe(`${header}\n${input}`);
@@ -205,6 +210,7 @@ describe("main", () => {
 
   it("rejects invalid entries before sending anything", async () => {
     const { deps, written, calls } = setup([
+      { fixture: "domains/getList", command: "namecheap.domains.getList" },
       { fixture: "../evil", command: "namecheap.domains.getList" },
     ]);
     await expect(main(deps)).rejects.toThrow(/fixture/i);
@@ -241,5 +247,84 @@ describe("main", () => {
     });
     expect(code).toBe(1);
     expect(logs.join("\n")).not.toContain("sekret-key-123");
+  });
+
+  it("passes redirect: error to fetch", async () => {
+    const { deps } = setup([{ fixture: "domains/getList", command: "namecheap.domains.getList" }]);
+    const inits: (RequestInit | undefined)[] = [];
+    const spy = async (_url: string | URL | Request, init?: RequestInit) => {
+      inits.push(init);
+      return new Response(okXml);
+    };
+    await main({ ...deps, fetch: spy as typeof fetch });
+    expect(inits).toHaveLength(1);
+    expect(inits[0]?.redirect).toBe("error");
+  });
+
+  it("ignores host overrides from argv, env and entry fields", async () => {
+    const { deps, calls } = setup([
+      {
+        fixture: "domains/getList",
+        command: "namecheap.domains.getList",
+        host: "evil.example",
+        url: "https://evil.example/x",
+      },
+    ]);
+    await main({
+      ...deps,
+      argv: ["node", "x", "req.json", "--host", "evil.example"],
+      env: { ...env, NAMECHEAP_HOST: "evil.example" },
+    });
+    expect(calls).toEqual([SANDBOX_URL]);
+  });
+
+  it.each([[false], [true]])(
+    "does not write a non-envelope 2xx body (allowError=%s)",
+    async (allowError) => {
+      const { deps, written } = setup([
+        { fixture: "domains/getList", command: "c", allowError },
+        { fixture: "domains/empty", command: "e", allowError },
+      ]);
+      const html = async (_u: unknown, init?: RequestInit) =>
+        new Response(
+          new URLSearchParams(String(init?.body)).get("Command") === "e"
+            ? ""
+            : "<html>maintenance</html>",
+        );
+      const code = await main({ ...deps, fetch: html as unknown as typeof fetch });
+      expect(code).toBe(1);
+      expect(written.size).toBe(0);
+    },
+  );
+
+  it("exits 0 when every entry is OK", async () => {
+    const { deps, written } = setup([
+      { fixture: "domains/getList", command: "namecheap.domains.getList" },
+    ]);
+    expect(await main(deps)).toBe(0);
+    expect(written.size).toBe(1);
+  });
+
+  it.each([["ApiUser"], ["apikey"], ["USERNAME"], ["clientIp"], ["command"]])(
+    "rejects reserved param %s without leaking env values",
+    async (name) => {
+      const { deps, calls } = setup([
+        { fixture: "domains/getList", command: "c", params: { [name]: "x" } },
+      ]);
+      const error = await main(deps).catch((e: Error) => e);
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toMatch(/reserved/i);
+      for (const value of Object.values(env)) expect((error as Error).message).not.toContain(value);
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it("rejects duplicate fixture values before sending anything", async () => {
+    const { deps, calls } = setup([
+      { fixture: "domains/getList", command: "a" },
+      { fixture: "domains/getList", command: "b" },
+    ]);
+    await expect(main(deps)).rejects.toThrow(/duplicate/i);
+    expect(calls).toHaveLength(0);
   });
 });

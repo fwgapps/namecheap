@@ -10,16 +10,16 @@
     "build": "yarn clean && tsup",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "lint": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,ts}'",
-    "lint:fix": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,ts}' --fix",
-    "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,ts}'",
+    "lint": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,mts,ts}'",
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,mts,ts}' --fix",
+    "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,mts,ts}'",
     "prepublishOnly": "yarn build",
     "prepare": "husky install",
     "commit": "cz",
     "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "*.{ts,tsx,js,jsx,mjs,mts}": [
       "eslint --fix",
       "prettier --write",
       "git add"

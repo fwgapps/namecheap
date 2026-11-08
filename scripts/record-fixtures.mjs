@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 export const SANDBOX_URL = "https://api.sandbox.namecheap.com/xml.response";
 
 const SOURCE_HEADER = "<!-- source: sandbox -->";
+const RESERVED_PARAMS = new Set(["apiuser", "apikey", "username", "clientip", "command"]);
 const FIXTURE_PATTERN = /^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/;
 const REQUIRED_ENV = ["NAMECHEAP_API_USER", "NAMECHEAP_API_KEY", "NAMECHEAP_CLIENT_IP"];
 
@@ -80,18 +81,23 @@ export function resolveFixturePath(fixture, rootDir) {
 
 /** Makes `<!-- source: sandbox -->` the first line, dropping any leading source comments. */
 export function withSourceHeader(xml) {
-  const rest = xml.replace(/^(?:\s*<!--\s*source:[^]*?-->[ \t]*\r?\n?)+/, "");
+  const rest = xml.replace(/^(?:\s*<!--\s*(?:source:|derived from)[^]*?-->[ \t]*\r?\n?)+/, "");
   return `${SOURCE_HEADER}\n${rest.replace(/^\s*\n/, "")}`;
 }
 
 function validateEntries(entries) {
   if (!Array.isArray(entries)) throw new Error("Requests file must contain a JSON array");
+  const seen = new Set();
   entries.forEach((entry, index) => {
     const where = `Entry ${index}`;
     if (entry === null || typeof entry !== "object" || Array.isArray(entry)) {
       throw new Error(`${where}: must be an object`);
     }
     resolveFixturePath(entry.fixture, "");
+    if (seen.has(entry.fixture)) {
+      throw new Error(`${where}: duplicate fixture ${entry.fixture}`);
+    }
+    seen.add(entry.fixture);
     if (typeof entry.command !== "string" || entry.command === "") {
       throw new Error(`${where}: "command" must be a non-empty string`);
     }
@@ -101,6 +107,9 @@ function validateEntries(entries) {
         throw new Error(`${where}: "params" must be an object of string values`);
       }
       for (const [name, value] of Object.entries(p)) {
+        if (RESERVED_PARAMS.has(name.toLowerCase())) {
+          throw new Error(`${where}: param ${name} is reserved and set by the recorder`);
+        }
         if (typeof value !== "string") {
           throw new Error(`${where}: param ${name} must be a string`);
         }
@@ -148,6 +157,11 @@ export async function main({
       const status = /<ApiResponse[^>]*\sStatus="([^"]*)"/.exec(text)?.[1] ?? "unknown";
       const failed = !response.ok || status === "ERROR";
       const summary = `HTTP ${response.status}, Status ${status}`;
+      if (status !== "OK" && status !== "ERROR") {
+        failures += 1;
+        log(maskSecrets(`${label}: skipped (${summary}); not a Namecheap response`, env));
+        continue;
+      }
       if (failed && entry.allowError !== true) {
         failures += 1;
         log(
