@@ -221,6 +221,10 @@ const update = defineCommand<UsersAddressUpdateParams, UsersAddressUpdateResult>
   },
 });
 
+/**
+ * The command table behind `client.usersAddress`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const usersAddressCommands = {
   create,
   delete: deleteAddress,

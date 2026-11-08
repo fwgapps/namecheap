@@ -533,6 +533,10 @@ const revokeCertificate = defineCommand<SslRevokeCertificateParams, SslRevokeCer
   },
 });
 
+/**
+ * The command table behind `client.ssl`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const sslCommands = {
   create,
   getList,

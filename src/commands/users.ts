@@ -347,6 +347,10 @@ const resetPassword = defineCommand<UsersResetPasswordParams, UsersResetPassword
     ...optionalField("success", cr.children()[0]?.lenientBoolean("Success")),
   }),
 });
+/**
+ * The command table behind `client.users`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const usersCommands = {
   getBalances,
   getPricing,

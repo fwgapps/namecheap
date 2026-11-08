@@ -162,4 +162,8 @@ const getList = defineCommand<TransferGetListParams, TransferGetListResult>({
   }),
 });
 
+/**
+ * The command table behind `client.transfer`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const transferCommands = { create, getStatus, updateStatus, getList };

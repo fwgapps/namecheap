@@ -237,7 +237,7 @@ try {
 }
 ```
 
-Error messages contain at most short fragments of the response (element names, a truncated entity name) and never request data or credentials.
+Error messages never contain request data or credentials. Apart from `NamecheapError`, whose message is Namecheap's own error text, they contain at most short fragments of the response (element or attribute names, a truncated entity name).
 
 **There are no automatic retries, on purpose.** Many commands are billed (register, renew, transfer, purchase). Retrying a request whose outcome is unknown could charge you twice. Decide per call whether a retry is safe; read-only commands such as `getList` or `check` usually are.
 
@@ -298,6 +298,8 @@ console.log(result.updated, calls[0]?.url);
 ## API coverage
 
 59 commands, all reachable as `nc.<group>.<method>`.
+
+The package also exports the command tables behind each group (`domainsCommands`, `dnsCommands`, and so on) for custom integrations. They are advanced API: they are not covered by semver stability, so prefer `nc.<group>.<method>`.
 
 | Group (`nc.`)  | Methods                                                                                                                                                          | Count |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----: |

@@ -286,6 +286,10 @@ const setHosts = defineCommand<DnsSetHostsParams, DnsSetHostsResult>({
   },
 });
 
+/**
+ * The command table behind `client.dns`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const dnsCommands = {
   setDefault,
   setCustom,

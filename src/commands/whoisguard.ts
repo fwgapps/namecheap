@@ -197,4 +197,8 @@ const renew = defineCommand<WhoisguardRenewParams, WhoisguardRenewResult>({
   },
 });
 
+/**
+ * The command table behind `client.whoisGuard`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const whoisGuardCommands = { changeEmailAddress, enable, disable, getList, renew };

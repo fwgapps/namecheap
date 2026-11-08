@@ -605,6 +605,10 @@ const getInfo = defineCommand<DomainsGetInfoParams, DomainsGetInfoResult>({
   },
 });
 
+/**
+ * The command table behind `client.domains`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const domainsCommands = {
   getList,
   check,

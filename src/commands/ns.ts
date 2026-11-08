@@ -136,4 +136,8 @@ const update = defineCommand<NsUpdateParams, NsUpdateResult>({
   },
 });
 
+/**
+ * The command table behind `client.ns`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
 export const nsCommands = { create, delete: deleteNs, getInfo, update };
