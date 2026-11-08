@@ -1,5 +1,5 @@
 <!-- source: docs -->
-<!-- derived from the renew response table in docs/namecheap-api-v2.md (no SDK fixture exists; element and attribute spelling follow the Namecheap documented sample, values invented) -->
+<!-- derived from the renew response table in docs/namecheap-api-v2.md, which lists only column labels: the response shape is NOT documented anywhere (no SDK fixture, no sample); element name, attributes and values are illustrative -->
 <?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
 	<Errors />

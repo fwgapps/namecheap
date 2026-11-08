@@ -113,6 +113,29 @@ describe("whoisguard", () => {
     });
   });
 
+  it("renew parses tolerantly: any result element name, only the attributes present", async () => {
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<CommandResponse Type="namecheap.whoisguard.renew">
+		<SomethingElseResult OrderId="77" ChargedAmount="2.5000" Renew="maybe" />
+	</CommandResponse>
+</ApiResponse>`;
+    const { client } = createTestClient(xml);
+    const result = await client.whoisGuard.renew({ whoisguardID: 1, years: 1 });
+    expect(result).toEqual({ orderId: 77, chargedAmount: 2.5 });
+  });
+
+  it("renew returns an empty object for an empty CommandResponse", async () => {
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<CommandResponse Type="namecheap.whoisguard.renew" />
+</ApiResponse>`;
+    const { client } = createTestClient(xml);
+    expect(await client.whoisGuard.renew({ whoisguardID: 1, years: 1 })).toEqual({});
+  });
+
   it("rejects with NamecheapError carrying the code and message of an error response", async () => {
     const { client } = createTestClient(loadFixture("whoisguard", "error"));
     const error = await client.whoisGuard

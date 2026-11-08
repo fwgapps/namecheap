@@ -1,5 +1,6 @@
 import { defineCommand } from "../core/define";
 import type { El } from "../core/element";
+import { optionalField } from "../core/fields";
 import { parsePaging } from "../core/paging";
 import type { Paging } from "../core/paging";
 
@@ -157,29 +158,36 @@ export interface WhoisguardRenewParams {
   promotionCode?: string;
 }
 
-// The reference documents the response columns ("WhoisGuard ID", "OrderId",
-// "TransactionId", ...) but no SDK fixture exists, so the element and attribute
-// spelling follow Namecheap's documented sample (see tests/fixtures/whoisguard/renew.xml).
+// Billed command whose response shape is NOT documented: the reference lists only
+// column labels ("WhoisGuard ID", "Renew", "OrderId", ...), the Go SDK has no renew
+// and no fixture exists. The parser therefore never throws once the charge went
+// through: it reads the first child element, whatever its name, and returns only
+// the attributes it finds and can read. The spellings below are guesses.
 export interface WhoisguardRenewResult {
-  whoisguardId: number;
-  years: number;
-  renew: boolean;
-  orderId: number;
-  transactionId: number;
-  chargedAmount: number;
+  whoisguardId?: number;
+  years?: number;
+  /** Omitted when the attribute is absent or not `true`/`false`. */
+  renew?: boolean;
+  orderId?: number;
+  transactionId?: number;
+  chargedAmount?: number;
+}
+
+function lenientBoolean(value: string | undefined): boolean | undefined {
+  return value === "true" ? true : value === "false" ? false : undefined;
 }
 
 const renew = defineCommand<WhoisguardRenewParams, WhoisguardRenewResult>({
   name: "namecheap.whoisguard.renew",
   parse: (cr) => {
-    const result = cr.one("WhoisguardRenewResult");
+    const result = cr.children()[0];
     return {
-      whoisguardId: result.number("WhoisguardId"),
-      years: result.number("Years"),
-      renew: result.boolean("Renew"),
-      orderId: result.number("OrderId"),
-      transactionId: result.number("TransactionId"),
-      chargedAmount: result.number("ChargedAmount"),
+      ...optionalField("whoisguardId", result?.optionalNumber("WhoisguardId")),
+      ...optionalField("years", result?.optionalNumber("Years")),
+      ...optionalField("renew", lenientBoolean(result?.optionalString("Renew"))),
+      ...optionalField("orderId", result?.optionalNumber("OrderId")),
+      ...optionalField("transactionId", result?.optionalNumber("TransactionId")),
+      ...optionalField("chargedAmount", result?.optionalNumber("ChargedAmount")),
     };
   },
 });

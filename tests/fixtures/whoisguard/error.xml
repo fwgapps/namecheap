@@ -1,5 +1,5 @@
 <!-- source: docs -->
-<!-- derived from tests/fixtures/transfer/error.xml: command name changed, error text for an unknown privacy subscription -->
+<!-- derived from tests/fixtures/transfer/error.xml: command name changed, error text for an unknown privacy subscription; error code 2011166 is a placeholder, not from any source -->
 <?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
 	<Errors>
