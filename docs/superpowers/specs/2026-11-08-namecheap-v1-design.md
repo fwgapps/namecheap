@@ -1,7 +1,7 @@
 # @fwgapps/namecheap 1.0 — Design
 
 Date: 2026-11-08
-Status: Draft, pending review
+Status: Approved; updated 2026-11-08 after reviewing the official Go SDK (POST transport, fixture sources)
 
 ## 1. Purpose and scope
 
@@ -19,6 +19,7 @@ Decisions agreed with the maintainer:
 | Public API | Free to break; released as 1.0.0 with a migration guide |
 | Runtimes | Node >= 20 and edge runtimes (Cloudflare Workers, Deno, Bun). No browser, no CDN/IIFE build |
 | Dependencies | Zero runtime dependencies. Own minimal XML parser |
+| Transport | Every command is an HTTP POST with an `application/x-www-form-urlencoded` body, as in the official Go SDK. Credentials never appear in the URL |
 | Coverage | Every command of every group, each covered by tests on XML fixtures |
 | Architecture | Declarative command table (see section 3) |
 | Language | Everything in the repository is written in English |
@@ -39,11 +40,12 @@ code generation from documentation.
 Flow of a call such as `client.domains.getList({ page: 2 })`:
 
 1. The public method looks up its command definition (`namecheap.domains.getList`).
-2. The serializer turns params into query pairs in PascalCase. POST commands send
-   the remaining params in the body as `RequestValues`.
-3. The transport builds the URL with `ApiUser`, `ApiKey`, `UserName`, `ClientIp`
-   and `Command`, then calls `fetch`. Network or non-2xx failures raise
-   `NamecheapHttpError`.
+2. The serializer turns params into `[name, value]` pairs in PascalCase.
+3. The transport sends an HTTP POST to the API host with a form-encoded body
+   holding `ApiUser`, `ApiKey`, `UserName`, `ClientIp`, `Command` and the
+   command's params, then calls `fetch`. The URL carries no query string.
+   Network or non-2xx failures raise `NamecheapHttpError`; HTTP 405 (which
+   Namecheap uses for rate limiting) is reported with `status` 405.
 4. The XML parser turns the response text into a node tree.
 5. The envelope check raises `NamecheapError` when `Status="ERROR"`.
 6. The command's `parse` function converts `CommandResponse` into a typed,
@@ -56,8 +58,8 @@ src/
   index.ts          exports Namecheap, errors, enums and types
   client.ts         Namecheap class: configuration and groups
   core/
-    transport.ts    URL building, GET/POST, injectable fetch, timeout
-    serialize.ts    params -> query pairs / RequestValues
+    transport.ts    form-encoded POST, injectable fetch, timeout
+    serialize.ts    params -> [name, value] pairs
     xml.ts          minimal XML parser
     envelope.ts     Status and error handling
     errors.ts       NamecheapError, NamecheapHttpError, NamecheapParseError
@@ -78,7 +80,6 @@ definitions plus the param and result types next to them.
 ```ts
 export const getList = defineCommand<GetListParams, GetListResult>({
   name: "namecheap.domains.getList",
-  http: "GET", // or "POST" with RequestValues
   parse: (cr) => ({
     domains: cr.all("Domain").map(parseDomain),
     paging: parsePaging(cr.one("Paging")),
@@ -89,6 +90,8 @@ export const getList = defineCommand<GetListParams, GetListResult>({
 - `<Params, Result>` are written by hand per command. Namecheap publishes no
   machine-readable schema, so the compiler guarantees that `parse` returns
   `Result` and that the public method accepts `Params`.
+- Dates are returned as the strings the API sends. Their formats differ per command
+  (`MM/DD/YYYY`, ISO without zone, date with time), so they are never converted.
 - `cr.all("Tag")` always returns an array, even for a single element. There is no
   global list of array paths.
 - The parser does not coerce values. Each field is read with `attr.string()`,
@@ -134,9 +137,11 @@ Tests (Vitest):
   (URL, method, body) and that the fixture XML becomes exactly the expected JSON.
   Each group also has at least one error fixture.
 - Fixtures live in `tests/fixtures/<group>/<command>.xml`. Each starts with a
-  comment declaring its origin: `source: docs` or `source: sandbox`.
+  comment declaring its origin: `source: go-namecheap-sdk` (copied from the official SDK,
+  Apache-2.0), `source: docs` (written by hand from the reference) or
+  `source: sandbox` (recorded from the Namecheap sandbox).
 - `scripts/record-fixtures` runs against the Namecheap sandbox on the
-  maintainer's machine and replaces `source: docs` fixtures. Credentials come
+  maintainer's machine and re-records fixtures; recorded ones become `source: sandbox`. Credentials come
   from environment variables only, and the script masks the API key in output.
 - CI fails below a coverage threshold, set during planning.
 
@@ -157,6 +162,7 @@ Tests (Vitest):
 - `MIGRATION.md` maps every 0.6 method and type to its 1.0 equivalent and lists
   changes in errors, return shapes and the removal of the browser/CDN build.
 - `README.md` is rewritten with examples that run.
+- `NOTICE` credits the fixtures copied from `namecheap/go-namecheap-sdk` (Apache-2.0).
 - `examples/express` stays as the REST bridge example, updated to the new API.
   It fixes the swapped `ssl` and `transfer` routers and maps `NamecheapError`
   to proper HTTP status codes instead of always returning 500.
@@ -168,16 +174,19 @@ Tests (Vitest):
 Command names, parameters and response fields enter the code only after they are
 checked against one of these sources, in this order:
 
-1. The official documentation at `https://www.namecheap.com/support/api/methods/`.
-   The site blocks automated clients with a Cloudflare challenge, so the
-   maintainer provides the pages. The list of methods is needed first, then the
-   page of each group when that group is implemented.
-2. Real responses recorded from the Namecheap sandbox (fixtures with
-   `source: sandbox`).
-3. The 0.6 source code, only as a hint, always flagged as unverified.
+1. The reference `docs/namecheap-api-v2.md` of the official Go SDK
+   (`namecheap/go-namecheap-sdk`, mirrored at `fwgapps/go-namecheap-sdk`,
+   Apache-2.0). It lists all 59 commands with typed parameters and states that
+   it is derived from `https://www.namecheap.com/support/api/methods/`, which
+   blocks automated clients with a Cloudflare challenge. The Go structs in
+   `namecheap/<group>_*.go` show response shapes.
+2. The 58 response fixtures in that SDK (`namecheaptest/fixtures/`), reused with
+   attribution.
+3. Real responses recorded from the Namecheap sandbox (`source: sandbox`).
+4. The 0.6 source code, only as a hint, always flagged as unverified.
 
-Open input needed from the maintainer before planning the commands:
+Out of scope unless the maintainer asks: the `allot`, `unallot` and `discard`
+WhoisGuard commands, which exist in the Go SDK but not in the reference's list.
 
-- The list of methods from the documentation index.
-- Whether sandbox credentials and an allowed IP are available for recording
-  fixtures.
+Open input needed from the maintainer: whether sandbox credentials and an
+allowed IP are available for recording fixtures (optional).

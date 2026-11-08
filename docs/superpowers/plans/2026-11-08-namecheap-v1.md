@@ -19,15 +19,17 @@
 - The parser never coerces values; commands read fields with `string`/`number`/`boolean` accessors.
 - No automatic retries anywhere.
 - No DTD or external entity support in the XML parser.
-- Command names, parameter names and response fields enter the code only after they are checked against the official documentation (provided by the maintainer, because `www.namecheap.com` blocks automated clients with a Cloudflare challenge) or against a recorded sandbox response. The 0.6 source (`git show 2cb5f7f:src/<path>`) is a hint only.
-- Every fixture's first line is a comment: `<!-- source: docs -->` or `<!-- source: sandbox -->`.
+- Command names, parameter names and response fields enter the code only after they are checked against the sources in spec section 6: the Go SDK reference `docs/namecheap-api-v2.md` (clone: `git clone --depth 1 https://github.com/fwgapps/go-namecheap-sdk`), its fixtures in `namecheaptest/fixtures/`, or a recorded sandbox response. The 0.6 source (`git show 2cb5f7f:src/<path>`) is a hint only.
+- Every command is sent as an HTTP POST with an `application/x-www-form-urlencoded` body; the URL has no query string and the API key never appears in it.
+- Every fixture's first line is a comment: `<!-- source: go-namecheap-sdk -->`, `<!-- source: docs -->` or `<!-- source: sandbox -->`.
+- `NOTICE` credits the fixtures copied from `namecheap/go-namecheap-sdk` (Apache-2.0).
 - The final rewrite commit carries a `BREAKING CHANGE:` footer so semantic-release goes from 0.6.0 to 1.0.0. Nothing is published to npm unless the maintainer asks.
 - Public client properties: `domains`, `dns`, `ns`, `transfer`, `ssl`, `users`, `usersAddress`, `whoisGuard`.
 
 ## Review Focus
 
 - A list command with zero results (empty `CommandResponse`) returns an empty array and never throws. Pinned in Task 10.
-- The API key never appears in any error message, `cause` text or stack-visible string, because it travels in the request URL. Pinned in Task 7.
+- The API key never appears in any error message, `cause` text, stack-visible string or URL; it is sent only in the POST body. Pinned in Task 7.
 - A 2xx response whose body is not Namecheap XML (an HTML gateway or challenge page, an empty body) raises `NamecheapParseError`, never a raw `TypeError`. Pinned in Tasks 3 and 6.
 - Several `<Error>` elements, or an error whose `Number` is not numeric, produce a `NamecheapError` that keeps all of them (`code` is `-1` when unparsable). Pinned in Task 6.
 - Numeric-looking text such as `007` or `00123` read as a string stays intact. Pinned in Task 4.
@@ -167,18 +169,17 @@ scripts/record-fixtures.mjs    sandbox recorder
 - Consumes: `readEnvelope`, `El`, `NamecheapHttpError`.
 - Produces:
   - `interface TransportConfig { apiUser: string; apiKey: string; userName?: string; clientIp: string; sandbox?: boolean; fetch?: typeof fetch; timeoutMs?: number }`
-  - `interface CommandRequest { command: string; http: "GET" | "POST"; query: Array<[string, string]>; body?: Array<[string, string]> }`
+  - `interface CommandRequest { command: string; params: Array<[string, string]> }`
   - `type Send = (req: CommandRequest) => Promise<El>`
-  - `function createTransport(config: TransportConfig): Send` — host is `https://api.sandbox.namecheap.com/xml.response` when `sandbox` is true, else `https://api.namecheap.com/xml.response`; `userName` defaults to `apiUser`; the URL always carries `ApiUser`, `ApiKey`, `UserName`, `ClientIp`, `Command`, then `query` pairs; POST sends `body` pairs as the request body.
+  - `function createTransport(config: TransportConfig): Send` — always `POST` to `https://api.sandbox.namecheap.com/xml.response` when `sandbox` is true, else `https://api.namecheap.com/xml.response`, with header `Content-Type: application/x-www-form-urlencoded` and a `URLSearchParams` body holding `ApiUser`, `ApiKey`, `UserName` (defaults to `apiUser`), `ClientIp`, `Command`, then `params`. The URL has no query string.
   - In `tests/helpers.ts`: `loadFixture(group: string, command: string): string` (reads `tests/fixtures/<group>/<command>.xml`). `createTestClient` is added in Task 9.
-- Network failure, abort/timeout or non-2xx → `NamecheapHttpError` with `cause` set when the failure came from `fetch`; messages never contain the URL.
+- Network failure, abort/timeout or non-2xx (HTTP 405 included, reported with `status 405`) → `NamecheapHttpError`, with `cause` set when the failure came from `fetch`; messages never contain the URL or the API key.
 
-- [ ] **Step 1: Verify the POST format against the documentation.** Ask the maintainer for the POST section of the Namecheap API documentation (spec section 3 says `RequestValues`; the 0.6 code sends `JSON.stringify({request: {RequestValues: [{Key, Value}]}})`, unverified). Record the documented body format and `Content-Type` in the spec if it differs, then use it below. Do not guess.
-- [ ] **Step 2: Write failing tests** with a fake `fetch`: GET URL contains the five base params and the query pairs, host switches on `sandbox`, `userName` defaults to `apiUser`; POST uses method `POST` with the documented body; a 502 response throws `NamecheapHttpError` with `status 502`; a rejecting `fetch` throws `NamecheapHttpError` with `cause` set and `status undefined`; `timeoutMs: 5` with a fetch that never resolves until its `signal` aborts throws `NamecheapHttpError`; for every failure above, `error.message`, `String(error.cause)` and `error.stack` do not contain the API key `"SECRET-KEY"`; a 200 response with body `<html>blocked</html>` rejects with `NamecheapParseError`.
-- [ ] **Step 3:** Run `yarn vitest run tests/core/transport.test.ts`. Expected: FAIL.
-- [ ] **Step 4:** Implement `createTransport` and `loadFixture` in `tests/helpers.ts`.
-- [ ] **Step 5:** Run the same command. Expected: PASS.
-- [ ] **Step 6:** `git add src/core/transport.ts tests/helpers.ts tests/core/transport.test.ts && git commit -m "feat(core): add transport"`
+- [ ] **Step 1: Write failing tests** with a fake `fetch`: the call is a `POST` to exactly the production host (no `?`), with the form content type; the body contains the five base params and the command's params; `sandbox: true` switches the host; `userName` defaults to `apiUser`; a 502 response throws `NamecheapHttpError` with `status 502`; a 405 response throws with `status 405`; a rejecting `fetch` throws with `cause` set and `status undefined`; `timeoutMs: 5` with a fetch that only settles on `signal` abort throws `NamecheapHttpError`; for every failure above, `error.message`, `String(error.cause)` and `error.stack` do not contain the API key `"SECRET-KEY"`; a 200 response with body `<html>blocked</html>` rejects with `NamecheapParseError`.
+- [ ] **Step 2:** Run `yarn vitest run tests/core/transport.test.ts`. Expected: FAIL.
+- [ ] **Step 3:** Implement `createTransport` and `loadFixture` in `tests/helpers.ts`.
+- [ ] **Step 4:** Run the same command. Expected: PASS.
+- [ ] **Step 5:** `git add src/core/transport.ts tests/helpers.ts tests/core/transport.test.ts && git commit -m "feat(core): add transport"`
 
 ### Task 8: defineCommand and group
 
@@ -187,13 +188,13 @@ scripts/record-fixtures.mjs    sandbox recorder
 **Interfaces:**
 - Consumes: `serializeParams`, `Send`, `El`.
 - Produces:
-  - `interface CommandDef<P, R> { name: string; http: "GET" | "POST"; arrayStyle?: ArrayStyle; keys?: Readonly<Record<string, string>>; parse: (cr: El) => R }`
+  - `interface CommandDef<P, R> { name: string; arrayStyle?: ArrayStyle; keys?: Readonly<Record<string, string>>; parse: (cr: El) => R }`
   - `interface Command<P, R> extends CommandDef<P, R> { readonly _params?: P }`
   - `function defineCommand<P, R>(def: CommandDef<P, R>): Command<P, R>`
   - `type Group<C> = { [K in keyof C]: C[K] extends Command<infer P, infer R> ? ({} extends P ? (params?: P) => Promise<R> : (params: P) => Promise<R>) : never }`
-  - `function group<C extends Record<string, Command<any, any>>>(commands: C, send: Send): Group<C>` — each method serializes `params` with the command's `arrayStyle`/`keys`; GET puts everything in `query`; POST puts everything in `body`; the result is `command.parse(await send(req))`.
+  - `function group<C extends Record<string, Command<any, any>>>(commands: C, send: Send): Group<C>` — each method serializes `params` with the command's `arrayStyle`/`keys`, calls `send({ command: name, params })` and resolves to `command.parse(await send(...))`.
 
-- [ ] **Step 1: Write failing tests**: a GET command called with `{domainName: "a.com"}` makes `send` receive `{command, http: "GET", query: [["DomainName","a.com"]]}` and the method resolves to `parse`'s return; a POST command puts the pairs in `body` and leaves `query` empty; a command whose params are all optional can be called with no argument (`expectTypeOf` on the method signature); a command with required params rejects a call without them at type level (`// @ts-expect-error`).
+- [ ] **Step 1: Write failing tests**: a command called with `{domainName: "a.com"}` makes `send` receive `{command: "namecheap.x.y", params: [["DomainName","a.com"]]}` and the method resolves to `parse`'s return; `arrayStyle: "suffix"` and `keys` are honored; a command whose params are all optional can be called with no argument (`expectTypeOf` on the method signature); a command with required params rejects a call without them at type level (`// @ts-expect-error`).
 - [ ] **Step 2:** Run `yarn vitest run tests/core/define.test.ts`. Expected: FAIL.
 - [ ] **Step 3:** Implement `defineCommand` (identity with typing) and `group`.
 - [ ] **Step 4:** Run the same command, then `yarn typecheck`. Expected: PASS and exit 0.
@@ -205,7 +206,7 @@ scripts/record-fixtures.mjs    sandbox recorder
 
 **Interfaces:**
 - Consumes: `createTransport`, `group`, the 8 `commands/*` objects (each exports `<name>Commands`, see Group Task Procedure).
-- Produces: `createTestClient(xml: string, init?: { status?: number }): { client: Namecheap; calls: Array<{ url: URL; query: URLSearchParams; method: string; body: string | undefined }> }` in `tests/helpers.ts` (a `Namecheap` with a fake `fetch` returning `xml`), and `class Namecheap` with constructor `(config: TransportConfig)` and readonly properties `domains`, `dns`, `ns`, `transfer`, `ssl`, `users`, `usersAddress`, `whoisGuard`, each `group(<commands>, send)`. `src/index.ts` exports `Namecheap` (default and named), the three error classes, and `export *` of each group's enums and types.
+- Produces: `createTestClient(xml: string, init?: { status?: number }): { client: Namecheap; calls: Array<{ url: string; method: string; headers: Headers; body: URLSearchParams }> }` in `tests/helpers.ts` (a `Namecheap` with a fake `fetch` returning `xml`), and `class Namecheap` with constructor `(config: TransportConfig)` and readonly properties `domains`, `dns`, `ns`, `transfer`, `ssl`, `users`, `usersAddress`, `whoisGuard`, each `group(<commands>, send)`. `src/index.ts` exports `Namecheap` (default and named), the three error classes, and `export *` of each group's enums and types.
 
 - [ ] **Step 1:** Create empty command objects first so the client compiles: each `src/commands/<group>.ts` exports `export const <group>Commands = {};` (Tasks 10-17 fill them).
 - [ ] **Step 2: Write failing test** `tests/client.test.ts`: `new Namecheap({apiUser:"u", apiKey:"k", clientIp:"1.1.1.1"})` has the eight properties defined; importing `{ Namecheap, NamecheapError, NamecheapHttpError, NamecheapParseError }` from `../src` works. Run `yarn vitest run tests/client.test.ts`. Expected: FAIL.
@@ -215,23 +216,22 @@ scripts/record-fixtures.mjs    sandbox recorder
 
 ## Group Task Procedure (used by Tasks 10-17)
 
-Each group task starts with a documentation gate and then repeats one loop per command.
+Each group task starts with a source gate and then repeats one loop per command. Sources are in spec section 6; the SDK clone is `git clone --depth 1 https://github.com/fwgapps/go-namecheap-sdk`.
 
-0. **Gate.** Ask the maintainer for the documentation page of the group (and the group's entry in the methods list). Compare it with the hint list in the task. Commands in the docs but not in the hint list are added; hint commands absent from the docs are dropped. Do not continue without the page. Record in the task's commit message which commands were added or dropped relative to 0.6.
-1. **Fixture.** Create `tests/fixtures/<group>/<command>.xml` from the documented sample response, first line `<!-- source: docs -->`. Replace `source: docs` by `source: sandbox` only when `scripts/record-fixtures.mjs` re-records it.
+0. **Gate.** Read the group's section in the SDK's `docs/namecheap-api-v2.md` (parameters, types, required flags) and the Go structs in `namecheap/<group>_*.go` (response shapes, which elements are lists). If something is missing or ambiguous, ask the maintainer; do not guess. The hint list in the task was already confirmed against the reference; record in the commit message any command found in the reference but not in the task.
+1. **Fixture.** Copy `namecheaptest/fixtures/<sdk name>.xml` to `tests/fixtures/<group>/<command>.xml` with the first line `<!-- source: go-namecheap-sdk -->`. If the SDK has none for the command, write one from the documented sample with `<!-- source: docs -->`. `scripts/record-fixtures.mjs` later turns either into `source: sandbox`.
 2. **Failing test** in `tests/<group>.test.ts`:
    ```ts
    it("<command> sends the documented request and parses the fixture", async () => {
      const { client, calls } = createTestClient(loadFixture("<group>", "<command>"));
      const result = await client.<property>.<method>(<documented example params>);
-     expect(calls[0].query.get("Command")).toBe("<documented command name>");
-     expect(calls[0].method).toBe("<GET|POST>");
-     expect(calls[0].query.get("<DocumentedParam>")).toBe("<value>"); // one assertion per documented param
+     expect(calls[0].body.get("Command")).toBe("<documented command name>");
+     expect(calls[0].body.get("<DocumentedParam>")).toBe("<value>"); // one assertion per documented param
      expect(result).toEqual(<object written by hand from the fixture>);
    });
    ```
 3. Run `yarn vitest run tests/<group>.test.ts -t "<command>"`. Expected: FAIL (`client.<property>.<method>` is not a function).
-4. **Implement** in `src/commands/<group>.ts`: the params interface, the result interface, a `defineCommand<Params, Result>` entry in `<group>Commands`, and any enum the docs define. Add to `ACRONYMS` (Task 5) any acronym the docs' parameter names require, with a test line in `tests/core/serialize.test.ts`.
+4. **Implement** in `src/commands/<group>.ts`: the params interface, the result interface, a `defineCommand<Params, Result>` entry in `<group>Commands`, and any enum the reference defines. Dates stay `string`. Add to `ACRONYMS` (Task 5) any acronym the parameter names require, with a test line in `tests/core/serialize.test.ts`.
 5. Run the same command. Expected: PASS.
 
 After the last command of a group:
@@ -247,8 +247,9 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `domainsCommands`, exposed as `client.domains`.
-- Hint (0.6, unverified): `getList`, `getContacts`, `create`, `getTldList`, `setContacts`, `check`, `reactivate`, `renew`, `getRegistrarLock`, `setRegistrarLock`, `getInfo`.
+- Commands (confirmed by the SDK reference): `getList`, `getContacts`, `create`, `getTldList`, `setContacts`, `check`, `reactivate`, `renew`, `getRegistrarLock`, `setRegistrarLock`, `getInfo`.
 
+- [ ] Create `NOTICE` (once, in the repository root) stating that the fixtures marked `source: go-namecheap-sdk` are copied from `namecheap/go-namecheap-sdk`, licensed under Apache-2.0, with the license URL.
 - [ ] Follow the Group Task Procedure for every command. For `getList`, also add a fixture with an empty result and a test that `result` is an empty list (not an exception) and `paging` still parses; for `check`, a fixture with a single `DomainCheckResult` and one with several, both producing arrays.
 
 ### Task 11: Domains DNS
@@ -257,7 +258,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `dnsCommands`, exposed as `client.dns`.
-- Hint (0.6, unverified): `setDefault`, `setCustom`, `getList`, `getHosts`, `getEmailForwarding`, `setEmailForwarding`, `setHosts`.
+- Commands (confirmed by the SDK reference): `setDefault`, `setCustom`, `getList`, `getHosts`, `getEmailForwarding`, `setEmailForwarding`, `setHosts`.
 
 - [ ] Follow the Group Task Procedure. For `setHosts` and `setEmailForwarding`, assert the array style the docs show (`arrayStyle` on the definition) and add a test with at least 3 records.
 
@@ -267,7 +268,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `nsCommands`, exposed as `client.ns`.
-- Hint (0.6, unverified): `create`, `delete`, `getInfo`, `update`.
+- Commands (confirmed by the SDK reference): `create`, `delete`, `getInfo`, `update`.
 
 - [ ] Follow the Group Task Procedure.
 
@@ -277,7 +278,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `transferCommands`, exposed as `client.transfer`.
-- Hint (0.6, unverified): `create`, `getStatus`, `updateStatus`, `getList`.
+- Commands (confirmed by the SDK reference): `create`, `getStatus`, `updateStatus`, `getList`.
 
 - [ ] Follow the Group Task Procedure.
 
@@ -287,7 +288,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `sslCommands`, exposed as `client.ssl`.
-- Hint (0.6, unverified): `create`, `getList`, `parseCSR`, `getApproverEmailList`, `activate`, `resendApproverEmail`, `getInfo`, `renew`, `reissue`, `resendFulfillmentEmail`, `purchaseMoreSans`, `revokeCertificate`, `editDCVMethod`. The 0.6 names for the last four are all-lowercase in the command string; follow the docs' exact spelling.
+- Commands (confirmed by the SDK reference): `create`, `getList`, `parseCSR`, `getApproverEmailList`, `activate`, `resendApproverEmail`, `getInfo`, `renew`, `reissue`, `resendFulfillmentEmail`, `purchaseMoreSans`, `revokeCertificate`, `editDCVMethod`. The reference spells several in all-lowercase (e.g. `namecheap.ssl.resendfulfillmentemail`); keep its spelling in `name`.
 
 - [ ] Follow the Group Task Procedure.
 
@@ -297,7 +298,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `usersCommands`, exposed as `client.users`.
-- Hint (0.6, unverified): `getPricing`, `getBalances`, `changePassword`, `update`, `createAddFundsRequest`, `getAddFundsStatus`, `create`, `login`, `resetPassword`.
+- Commands (confirmed by the SDK reference): `getPricing`, `getBalances`, `changePassword`, `update`, `createAddFundsRequest`, `getAddFundsStatus`, `create`, `login`, `resetPassword`.
 
 - [ ] Follow the Group Task Procedure. For `getPricing`, include a fixture with nested product categories and prices and assert every level is an array in the result.
 
@@ -307,7 +308,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `usersAddressCommands`, exposed as `client.usersAddress`.
-- Hint (0.6, unverified): `create`, `delete`, `getInfo`, `getList`, `setDefault`, `update`.
+- Commands (confirmed by the SDK reference): `create`, `delete`, `getInfo`, `getList`, `setDefault`, `update`.
 
 - [ ] Follow the Group Task Procedure.
 
@@ -317,7 +318,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Produces: `whoisGuardCommands`, exposed as `client.whoisGuard`.
-- Hint (0.6, unverified): `changeEmailAddress`, `enable`, `disable`, `getList`, `renew`. The 0.6 command strings are all-lowercase for three of them; follow the docs' exact spelling.
+- Commands (confirmed by the SDK reference): `changeEmailAddress`, `enable`, `disable`, `getList`, `renew`. The reference spells them all-lowercase (e.g. `namecheap.whoisguard.getlist`); keep its spelling in `name`. `allot`, `unallot` and `discard` exist only in the Go SDK and are out of scope unless the maintainer asks.
 
 - [ ] Follow the Group Task Procedure.
 
@@ -327,7 +328,7 @@ After the last command of a group:
 
 **Interfaces:**
 - Consumes: environment variables `NAMECHEAP_API_USER`, `NAMECHEAP_API_KEY`, `NAMECHEAP_CLIENT_IP`.
-- Produces: a zero-dependency Node ESM script. Input: a JSON file path argument listing `{ "fixture": "domains/getList", "command": "namecheap.domains.getList", "params": {"Page": "1"} }` entries (params already in Namecheap's PascalCase). Output: for each entry, `tests/fixtures/<fixture>.xml` whose first line is `<!-- source: sandbox -->`. It always calls `https://api.sandbox.namecheap.com/xml.response`; the host is a constant and cannot be changed by flag or env.
+- Produces: a zero-dependency Node ESM script. Input: a JSON file path argument listing `{ "fixture": "domains/getList", "command": "namecheap.domains.getList", "params": {"Page": "1"} }` entries (params already in Namecheap's PascalCase). Output: for each entry, `tests/fixtures/<fixture>.xml` whose first line is `<!-- source: sandbox -->`. It always sends a form-encoded POST (same as the library) to `https://api.sandbox.namecheap.com/xml.response`; the host is a constant and cannot be changed by flag or env.
 
 - [ ] **Step 1: Write failing tests** in `tests/scripts/record-fixtures.test.ts` against exported pure helpers (`buildRequestUrl(entry, env)`, `maskSecrets(text, env)`): the URL host is the sandbox host; the output of `maskSecrets` contains no occurrence of the API key; a missing env var throws a clear error.
 - [ ] **Step 2:** Run `yarn vitest run tests/scripts/record-fixtures.test.ts`. Expected: FAIL.
