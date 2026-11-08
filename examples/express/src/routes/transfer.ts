@@ -1,58 +1,52 @@
 import { Router } from "express";
-import { DomainTransferListType, DomainTransferSortBy } from "@fwgapps/namecheap";
-
+import type { TransferCreateParams } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
+import { bodyOf, numericParam, optionalBodyBoolean, pickQuery } from "../util/params";
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
-    const { domain, ...params } = req.body;
-    const response = await namecheap.domainsTransfer.create(domain, params);
-
-    res.json(response);
+    res.json(
+      await namecheap.transfer.create(
+        bodyOf<TransferCreateParams>(req, ["domainName", "years", "eppCode"]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/status/:id", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const response = await namecheap.domainsTransfer.getStatus(+id);
-    res.json(response);
+    const params = pickQuery(req.query, ["listType", "searchTerm", "sortBy"], ["page", "pageSize"]);
+    res.json(await namecheap.transfer.getList(params));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/status/:id", async (req, res) => {
+router.get("/status/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { resubmit } = req.body;
-
-    const response = await namecheap.domainsTransfer.updateStatus(+id, !!resubmit);
-    res.json(response);
+    const transferID = numericParam(req.params.id, "id");
+    res.json(await namecheap.transfer.getStatus({ transferID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/", async (req, res) => {
+// Body: { "resubmit": true }
+router.put("/status/:id", async (req, res, next) => {
   try {
-    const { listType, page, pageSize, sortBy } = req.query;
-
-    const response = await namecheap.domainsTransfer.getList({
-      listType: listType as DomainTransferListType,
-      page: +(page || 1),
-      pageSize: +(pageSize || 10),
-      sortBy: sortBy as DomainTransferSortBy,
-    });
-
-    res.json(response);
+    const transferID = numericParam(req.params.id, "id");
+    res.json(
+      await namecheap.transfer.updateStatus({
+        transferID,
+        resubmit: optionalBodyBoolean(req, "resubmit"),
+      }),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 

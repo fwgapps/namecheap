@@ -1,175 +1,171 @@
 import { Router } from "express";
-import { SSLListType, SSLListSortBy, SSLType } from "@fwgapps/namecheap";
-
+import type {
+  SslActivateParams,
+  SslCreateParams,
+  SslEditDcvMethodParams,
+  SslReissueParams,
+  SslRenewParams,
+} from "@fwgapps/namecheap";
+import { BadRequestError } from "../middleware/errors";
 import namecheap from "../services/namecheap";
+import {
+  bodyNumber,
+  bodyOf,
+  bodyString,
+  optionalBodyString,
+  numericParam,
+  pickQuery,
+  requiredString,
+} from "../util/params";
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
-    const params = req.body;
-    const response = await namecheap.ssl.create(params);
-
-    res.json(response);
+    bodyString(req, "type");
+    bodyNumber(req, "years");
+    res.json(await namecheap.ssl.create(bodyOf<SslCreateParams>(req, ["years", "type"])));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const { listType, page, pageSize, sortBy } = req.query;
-
-    const response = await namecheap.ssl.getList({
-      listType: listType as SSLListType,
-      page: +(page || 1),
-      pageSize: +(pageSize || 10),
-      sortBy: sortBy as SSLListSortBy,
-    });
-
-    res.json(response);
+    const params = pickQuery(req.query, ["listType", "searchTerm", "sortBy"], ["page", "pageSize"]);
+    res.json(await namecheap.ssl.getList(params));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/csr/:csr", async (req, res) => {
+// The CSR is sent in the body (it is long and multi-line): POST, read-only on the API side.
+router.post("/parseCsr", async (req, res, next) => {
   try {
-    const { csr } = req.params;
-    const { certificateType } = req.query;
-
-    const response = await namecheap.ssl.parseCSR(csr, certificateType as SSLType);
-
-    res.json(response);
+    const csr = bodyString(req, "csr");
+    const certificateType = optionalBodyString(req, "certificateType");
+    res.json(
+      await namecheap.ssl.parseCSR({ csr, ...(certificateType ? { certificateType } : {}) }),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/approverEmails/:domain", async (req, res) => {
+router.get("/approverEmails/:domain", async (req, res, next) => {
   try {
-    const { domain } = req.params;
-    const { certificateType } = req.query;
-
-    const response = await namecheap.ssl.getApproverEmailList(domain, certificateType as SSLType);
-
-    res.json(response);
+    const certificateType = requiredString(req.query, "certificateType");
+    res.json(
+      await namecheap.ssl.getApproverEmailList({ domainName: req.params.domain, certificateType }),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/activate/:id", async (req, res) => {
+router.get("/info/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const params = req.body;
-
-    const response = await namecheap.ssl.activate(+id, params);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    res.json(await namecheap.ssl.getInfo({ certificateID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/resendApproverEmail/:id", async (req, res) => {
+router.post("/activate/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const response = await namecheap.ssl.resendApproverEmail(+id);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    bodyString(req, "csr");
+    bodyString(req, "adminEmailAddress");
+    const body = bodyOf<Omit<SslActivateParams, "certificateID">>(req, [
+      "csr",
+      "adminEmailAddress",
+    ]);
+    res.json(await namecheap.ssl.activate({ ...body, certificateID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/info/:id", async (req, res) => {
+router.post("/resendApproverEmail/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const response = await namecheap.ssl.getInfo(+id);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    res.json(await namecheap.ssl.resendApproverEmail({ certificateID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/renew/:id", async (req, res) => {
+router.post("/resendFulfillmentEmail/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const params = req.body;
-
-    const response = await namecheap.ssl.renew(+id, params);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    res.json(await namecheap.ssl.resendFulfillmentEmail({ certificateID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/reissue/:id", async (req, res) => {
+router.post("/renew/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const params = req.body;
-
-    const response = await namecheap.ssl.reissue(+id, params);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    bodyNumber(req, "years");
+    bodyString(req, "sslType");
+    const body = bodyOf<Omit<SslRenewParams, "certificateID">>(req, ["years", "sslType"]);
+    res.json(await namecheap.ssl.renew({ ...body, certificateID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/resendFulfillmentEmail/:id", async (req, res) => {
+router.post("/reissue/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const response = await namecheap.ssl.resendFulfillmentEmail(+id);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    bodyString(req, "csr");
+    const body = bodyOf<Omit<SslReissueParams, "certificateID">>(req, ["csr"]);
+    res.json(await namecheap.ssl.reissue({ ...body, certificateID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/purchaseMoreSANS/:id", async (req, res) => {
+// Body: { "numberOfSansToAdd": 2 }
+router.post("/purchaseMoreSans/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { numberOfSANSToAdd } = req.body;
-
-    const response = await namecheap.ssl.purchaseMoreSANS(+id, numberOfSANSToAdd);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    const numberOfSansToAdd = bodyNumber(req, "numberOfSansToAdd");
+    res.json(await namecheap.ssl.purchaseMoreSans({ certificateID, numberOfSansToAdd }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.delete("/certificate/:id", async (req, res) => {
+router.post("/dcvMethod/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { certificateType } = req.query;
-
-    const response = await namecheap.ssl.revokeCertificate(+id, certificateType as SSLType);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    const dcvMethod = optionalBodyString(req, "dcvMethod");
+    const dnsNames = optionalBodyString(req, "dnsNames");
+    const dcvMethods = optionalBodyString(req, "dcvMethods");
+    let params: SslEditDcvMethodParams;
+    if (dcvMethod !== undefined && dnsNames === undefined && dcvMethods === undefined) {
+      params = { certificateID, dcvMethod };
+    } else if (dcvMethod === undefined && dnsNames !== undefined && dcvMethods !== undefined) {
+      params = { certificateID, dnsNames, dcvMethods };
+    } else {
+      throw new BadRequestError("Provide either dcvMethod, or both dnsNames and dcvMethods");
+    }
+    res.json(await namecheap.ssl.editDCVMethod(params));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/dcvMethod/:id", async (req, res) => {
+router.delete("/certificate/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const params = req.body;
-
-    const response = await namecheap.ssl.editDCVMethod(+id, params);
-
-    res.json(response);
+    const certificateID = numericParam(req.params.id, "id");
+    const certificateType = requiredString(req.query, "certificateType");
+    res.json(await namecheap.ssl.revokeCertificate({ certificateID, certificateType }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 

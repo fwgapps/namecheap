@@ -1,110 +1,145 @@
 import { Router } from "express";
-import { UserProductType } from "@fwgapps/namecheap";
-
+import type {
+  UsersChangePasswordParams,
+  UsersCreateAddFundsRequestParams,
+  UsersCreateParams,
+  UsersLoginParams,
+  UsersResetPasswordParams,
+  UsersUpdateParams,
+} from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
+import { BadRequestError } from "../middleware/errors";
+import { bodyOf, bodyString, optionalBodyString, pickQuery } from "../util/params";
 
 const router = Router();
 
-router.get("/pricing/:productType", async (req, res) => {
+router.get("/balances", async (_req, res, next) => {
   try {
-    const { productType } = req.params;
-    const params = req.query;
-
-    const response = await namecheap.users.getPricing({
-      ...params,
-      productType: productType as UserProductType,
-    });
-
-    res.json(response);
+    res.json(await namecheap.users.getBalances());
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/balances", async (req, res) => {
+router.get("/pricing/:productType", async (req, res, next) => {
   try {
-    const response = await namecheap.users.getBalances();
-    res.json(response);
+    const params = pickQuery(req.query, [
+      "productCategory",
+      "promotionCode",
+      "actionName",
+      "productName",
+    ]);
+    res.json(await namecheap.users.getPricing({ ...params, productType: req.params.productType }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/password", async (req, res) => {
+router.get("/addFundsStatus/:tokenId", async (req, res, next) => {
   try {
-    const { oldPassword, newPassword } = req.body;
-
-    const response = await namecheap.users.changePassword(oldPassword, newPassword);
-    res.json(response);
+    res.json(await namecheap.users.getAddFundsStatus({ tokenId: req.params.tokenId }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/", async (req, res) => {
+// Body: { "paymentType": "Creditcard", "amount": 10, "returnUrl": "https://..." }
+router.post("/addFundsRequest", async (req, res, next) => {
   try {
-    const params = req.body;
-
-    const response = await namecheap.users.update(params);
-    res.json(response);
+    res.json(
+      await namecheap.users.createAddFundsRequest(
+        bodyOf<UsersCreateAddFundsRequestParams>(req, ["paymentType", "amount", "returnUrl"]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/addFundsRequest/:username", async (req, res) => {
+router.put("/", async (req, res, next) => {
   try {
-    const { username } = req.params;
-    const params = req.body;
-
-    const response = await namecheap.users.createAddFundsRequest(username, params);
-    res.json(response);
+    res.json(
+      await namecheap.users.update(
+        bodyOf<UsersUpdateParams>(req, [
+          "firstName",
+          "lastName",
+          "address1",
+          "city",
+          "stateProvince",
+          "zip",
+          "country",
+          "emailAddress",
+          "phone",
+        ]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/addFundsStatus/:tokenId", async (req, res) => {
+// Secrets (passwords, reset codes) are accepted in the JSON body only, never in the query string.
+// Body: { "oldPassword", "newPassword" } or { "resetCode", "newPassword" }
+router.put("/password", async (req, res, next) => {
   try {
-    const { tokenId } = req.params;
-
-    const response = await namecheap.users.getAddFundsStatus(tokenId);
-    res.json(response);
+    const newPassword = bodyString(req, "newPassword");
+    const oldPassword = optionalBodyString(req, "oldPassword");
+    const resetCode = optionalBodyString(req, "resetCode");
+    if ((oldPassword === undefined) === (resetCode === undefined)) {
+      throw new BadRequestError("Send exactly one body field: oldPassword or resetCode");
+    }
+    const params: UsersChangePasswordParams =
+      oldPassword !== undefined
+        ? { oldPassword, newPassword }
+        : { resetCode: resetCode!, newPassword };
+    res.json(await namecheap.users.changePassword(params));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
-    const params = req.body;
-
-    const response = await namecheap.users.create(params);
-    res.json(response);
+    res.json(
+      await namecheap.users.create(
+        bodyOf<UsersCreateParams>(req, [
+          "newUserName",
+          "newUserPassword",
+          "emailAddress",
+          "firstName",
+          "lastName",
+          "acceptTerms",
+          "city",
+          "stateProvince",
+          "zip",
+          "country",
+          "phone",
+        ]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/login", async (req, res) => {
+// Body: { "password" }
+router.post("/login", async (req, res, next) => {
   try {
-    const { password } = req.body;
-
-    const response = await namecheap.users.login(password);
-    res.json(response);
+    res.json(await namecheap.users.login(bodyOf<UsersLoginParams>(req, ["password"])));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/resetPassword", async (req, res) => {
+router.post("/resetPassword", async (req, res, next) => {
   try {
-    const params = req.body;
-
-    const response = await namecheap.users.resetPassword(params);
-    res.json(response);
+    res.json(
+      await namecheap.users.resetPassword(
+        bodyOf<UsersResetPasswordParams>(req, ["findBy", "findByValue"]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 

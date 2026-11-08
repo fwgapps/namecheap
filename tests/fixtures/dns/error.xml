@@ -1,0 +1,13 @@
+<!-- source: docs -->
+<!-- derived from namecheap/go-namecheap-sdk docs/namecheap-api-v2.md (Apache-2.0): error shape and code 2019166 from the domains.dns.setDefault error table -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
+	<Errors>
+		<Error Number="2019166">Domain not found</Error>
+	</Errors>
+	<Warnings />
+	<RequestedCommand>namecheap.domains.dns.setDefault</RequestedCommand>
+	<Server>PHX01SBAPIEXT06</Server>
+	<GMTTimeDifference>--4:00</GMTTimeDifference>
+	<ExecutionTime>0.003</ExecutionTime>
+</ApiResponse>

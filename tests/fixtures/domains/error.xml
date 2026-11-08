@@ -1,0 +1,13 @@
+<!-- source: docs -->
+<!-- derived from namecheap/go-namecheap-sdk namecheap/domains_ns_create_test.go (Apache-2.0): error shape and code 2019166 -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
+	<Errors>
+		<Error Number="2019166">Domain not found</Error>
+	</Errors>
+	<Warnings />
+	<RequestedCommand>namecheap.domains.getContacts</RequestedCommand>
+	<Server>PHX01SBAPIEXT06</Server>
+	<GMTTimeDifference>--4:00</GMTTimeDifference>
+	<ExecutionTime>0.003</ExecutionTime>
+</ApiResponse>

@@ -1,17 +1,16 @@
 import { defineConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 const ignorePaths = [
-  "examples/**/*",
+  "examples/**",
   "node_modules",
   "dist",
+  "scripts",
   "vitest.config.ts",
   "eslint.config.ts",
   "tsup.config.ts",
 ];
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
   root: ".",
   test: {
     exclude: ignorePaths,
@@ -20,7 +19,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
+      // Measure the published code only; test helpers and fixtures are not part of the package.
+      include: ["src/**/*.ts"],
       exclude: ignorePaths,
+      thresholds: { lines: 95, functions: 95, statements: 95, branches: 90 },
     },
   },
 });

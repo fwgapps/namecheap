@@ -1,0 +1,15 @@
+<!-- source: docs -->
+<!-- derived from namecheap/go-namecheap-sdk namecheaptest/fixtures/domains_transfer_getList.xml (Apache-2.0): removed both transfers, empty result element, totals zeroed -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<RequestedCommand>namecheap.domains.transfer.getList</RequestedCommand>
+	<CommandResponse Type="namecheap.domains.transfer.getList">
+		<TransferGetListResult />
+		<Paging>
+			<TotalItems>0</TotalItems>
+			<CurrentPage>1</CurrentPage>
+			<PageSize>10</PageSize>
+		</Paging>
+	</CommandResponse>
+</ApiResponse>

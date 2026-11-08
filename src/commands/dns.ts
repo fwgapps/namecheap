@@ -1,0 +1,321 @@
+import { defineCommand } from "../core/define";
+import type { El } from "../core/element";
+import { optionalField } from "../core/fields";
+
+// ---------------------------------------------------------------------------
+// namecheap.domains.dns.setDefault
+// ---------------------------------------------------------------------------
+
+export interface DnsSetDefaultParams {
+  /** SLD of the domain name. */
+  sld: string;
+  /** TLD of the domain name. */
+  tld: string;
+}
+
+export interface DnsSetDefaultResult {
+  domain: string;
+  updated: boolean;
+}
+
+const setDefault = /* @__PURE__ */ defineCommand<DnsSetDefaultParams, DnsSetDefaultResult>({
+  name: "namecheap.domains.dns.setDefault",
+  parse: (cr) => {
+    const result = cr.one("DomainDNSSetDefaultResult");
+    return { domain: result.string("Domain"), updated: result.boolean("Updated") };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// namecheap.domains.dns.setCustom
+// ---------------------------------------------------------------------------
+
+export interface DnsSetCustomParams {
+  sld: string;
+  tld: string;
+  /** Comma-separated list of nameservers. */
+  nameservers: string;
+}
+
+export interface DnsSetCustomResult {
+  domain: string;
+  updated: boolean;
+}
+
+const setCustom = /* @__PURE__ */ defineCommand<DnsSetCustomParams, DnsSetCustomResult>({
+  name: "namecheap.domains.dns.setCustom",
+  parse: (cr) => {
+    const result = cr.one("DomainDNSSetCustomResult");
+    return { domain: result.string("Domain"), updated: result.boolean("Updated") };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// namecheap.domains.dns.getList
+// ---------------------------------------------------------------------------
+
+export interface DnsGetListParams {
+  sld: string;
+  tld: string;
+}
+
+export interface DnsGetListResult {
+  domain: string;
+  isUsingOurDNS: boolean;
+  /** Present in recorded responses, not in the reference. */
+  isPremiumDNS?: boolean;
+  /** Present in recorded responses, not in the reference. */
+  isUsingFreeDNS?: boolean;
+  /** Taken from the recorded responses (not in the reference's response table); empty when none are listed. */
+  nameservers: string[];
+}
+
+const getList = /* @__PURE__ */ defineCommand<DnsGetListParams, DnsGetListResult>({
+  name: "namecheap.domains.dns.getList",
+  parse: (cr) => {
+    const result = cr.one("DomainDNSGetListResult");
+    return {
+      domain: result.string("Domain"),
+      isUsingOurDNS: result.boolean("IsUsingOurDNS"),
+      ...optionalField("isPremiumDNS", result.optionalBoolean("IsPremiumDNS")),
+      ...optionalField("isUsingFreeDNS", result.optionalBoolean("IsUsingFreeDNS")),
+      nameservers: result.all("Nameserver").map((ns) => ns.text()),
+    };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// namecheap.domains.dns.getHosts
+// ---------------------------------------------------------------------------
+
+export interface DnsGetHostsParams {
+  sld: string;
+  tld: string;
+}
+
+export interface DnsHost {
+  /** The reference spells the attribute `HostID`; responses carry `HostId`. */
+  hostId: number;
+  name: string;
+  type: string;
+  address: string;
+  mxPref: number;
+  ttl: number;
+  /** Present in recorded responses, not in the reference. */
+  associatedAppTitle?: string;
+  /** Present in recorded responses, not in the reference. */
+  friendlyName?: string;
+  /** Present in recorded responses, not in the reference. */
+  isActive?: boolean;
+  /** Present in recorded responses, not in the reference. */
+  isDDNSEnabled?: boolean;
+}
+
+export interface DnsGetHostsResult {
+  domain: string;
+  /** Present in recorded responses, not in the reference. */
+  emailType?: string;
+  isUsingOurDNS: boolean;
+  hosts: DnsHost[];
+}
+
+function parseHost(host: El): DnsHost {
+  return {
+    hostId: host.number("HostId"),
+    name: host.string("Name"),
+    type: host.string("Type"),
+    address: host.string("Address"),
+    mxPref: host.number("MXPref"),
+    ttl: host.number("TTL"),
+    ...optionalField("associatedAppTitle", host.optionalString("AssociatedAppTitle")),
+    ...optionalField("friendlyName", host.optionalString("FriendlyName")),
+    ...optionalField("isActive", host.optionalBoolean("IsActive")),
+    ...optionalField("isDDNSEnabled", host.optionalBoolean("IsDDNSEnabled")),
+  };
+}
+
+const getHosts = /* @__PURE__ */ defineCommand<DnsGetHostsParams, DnsGetHostsResult>({
+  name: "namecheap.domains.dns.getHosts",
+  parse: (cr) => {
+    const result = cr.one("DomainDNSGetHostsResult");
+    return {
+      domain: result.string("Domain"),
+      ...optionalField("emailType", result.optionalString("EmailType")),
+      isUsingOurDNS: result.boolean("IsUsingOurDNS"),
+      hosts: result.all("host").map(parseHost),
+    };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// namecheap.domains.dns.getEmailForwarding
+// ---------------------------------------------------------------------------
+
+export interface DnsGetEmailForwardingParams {
+  /** Domain name to get settings for. */
+  domainName: string;
+}
+
+export interface DnsEmailForward {
+  mailbox: string;
+  /** Present in recorded responses, not in the reference. */
+  forwardTo?: string;
+}
+
+export interface DnsGetEmailForwardingResult {
+  domain: string;
+  forwards: DnsEmailForward[];
+}
+
+const getEmailForwarding = /* @__PURE__ */ defineCommand<
+  DnsGetEmailForwardingParams,
+  DnsGetEmailForwardingResult
+>({
+  name: "namecheap.domains.dns.getEmailForwarding",
+  parse: (cr) => {
+    const result = cr.one("DomainEmailForwardingResult");
+    return {
+      domain: result.string("Domain"),
+      forwards: result.all("Forward").map((forward) => ({
+        mailbox: forward.string("mailbox"),
+        ...optionalField("forwardTo", forward.optionalString("ForwardTo")),
+      })),
+    };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// namecheap.domains.dns.setEmailForwarding
+// ---------------------------------------------------------------------------
+
+/** One forwarding rule, sent as `MailBox<n>` and `ForwardTo<n>`. */
+export interface DnsEmailForwardRecord {
+  /** Mailbox for email forwarding (e.g. `example@domain.com`). */
+  mailBox: string;
+  /** Email address to forward to (e.g. `example@gmail.com`). */
+  forwardTo: string;
+}
+
+export interface DnsSetEmailForwardingParams {
+  domainName: string;
+  /** An empty list is allowed and clears the domain's email forwarding. */
+  forwards: DnsEmailForwardRecord[];
+}
+
+export interface DnsSetEmailForwardingResult {
+  domain: string;
+  isSuccess: boolean;
+}
+
+const setEmailForwarding = /* @__PURE__ */ defineCommand<
+  DnsSetEmailForwardingParams,
+  DnsSetEmailForwardingResult
+>({
+  name: "namecheap.domains.dns.setEmailForwarding",
+  parse: (cr) => {
+    const result = cr.one("DomainEmailForwardingResult");
+    return { domain: result.string("Domain"), isSuccess: result.boolean("IsSuccess") };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// namecheap.domains.dns.setHosts
+// ---------------------------------------------------------------------------
+
+export type DnsRecordType =
+  | "A"
+  | "AAAA"
+  | "ALIAS"
+  | "CAA"
+  | "CNAME"
+  | "MX"
+  | "MXE"
+  | "NS"
+  | "TXT"
+  | "URL"
+  | "URL301"
+  | "FRAME";
+
+export type DnsEmailType = "NONE" | "MXE" | "MX" | "FWD" | "OX" | "GMAIL";
+
+/** One host record, sent as `HostName<n>`, `RecordType<n>`, `Address<n>`, `MXPref<n>`, `TTL<n>`. */
+export interface DnsHostRecord {
+  /** Sub-domain/hostname for the record. */
+  hostName: string;
+  recordType: DnsRecordType;
+  /** URL or IP address, depending on the record type. */
+  address: string;
+  /** MX preference (MX records only). Required by the reference, but optional on the wire. */
+  mxPref?: number;
+  /** Time to live (300-60000). */
+  ttl?: number;
+}
+
+export interface DnsSetHostsParams {
+  sld: string;
+  tld: string;
+  /**
+   * Omitted keeps the zone's current mode.
+   *
+   * @remarks The reference warns that MX records are silently discarded unless the
+   * resulting email mode is `MX`. `setHosts` replaces the whole zone, so a call that
+   * lists MX hosts under another mode loses the mail routing.
+   */
+  emailType?: DnsEmailType;
+  /** Replaces the whole zone: records not listed are deleted, so at least one is required. */
+  hosts: [DnsHostRecord, ...DnsHostRecord[]];
+}
+
+export interface DnsSetHostsResult {
+  domain: string;
+  /** Present in recorded responses, not in the reference. */
+  emailType?: string;
+  isSuccess: boolean;
+}
+
+const setHosts = /* @__PURE__ */ defineCommand<DnsSetHostsParams, DnsSetHostsResult>({
+  name: "namecheap.domains.dns.setHosts",
+  validate: (params) => {
+    if (!params.hosts?.some((host) => host !== undefined && host !== null)) {
+      throw new TypeError(
+        "dns.setHosts requires at least one host record: it replaces the whole zone, so an empty list would delete every record",
+      );
+    }
+  },
+  parse: (cr) => {
+    const result = cr.one("DomainDNSSetHostsResult");
+    return {
+      domain: result.string("Domain"),
+      ...optionalField("emailType", result.optionalString("EmailType")),
+      isSuccess: result.boolean("IsSuccess"),
+    };
+  },
+});
+
+/**
+ * The command table behind `client.dns`. Advanced use only: it is exported for custom
+ * integrations and is not covered by semver stability.
+ */
+export const dnsCommands = {
+  setDefault,
+  setCustom,
+  getList,
+  getHosts,
+  getEmailForwarding,
+  setEmailForwarding,
+  setHosts,
+};
+
+/**
+ * Every command of this group as a standalone export (`<group><Method>`), for
+ * tree-shaken use with `run(command, send, params)`; see the README.
+ */
+export {
+  setDefault as dnsSetDefault,
+  setCustom as dnsSetCustom,
+  getList as dnsGetList,
+  getHosts as dnsGetHosts,
+  getEmailForwarding as dnsGetEmailForwarding,
+  setEmailForwarding as dnsSetEmailForwarding,
+  setHosts as dnsSetHosts,
+};

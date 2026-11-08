@@ -1,0 +1,13 @@
+<!-- source: docs -->
+<!-- derived from tests/fixtures/users/error.xml: command name changed; error code 4022336 and its message are from the reference error table for getInfo -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
+	<Errors>
+		<Error Number="4022336">Failed to retrieve user's address</Error>
+	</Errors>
+	<Warnings />
+	<RequestedCommand>namecheap.users.address.getInfo</RequestedCommand>
+	<Server>PHX01SBAPIEXT05</Server>
+	<GMTTimeDifference>--4:00</GMTTimeDifference>
+	<ExecutionTime>0.011</ExecutionTime>
+</ApiResponse>

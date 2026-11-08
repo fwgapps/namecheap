@@ -1,96 +1,90 @@
 import { Router } from "express";
+import type {
+  DnsSetCustomParams,
+  DnsSetDefaultParams,
+  DnsSetEmailForwardingParams,
+  DnsSetHostsParams,
+} from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
+import { bodyObjectArray, bodyOf, requiredString } from "../util/params";
 
 const router = Router();
 
-router.post("/default", async (req, res) => {
+router.post("/default", async (req, res, next) => {
   try {
-    const { sld, tld } = req.body;
-    const response = await namecheap.domainsDns.setDefault(sld, tld);
-
-    res.json(response);
+    res.json(await namecheap.dns.setDefault(bodyOf<DnsSetDefaultParams>(req, ["sld", "tld"])));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/custom", async (req, res) => {
+// Body: { "sld", "tld", "nameservers": "ns1.example.com,ns2.example.com" }
+router.post("/custom", async (req, res, next) => {
   try {
-    const { sld, tld, nameservers } = req.body;
-    const response = await namecheap.domainsDns.setCustom(sld, tld, nameservers);
-    res.json(response);
+    res.json(
+      await namecheap.dns.setCustom(
+        bodyOf<DnsSetCustomParams>(req, ["sld", "tld", "nameservers"], ["nameservers"]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const { sld, tld } = req.query;
-
-    if (typeof sld !== "string" || typeof tld !== "string") {
-      res.status(400).json({ error: "Missing or invalid sld/tld parameters" });
-      return;
-    }
-
-    const response = await namecheap.domainsDns.getList(sld, tld);
-    res.json(response);
+    const sld = requiredString(req.query, "sld");
+    const tld = requiredString(req.query, "tld");
+    res.json(await namecheap.dns.getList({ sld, tld }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/hosts", async (req, res) => {
+router.get("/hosts", async (req, res, next) => {
   try {
-    const { sld, tld } = req.query;
-
-    if (typeof sld !== "string" || typeof tld !== "string") {
-      res.status(400).json({ error: "Missing or invalid sld/tld parameters" });
-      return;
-    }
-
-    const response = await namecheap.domainsDns.getHosts(sld, tld);
-    res.json(response);
+    const sld = requiredString(req.query, "sld");
+    const tld = requiredString(req.query, "tld");
+    res.json(await namecheap.dns.getHosts({ sld, tld }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/emailForwarding", async (req, res) => {
+// Replaces the whole zone: records that are not listed are deleted.
+router.post("/hosts", async (req, res, next) => {
   try {
-    const { domainName } = req.query;
-
-    if (typeof domainName !== "string") {
-      res.status(400).json({ error: "Missing or invalid domainName parameters" });
-      return;
-    }
-
-    const response = await namecheap.domainsDns.getEmailForwarding(domainName);
-    res.json(response);
+    bodyObjectArray(req, "hosts");
+    res.json(
+      await namecheap.dns.setHosts(
+        bodyOf<DnsSetHostsParams>(req, ["sld", "tld", "hosts"], ["hosts"]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/emailForwarding", async (req, res) => {
+router.get("/emailForwarding", async (req, res, next) => {
   try {
-    const { domainName, ...params } = req.body;
-
-    const response = await namecheap.domainsDns.setEmailForwarding(domainName, params);
-    res.json(response);
+    const domainName = requiredString(req.query, "domainName");
+    res.json(await namecheap.dns.getEmailForwarding({ domainName }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/hosts", async (req, res) => {
+// Body: { "domainName", "forwards": [{ "mailBox", "forwardTo" }] }
+router.post("/emailForwarding", async (req, res, next) => {
   try {
-    const { sld, tld, ...params } = req.body;
-
-    const response = await namecheap.domainsDns.setHosts(sld, tld, params);
-    res.json(response);
+    bodyObjectArray(req, "forwards", true);
+    res.json(
+      await namecheap.dns.setEmailForwarding(
+        bodyOf<DnsSetEmailForwardingParams>(req, ["domainName", "forwards"], ["forwards"]),
+      ),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 

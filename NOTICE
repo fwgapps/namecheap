@@ -1,0 +1,11 @@
+@fwgapps/namecheap
+Copyright (c) the @fwgapps/namecheap contributors
+
+The test fixtures under tests/fixtures/ whose first line is
+"<!-- source: go-namecheap-sdk -->" are copied from the Namecheap Go SDK
+(github.com/namecheap/go-namecheap-sdk), which is licensed under the
+Apache License, Version 2.0. A copy of the license is available at
+https://www.apache.org/licenses/LICENSE-2.0
+
+Fixtures whose first line is "<!-- source: docs -->" may carry a second comment
+line saying they were derived from such a file; those are edited derivatives.

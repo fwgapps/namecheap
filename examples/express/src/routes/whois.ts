@@ -1,72 +1,63 @@
 import { Router } from "express";
-import { WhoIsListType } from "@fwgapps/namecheap";
-
 import namecheap from "../services/namecheap";
+import { bodyNumber, bodyObject, bodyString, numericParam, pickQuery } from "../util/params";
 
 const router = Router();
 
-router.put("/email", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const { whoIsGuardId } = req.body;
-    const response = await namecheap.domainPrivacy.changeEmailAddress(whoIsGuardId);
-
-    res.json(response);
+    const params = pickQuery(req.query, ["listType"], ["page", "pageSize"]);
+    res.json(await namecheap.whoisGuard.getList(params));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/enable/:id", async (req, res) => {
+// Body: { "whoisguardID": 123 }
+router.put("/email", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { forwardedToEmail } = req.body;
-
-    const response = await namecheap.domainPrivacy.enable(+id, forwardedToEmail);
-
-    res.json(response);
+    const whoisguardID = bodyNumber(req, "whoisguardID");
+    res.json(await namecheap.whoisGuard.changeEmailAddress({ whoisguardID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.delete("/disable/:id", async (req, res) => {
+// Body: { "forwardedToEmail": "me@example.com" }
+router.put("/enable/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const response = await namecheap.domainPrivacy.disable(+id);
-
-    res.json(response);
+    const whoisguardID = numericParam(req.params.id, "id");
+    const forwardedToEmail = bodyString(req, "forwardedToEmail");
+    res.json(await namecheap.whoisGuard.enable({ whoisguardID, forwardedToEmail }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/", async (req, res) => {
+router.delete("/disable/:id", async (req, res, next) => {
   try {
-    const { listType, page, pageSize } = req.query;
-
-    const response = await namecheap.domainPrivacy.getList({
-      listType: listType as WhoIsListType,
-      page: +(page ?? 1),
-      pageSize: +(pageSize ?? 10),
-    });
-
-    res.json(response);
+    const whoisguardID = numericParam(req.params.id, "id");
+    res.json(await namecheap.whoisGuard.disable({ whoisguardID }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/renew/:id", async (req, res) => {
+// Billed call. Body: { "years": 1, "promotionCode": "optional" }; years is required.
+router.post("/renew/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { year, promotionCode } = req.body;
-
-    const response = await namecheap.domainPrivacy.renew(id, year, promotionCode);
-
-    res.json(response);
+    const whoisguardID = numericParam(req.params.id, "id");
+    const years = bodyNumber(req, "years");
+    const promotionCode = bodyObject(req).promotionCode;
+    res.json(
+      await namecheap.whoisGuard.renew({
+        whoisguardID,
+        years,
+        ...(typeof promotionCode === "string" && promotionCode !== "" ? { promotionCode } : {}),
+      }),
+    );
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 

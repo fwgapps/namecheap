@@ -1,0 +1,13 @@
+<!-- source: docs -->
+<!-- derived from tests/fixtures/ssl/error.xml: command name changed; error code 2010302 is a placeholder, not from any source -->
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
+	<Errors>
+		<Error Number="2010302">Invalid password</Error>
+	</Errors>
+	<Warnings />
+	<RequestedCommand>namecheap.users.changePassword</RequestedCommand>
+	<Server>PHX01SBAPIEXT05</Server>
+	<GMTTimeDifference>--4:00</GMTTimeDifference>
+	<ExecutionTime>0.011</ExecutionTime>
+</ApiResponse>
