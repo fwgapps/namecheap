@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type -- `{}` is the intended "all params optional" check */
 import type { El } from "./element";
+import { NamecheapParseError } from "./errors";
 import { serializeParams } from "./serialize";
 import type { ArrayStyle } from "./serialize";
 import type { Send } from "./transport";
@@ -49,7 +50,17 @@ export function group<C extends Record<string, Command<any, any>>>(
         command: def.name,
         params: serializeParams(params ?? {}, options),
       });
-      return def.parse(el);
+      try {
+        return def.parse(el);
+      } catch (error) {
+        if (error instanceof NamecheapParseError) {
+          throw new NamecheapParseError(
+            `${def.name}: Namecheap reported success but the response could not be read; the action may have been performed, verify before retrying`,
+            { cause: error },
+          );
+        }
+        throw error;
+      }
     };
   }
   return out as Group<C>;

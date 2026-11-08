@@ -3,6 +3,7 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { defineCommand, group } from "../../src/core/define";
 import type { El } from "../../src/core/element";
+import { NamecheapParseError } from "../../src/core/errors";
 import type { Send } from "../../src/core/transport";
 
 const fakeEl = { tag: "CommandResponse" } as unknown as El;
@@ -102,6 +103,56 @@ describe("group", () => {
       throw boom;
     });
     await expect(api.c()).rejects.toBe(boom);
+  });
+});
+
+describe("group parse failures", () => {
+  it("wraps a parse error with a may-have-happened message and keeps the cause", async () => {
+    const original = new NamecheapParseError('X: missing element "secret-ish"');
+    const api = group(
+      {
+        run: defineCommand<{}, number>({
+          name: "namecheap.domains.create",
+          parse: () => {
+            throw original;
+          },
+        }),
+      },
+      makeSend(),
+    );
+    const error = await api.run().catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(NamecheapParseError);
+    expect((error as NamecheapParseError).message).toBe(
+      "namecheap.domains.create: Namecheap reported success but the response could not be read; the action may have been performed, verify before retrying",
+    );
+    expect((error as NamecheapParseError).cause).toBe(original);
+  });
+
+  it("passes other parse errors through unchanged", async () => {
+    const boom = new TypeError("boom");
+    const api = group(
+      {
+        run: defineCommand<{}, number>({
+          name: "n",
+          parse: () => {
+            throw boom;
+          },
+        }),
+      },
+      makeSend(),
+    );
+    await expect(api.run()).rejects.toBe(boom);
+  });
+
+  it("does not wrap a parse error raised by send", async () => {
+    const original = new NamecheapParseError("envelope broken");
+    const api = group(
+      { run: defineCommand<{}, number>({ name: "n", parse: () => 1 }) },
+      async () => {
+        throw original;
+      },
+    );
+    await expect(api.run()).rejects.toBe(original);
   });
 });
 
