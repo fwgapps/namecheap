@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/fwgapps/[secure]/compare/v1.0.0...v1.1.0) (2026-11-08)
+
+
+### Bug Fixes
+
+* **deps:** resolve minimatch to 11.x where it was 10.x ([8f04d25](https://github.com/fwgapps/[secure]/commit/8f04d258178e9dbc689a9f8083f51c701e0fbe32))
+* read the response shapes the live sandbox actually sends ([c1d124e](https://github.com/fwgapps/[secure]/commit/c1d124edef850dbcc34e1c2dee088f8b08a83976))
+
+
+### Features
+
+* **ssl:** activate and reissue accept approver e-mail and HTTP/DNS validation ([870c3b4](https://github.com/fwgapps/[secure]/commit/870c3b446f0d1ea120e4fc17feb28c985e0be922))
+
 # [1.0.0](https://github.com/fwgapps/[secure]/compare/v0.6.0...v1.0.0) (2026-11-08)
 
 
