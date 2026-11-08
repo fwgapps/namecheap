@@ -127,7 +127,7 @@ export type UsersChangePasswordParams =
 /** Never echoes a password or reset code. */
 export interface UsersChangePasswordResult {
   success: boolean;
-  userID: number;
+  userID?: number;
 }
 
 const changePassword = /* @__PURE__ */ defineCommand<
@@ -137,7 +137,11 @@ const changePassword = /* @__PURE__ */ defineCommand<
   name: "namecheap.users.changePassword",
   parse: (cr) => {
     const result = cr.one("UserChangePasswordResult");
-    return { success: result.boolean("Success"), userID: result.number("UserID") };
+    return {
+      success: result.boolean("Success"),
+      // The live API may spell it UserId, or leave it out.
+      ...optionalField("userID", result.lenientNumber("UserID") ?? result.lenientNumber("UserId")),
+    };
   },
 });
 // ---------------------------------------------------------------------------

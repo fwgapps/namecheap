@@ -1,4 +1,5 @@
 import { defineCommand } from "../core/define";
+import { optionalField } from "../core/fields";
 import type { El } from "../core/element";
 import { parsePaging } from "../core/paging";
 import type { Paging } from "../core/paging";
@@ -135,7 +136,8 @@ export interface TransferListItem {
   domainName: string;
   user: string;
   transferDate: string;
-  orderID: number;
+  /** Absent while the transfer is still queued. */
+  orderID?: number;
   statusID: number;
   status: string;
 }
@@ -147,11 +149,13 @@ export interface TransferGetListResult {
 
 function parseListItem(transfer: El): TransferListItem {
   return {
-    transferID: transfer.number("TransferID"),
+    // The live list sends ID; the reference says TransferID.
+    transferID: transfer.optionalNumber("ID") ?? transfer.number("TransferID"),
     domainName: transfer.string("DomainName"),
     user: transfer.string("User"),
     transferDate: transfer.string("TransferDate"),
-    orderID: transfer.number("OrderID"),
+    // OrderID is empty for a queued transfer.
+    ...optionalField("orderID", transfer.lenientNumber("OrderID")),
     statusID: transfer.number("StatusID"),
     status: transfer.string("Status"),
   };

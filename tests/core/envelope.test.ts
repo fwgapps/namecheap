@@ -17,6 +17,14 @@ function ok(body: string): string {
 </ApiResponse>`;
 }
 
+describe("readEnvelope with a PHP warning before the XML", () => {
+  it("still reads the API error", () => {
+    const body = `<br />\n<b>Warning</b>: something in <b>x.php</b><br />\n<?xml version="1.0" encoding="UTF-8"?>
+<ApiResponse Status="ERROR" ${NS}><Errors><Error Number="3022296">CSR is invalid</Error></Errors></ApiResponse>`;
+    expect(() => readEnvelope(body)).toThrow(NamecheapError);
+  });
+});
+
 function caught(fn: () => unknown): unknown {
   try {
     fn();

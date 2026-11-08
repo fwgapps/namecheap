@@ -438,4 +438,28 @@ describe("ssl.getApproverEmailList with groups absent", () => {
       manualEmails: [],
     });
   });
+
+  it("getInfo accepts a response without CertificateID, as the live API sends", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<SSLGetInfoResult Status="newpurchase" Type="standard ssl" Years="1"><CertificateDetails/></SSLGetInfoResult>`,
+        "namecheap.ssl.getInfo",
+      ),
+    );
+    const result = await client.ssl.getInfo({ certificateID: 1 });
+    expect(result.status).toBe("newpurchase");
+    expect(result).not.toHaveProperty("certificateID");
+  });
+
+  it("parseCSR accepts a CSR without an organisational unit", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<SSLParseCSRResult><CSRDetails><CommonName>a.example.com</CommonName><DomainName>a.example.com</DomainName><Country>US</Country></CSRDetails></SSLParseCSRResult>`,
+        "namecheap.ssl.parseCSR",
+      ),
+    );
+    const result = await client.ssl.parseCSR({ csr: "x" });
+    expect(result.commonName).toBe("a.example.com");
+    expect(result).not.toHaveProperty("organisationUnit");
+  });
 });

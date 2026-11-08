@@ -156,12 +156,12 @@ export interface SslParseCsrParams {
 export interface SslParseCsrResult {
   commonName: string;
   domainName: string;
-  country: string;
-  organisationUnit: string;
-  organisation: string;
-  state: string;
-  locality: string;
-  email: string;
+  country?: string;
+  organisationUnit?: string;
+  organisation?: string;
+  state?: string;
+  locality?: string;
+  email?: string;
 }
 
 const parseCSR = /* @__PURE__ */ defineCommand<SslParseCsrParams, SslParseCsrResult>({
@@ -172,12 +172,13 @@ const parseCSR = /* @__PURE__ */ defineCommand<SslParseCsrParams, SslParseCsrRes
     return {
       commonName: details.one("CommonName").text(),
       domainName: details.one("DomainName").text(),
-      country: details.one("Country").text(),
-      organisationUnit: details.one("OrganisationUnit").text(),
-      organisation: details.one("Organisation").text(),
-      state: details.one("State").text(),
-      locality: details.one("Locality").text(),
-      email: details.one("Email").text(),
+      // A CSR may omit any of these (e.g. no organisational unit), and the API then omits them too.
+      ...optionalField("country", details.optional("Country")?.text()),
+      ...optionalField("organisationUnit", details.optional("OrganisationUnit")?.text()),
+      ...optionalField("organisation", details.optional("Organisation")?.text()),
+      ...optionalField("state", details.optional("State")?.text()),
+      ...optionalField("locality", details.optional("Locality")?.text()),
+      ...optionalField("email", details.optional("Email")?.text()),
     };
   },
 });
@@ -390,7 +391,8 @@ export interface SslGetInfoParams {
 }
 
 export interface SslGetInfoResult {
-  certificateID: number;
+  /** Absent in live responses; the reference lists it. */
+  certificateID?: number;
   /** For example `Active`, `Newpurchase`, `Purchased`, `Cancelled`. */
   status: string;
   /** The attributes below are in the fixture but not in the reference. */
@@ -407,7 +409,7 @@ const getInfo = /* @__PURE__ */ defineCommand<SslGetInfoParams, SslGetInfoResult
   parse: (cr) => {
     const result = cr.one("SSLGetInfoResult");
     return {
-      certificateID: result.number("CertificateID"),
+      ...optionalField("certificateID", result.lenientNumber("CertificateID")),
       status: result.string("Status"),
       ...optionalField("type", result.optionalString("Type")),
       ...optionalField("commonName", result.optionalString("CommonName")),

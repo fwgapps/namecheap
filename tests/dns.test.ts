@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { NamecheapError } from "../src";
 import { dnsCommands } from "../src/commands/dns";
 import type { DnsHostRecord } from "../src/commands/dns";
-import { createTestClient, loadFixture } from "./helpers";
+import { createTestClient, loadFixture, okEnvelope } from "./helpers";
 
 describe("dns", () => {
   it("setDefault sends the documented request and parses the fixture", async () => {
@@ -307,5 +307,30 @@ describe("dns", () => {
         "setHosts",
       ].sort(),
     );
+  });
+
+  it("getEmailForwarding reads the element name the live API sends", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<DomainDNSGetEmailForwardingResult Domain="example.com" />`,
+        "namecheap.domains.dns.getEmailForwarding",
+      ),
+    );
+    await expect(client.dns.getEmailForwarding({ domainName: "example.com" })).resolves.toEqual({
+      domain: "example.com",
+      forwards: [],
+    });
+  });
+
+  it("setEmailForwarding reads the element name the live API sends", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<DomainDNSSetEmailForwardingResult Domain="example.com" IsSuccess="true"><Warnings /></DomainDNSSetEmailForwardingResult>`,
+        "namecheap.domains.dns.setEmailForwarding",
+      ),
+    );
+    await expect(
+      client.dns.setEmailForwarding({ domainName: "example.com", forwards: [] }),
+    ).resolves.toEqual({ domain: "example.com", isSuccess: true });
   });
 });

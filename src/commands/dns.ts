@@ -173,7 +173,9 @@ const getEmailForwarding = /* @__PURE__ */ defineCommand<
 >({
   name: "namecheap.domains.dns.getEmailForwarding",
   parse: (cr) => {
-    const result = cr.one("DomainEmailForwardingResult");
+    // The live API names the element DomainDNSGetEmailForwardingResult; the reference omits "DNSGet".
+    const result =
+      cr.optional("DomainDNSGetEmailForwardingResult") ?? cr.one("DomainEmailForwardingResult");
     return {
       domain: result.string("Domain"),
       forwards: result.all("Forward").map((forward) => ({
@@ -213,7 +215,9 @@ const setEmailForwarding = /* @__PURE__ */ defineCommand<
 >({
   name: "namecheap.domains.dns.setEmailForwarding",
   parse: (cr) => {
-    const result = cr.one("DomainEmailForwardingResult");
+    // The live API names the element DomainDNSSetEmailForwardingResult.
+    const result =
+      cr.optional("DomainDNSSetEmailForwardingResult") ?? cr.one("DomainEmailForwardingResult");
     return { domain: result.string("Domain"), isSuccess: result.boolean("IsSuccess") };
   },
 });

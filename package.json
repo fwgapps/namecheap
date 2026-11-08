@@ -9,6 +9,7 @@
     "clean": "rm -rf dist",
     "build": "yarn clean && tsup",
     "test": "vitest",
+    "test:e2e": "node --env-file=.env node_modules/vitest/vitest.mjs run --no-file-parallelism tests/e2e",
     "coverage": "vitest run --coverage",
     "lint": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,mts,ts}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.{mjs,mts,ts}' --fix",

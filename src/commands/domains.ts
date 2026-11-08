@@ -385,7 +385,8 @@ const getTldList = /* @__PURE__ */ defineCommand<Record<string, never>, DomainsG
   parse: (cr) =>
     (cr.optional("Tlds")?.all("Tld") ?? []).map((tld) => ({
       name: tld.string("Name"),
-      nonRealTimeDomain: tld.boolean("NonRealTimeDomain"),
+      // The live API sends NonRealTime; the reference (and older fixtures) say NonRealTimeDomain.
+      nonRealTimeDomain: tld.optionalBoolean("NonRealTime") ?? tld.boolean("NonRealTimeDomain"),
       minRegisterYears: tld.number("MinRegisterYears"),
       maxRegisterYears: tld.number("MaxRegisterYears"),
       minRenewYears: tld.number("MinRenewYears"),
@@ -428,7 +429,8 @@ export interface DomainsGetContactsResult {
   domain: string;
   /** Sent as the lower-case attribute `domainnameid`. */
   domainnameid: number;
-  readonly: boolean;
+  /** Absent in live responses, which carry ReadOnly on each contact block instead. */
+  readonly?: boolean;
   registrant?: DomainsContact;
   tech?: DomainsContact;
   admin?: DomainsContact;
@@ -467,7 +469,10 @@ const getContacts = /* @__PURE__ */ defineCommand<
     return {
       domain: result.string("Domain"),
       domainnameid: result.number("domainnameid"),
-      readonly: result.boolean("Readonly"),
+      ...optionalField(
+        "readonly",
+        result.optionalBoolean("ReadOnly") ?? result.optionalBoolean("Readonly"),
+      ),
       ...optionalField("registrant", contact("Registrant")),
       ...optionalField("tech", contact("Tech")),
       ...optionalField("admin", contact("Admin")),

@@ -539,6 +539,29 @@ describe("domains responses with optional elements absent", () => {
     await expect(client.domains.getTldList()).resolves.toEqual([]);
   });
 
+  it("getTldList reads NonRealTime, the attribute the live API sends", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<Tlds><Tld Name="com" NonRealTime="true" MinRegisterYears="1" MaxRegisterYears="10" MinRenewYears="1" MaxRenewYears="10" MinTransferYears="1" MaxTransferYears="1" IsApiRegisterable="true" IsApiRenewable="true" IsApiTransferable="false" IsEppRequired="true">.com domain</Tld></Tlds>`,
+        "namecheap.domains.getTldList",
+      ),
+    );
+    const [tld] = await client.domains.getTldList();
+    expect(tld?.nonRealTimeDomain).toBe(true);
+  });
+
+  it("getContacts accepts a response without a root ReadOnly attribute, as the live API sends", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<DomainContactsResult Domain="example.com" domainnameid="7"><Registrant ReadOnly="false"><FirstName>Ana</FirstName></Registrant></DomainContactsResult>`,
+        "namecheap.domains.getContacts",
+      ),
+    );
+    const result = await client.domains.getContacts({ domainName: "example.com" });
+    expect(result).not.toHaveProperty("readonly");
+    expect(result.registrant?.firstName).toBe("Ana");
+  });
+
   it("getContacts omits the contact blocks that the response does not carry", async () => {
     const { client } = createTestClient(
       okEnvelope(
