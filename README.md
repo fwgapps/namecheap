@@ -1,6 +1,8 @@
 # @fwgapps/namecheap
 
 [![CI/CD Pipeline](https://github.com/fwgapps/namecheap/actions/workflows/publish.yml/badge.svg)](https://github.com/fwgapps/namecheap/actions/workflows/publish.yml)
+[![Codecov](https://codecov.io/gh/fwgapps/namecheap/branch/main/graph/badge.svg)](https://codecov.io/gh/fwgapps/namecheap)
+![Maintenance](https://img.shields.io/maintenance/yes/2026)
 [![npm](https://img.shields.io/npm/v/@fwgapps/namecheap)](https://www.npmjs.com/package/@fwgapps/namecheap)
 ![license](https://img.shields.io/npm/l/@fwgapps/namecheap)
 
