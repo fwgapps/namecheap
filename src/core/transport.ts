@@ -44,6 +44,7 @@ export function createTransport(config: TransportConfig): Send {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
+      redirect: "error",
     };
     if (config.timeoutMs !== undefined) init.signal = AbortSignal.timeout(config.timeoutMs);
 

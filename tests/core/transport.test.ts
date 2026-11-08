@@ -123,7 +123,10 @@ describe("createTransport", () => {
       ({ init }) =>
         new Promise<Response>((_, reject) => {
           const signal = init?.signal;
-          if (!signal) return;
+          if (!signal) {
+            reject(new Error("no signal passed to fetch"));
+            return;
+          }
           signal.addEventListener("abort", () => reject(signal.reason));
         }),
     );
@@ -133,6 +136,35 @@ describe("createTransport", () => {
     expect(error).toBeInstanceOf(NamecheapHttpError);
     expect((error as NamecheapHttpError).status).toBeUndefined();
     expect((error as Error).cause).toBeDefined();
+    expectNoKey(error, f.calls);
+  });
+
+  it("encodes special characters exactly in the body string", async () => {
+    const f = fakeFetch(async () => new Response(OK_BODY, { status: 200 }));
+    await createTransport(config(f.fetch))({
+      command: "namecheap.test",
+      params: [["Foo", "a&b=c +d ç 😀"]],
+    });
+    expect(f.calls[0]!.init?.body).toBe(
+      "ApiUser=alice&ApiKey=SECRET-KEY&UserName=alice&ClientIp=1.2.3.4&Command=namecheap.test&Foo=a%26b%3Dc+%2Bd+%C3%A7+%F0%9F%98%80",
+    );
+  });
+
+  it("refuses redirects", async () => {
+    const f = fakeFetch(async () => new Response(OK_BODY, { status: 200 }));
+    await createTransport(config(f.fetch))({ command: "c", params: [] });
+    expect(f.calls[0]!.init?.redirect).toBe("error");
+  });
+
+  it("maps a redirect rejection to the generic NamecheapHttpError", async () => {
+    const original = new TypeError("fetch failed");
+    const f = fakeFetch(async () => {
+      throw original;
+    });
+    const error = await caught(createTransport(config(f.fetch))({ command: "c", params: [] }));
+    expect(error).toBeInstanceOf(NamecheapHttpError);
+    expect((error as Error).message).toBe("Request to Namecheap failed");
+    expect((error as Error).cause).toBe(original);
     expectNoKey(error, f.calls);
   });
 
