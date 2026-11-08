@@ -1,68 +1,61 @@
 import { Router } from "express";
+import type { UsersAddressCreateParams, UsersAddressUpdateParams } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
+import { numericParam } from "../lib/params";
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
-    const params = req.body;
-
-    const response = await namecheap.usersAddress.create(params);
-    res.json(response);
+    res.json(await namecheap.usersAddress.create(req.body as UsersAddressCreateParams));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.get("/", async (_req, res, next) => {
   try {
-    const { id } = req.params;
-    const response = await namecheap.usersAddress.delete(+id);
-    res.json(response);
+    res.json(await namecheap.usersAddress.getList());
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/:id", async (req, res) => {
+// Body: { "addressId": 123 }
+router.post("/default", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const response = await namecheap.usersAddress.getInfo(+id);
-    res.json(response);
+    const addressId = numericParam(String(req.body?.addressId), "addressId");
+    res.json(await namecheap.usersAddress.setDefault({ addressId }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
-    const response = await namecheap.usersAddress.getList();
-    res.json(response);
+    const addressId = numericParam(req.params.id, "id");
+    res.json(await namecheap.usersAddress.getInfo({ addressId }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/default", async (req, res) => {
+router.put("/:id", async (req, res, next) => {
   try {
-    const { addressId } = req.body;
-
-    const response = await namecheap.usersAddress.setDefault(addressId);
-    res.json(response);
+    const addressId = numericParam(req.params.id, "id");
+    const body = req.body as Omit<UsersAddressUpdateParams, "addressId">;
+    res.json(await namecheap.usersAddress.update({ ...body, addressId }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const params = req.body;
-
-    const response = await namecheap.usersAddress.update(+id, params);
-    res.json(response);
+    const addressId = numericParam(req.params.id, "id");
+    res.json(await namecheap.usersAddress.delete({ addressId }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 

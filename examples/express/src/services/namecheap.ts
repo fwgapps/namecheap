@@ -3,20 +3,29 @@ import Namecheap from "@fwgapps/namecheap";
 
 dotenv.config();
 
-const apiUser = process.env.API_USER || "";
-const apiKey = process.env.API_KEY || "";
-const clientIp = process.env.CLIENT_IP || "";
-const sandbox = process.env.ENV !== "PRODUCTION";
+const { API_USER, API_KEY, CLIENT_IP, USER_NAME, ENV } = process.env;
 
-if (!apiUser || !apiKey || !clientIp) {
-  throw new Error("Please provide a valid namecheap config");
+const missing = [
+  ["API_USER", API_USER],
+  ["API_KEY", API_KEY],
+  ["CLIENT_IP", CLIENT_IP],
+]
+  .filter(([, value]) => !value)
+  .map(([name]) => name);
+
+if (missing.length > 0) {
+  // Only the names are printed, never the values.
+  throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
 }
 
 const namecheap = new Namecheap({
-  apiUser,
-  apiKey,
-  clientIp,
-  sandbox,
+  apiUser: API_USER as string,
+  apiKey: API_KEY as string,
+  clientIp: CLIENT_IP as string,
+  ...(USER_NAME ? { userName: USER_NAME } : {}),
+  // Sandbox unless ENV is exactly "PRODUCTION".
+  sandbox: ENV !== "PRODUCTION",
+  timeoutMs: 30000,
 });
 
 export default namecheap;

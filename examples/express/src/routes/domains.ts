@@ -1,114 +1,105 @@
 import { Router } from "express";
+import type {
+  DomainsCheckParams,
+  DomainsCreateParams,
+  DomainsReactivateParams,
+  DomainsRenewParams,
+  DomainsSetContactsParams,
+  DomainsSetRegistrarLockParams,
+} from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
+import { pickQuery } from "../lib/params";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const response = await namecheap.domains.getList();
-    res.json(response);
+    const params = pickQuery(req.query, ["listType", "searchTerm", "sortBy"], ["page", "pageSize"]);
+    res.json(await namecheap.domains.getList(params));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/contacts/:domainName", async (req, res) => {
+router.get("/tld", async (_req, res, next) => {
   try {
-    const response = await namecheap.domains.getContacts(req.params.domainName);
-    res.json(response);
+    res.json(await namecheap.domains.getTldList());
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/create", async (req, res) => {
+router.get("/contacts/:domainName", async (req, res, next) => {
   try {
-    const { domainName, ...params } = req.body;
-    const response = await namecheap.domains.create(domainName, params);
-
-    res.json(response);
+    res.json(await namecheap.domains.getContacts({ domainName: req.params.domainName }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/tld", async (req, res) => {
+router.post("/contacts", async (req, res, next) => {
   try {
-    const response = await namecheap.domains.getTldList();
-    res.json(response);
+    res.json(await namecheap.domains.setContacts(req.body as DomainsSetContactsParams));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/contacts", async (req, res) => {
+router.get("/info/:domainName", async (req, res, next) => {
   try {
-    const { domainName, ...params } = req.body;
-    const response = await namecheap.domains.setContacts(domainName, params);
-    res.json(response);
+    const params = pickQuery(req.query, ["hostName"]);
+    res.json(await namecheap.domains.getInfo({ domainName: req.params.domainName, ...params }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/check", async (req, res) => {
+// Body: { "domainList": "example.com,example.net" }
+router.post("/check", async (req, res, next) => {
   try {
-    const { domains } = req.body;
-    const response = await namecheap.domains.check(domains);
-    res.json(response);
+    res.json(await namecheap.domains.check(req.body as DomainsCheckParams));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/reactivate", async (req, res) => {
+router.post("/create", async (req, res, next) => {
   try {
-    const { domainName, ...params } = req.body;
-    const response = await namecheap.domains.reactivate(domainName, params);
-    res.json(response);
+    res.json(await namecheap.domains.create(req.body as DomainsCreateParams));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/renew", async (req, res) => {
+router.post("/reactivate", async (req, res, next) => {
   try {
-    const { domainName, ...params } = req.body;
-    const response = await namecheap.domains.renew(domainName, params);
-    res.json(response);
+    res.json(await namecheap.domains.reactivate(req.body as DomainsReactivateParams));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/registrarLock/:domainName", async (req, res) => {
+router.post("/renew", async (req, res, next) => {
   try {
-    const response = await namecheap.domains.getRegistrarLock(req.params.domainName);
-    res.json(response);
+    res.json(await namecheap.domains.renew(req.body as DomainsRenewParams));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.post("/registrarLock", async (req, res) => {
+router.get("/registrarLock/:domainName", async (req, res, next) => {
   try {
-    const { domainName, ...params } = req.body;
-    const response = await namecheap.domains.setRegistrarLock(domainName, params);
-    res.json(response);
+    res.json(await namecheap.domains.getRegistrarLock({ domainName: req.params.domainName }));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
-router.get("/info/:domainName", async (req, res) => {
+router.post("/registrarLock", async (req, res, next) => {
   try {
-    const domain = req.params.domainName;
-    const hostName = req.query.hostname as string | undefined;
-
-    const response = await namecheap.domains.getInfo(domain, { hostName });
-    res.json(response);
+    res.json(await namecheap.domains.setRegistrarLock(req.body as DomainsSetRegistrarLockParams));
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    next(error);
   }
 });
 
