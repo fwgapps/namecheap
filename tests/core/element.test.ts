@@ -167,4 +167,25 @@ describe("El text accessors", () => {
     expect(el("<A>False</A>").booleanText()).toBe(false);
     expect(() => el("<A>yes</A>").booleanText()).toThrow(NamecheapParseError);
   });
+
+  it("lenientNumber returns plain decimals and undefined for absent or unacceptable values, never throwing", () => {
+    const root = el('<R Ok="2.5" Neg="-3" NA="n/a" Comma="1,50" Empty="" Abc="abc" Exp="1.0e0"/>');
+    expect(root.lenientNumber("Ok")).toBe(2.5);
+    expect(root.lenientNumber("Neg")).toBe(-3);
+    for (const attr of ["Missing", "NA", "Comma", "Empty", "Abc", "Exp"]) {
+      expect(root.lenientNumber(attr)).toBeUndefined();
+    }
+    expect(root.lenientNumber("toString")).toBeUndefined();
+  });
+
+  it("lenientBoolean accepts true/false in any case and undefined otherwise, never throwing", () => {
+    const root = el('<R A="true" B="False" C="TRUE" D="maybe" E="" F="1"/>');
+    expect(root.lenientBoolean("A")).toBe(true);
+    expect(root.lenientBoolean("B")).toBe(false);
+    expect(root.lenientBoolean("C")).toBe(true);
+    for (const attr of ["Missing", "D", "E", "F"]) {
+      expect(root.lenientBoolean(attr)).toBeUndefined();
+    }
+    expect(root.lenientBoolean("constructor")).toBeUndefined();
+  });
 });

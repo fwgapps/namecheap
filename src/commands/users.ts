@@ -310,7 +310,7 @@ const login = defineCommand<UsersLoginParams, UsersLoginResult>({
     const result = cr.children()[0];
     return {
       ...optionalField("username", result?.optionalString("Username")),
-      ...optionalField("loginSuccess", result?.optionalBoolean("LoginSuccess")),
+      ...optionalField("loginSuccess", result?.lenientBoolean("LoginSuccess")),
     };
   },
 });
@@ -342,7 +342,7 @@ const resetPassword = defineCommand<UsersResetPasswordParams, UsersResetPassword
   name: "namecheap.users.resetPassword",
   keys: { urlPattern: "URLPattern" },
   parse: (cr) => ({
-    ...optionalField("success", cr.children()[0]?.optionalBoolean("Success")),
+    ...optionalField("success", cr.children()[0]?.lenientBoolean("Success")),
   }),
 });
 export const usersCommands = {

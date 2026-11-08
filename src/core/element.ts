@@ -67,6 +67,26 @@ export class El {
     return value === undefined ? undefined : this.parseBoolean(attr, value);
   }
 
+  /**
+   * Never throws: the plain decimal value of an attribute, or `undefined` when it is
+   * absent or not acceptable. For undocumented responses of billed or account-changing
+   * commands, where a parse failure after the action succeeded would invite a retry.
+   */
+  lenientNumber(attr: string): number | undefined {
+    const value = this.optionalString(attr);
+    if (value === undefined || !PLAIN_DECIMAL.test(value)) return undefined;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  /** Never throws: `true`/`false` (any case), or `undefined` when absent or anything else. */
+  lenientBoolean(attr: string): boolean | undefined {
+    const lower = this.optionalString(attr)?.toLowerCase();
+    if (lower === "true") return true;
+    if (lower === "false") return false;
+    return undefined;
+  }
+
   /** Element text as a plain decimal number (for numeric child elements). */
   numberText(): number {
     return this.parseNumber(`text`, this.text(), `${this.name}: text is not a number`);

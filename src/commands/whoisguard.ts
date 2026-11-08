@@ -162,7 +162,7 @@ export interface WhoisguardRenewParams {
 // column labels ("WhoisGuard ID", "Renew", "OrderId", ...), the Go SDK has no renew
 // and no fixture exists. The parser therefore never throws once the charge went
 // through: it reads the first child element, whatever its name, and returns only
-// the attributes it finds and can read. The spellings below are guesses.
+// the attributes it finds and can read (never throwing on a present but unexpected value). The spellings below are guesses.
 export interface WhoisguardRenewResult {
   whoisguardId?: number;
   years?: number;
@@ -173,21 +173,17 @@ export interface WhoisguardRenewResult {
   chargedAmount?: number;
 }
 
-function lenientBoolean(value: string | undefined): boolean | undefined {
-  return value === "true" ? true : value === "false" ? false : undefined;
-}
-
 const renew = defineCommand<WhoisguardRenewParams, WhoisguardRenewResult>({
   name: "namecheap.whoisguard.renew",
   parse: (cr) => {
     const result = cr.children()[0];
     return {
-      ...optionalField("whoisguardId", result?.optionalNumber("WhoisguardId")),
-      ...optionalField("years", result?.optionalNumber("Years")),
-      ...optionalField("renew", lenientBoolean(result?.optionalString("Renew"))),
-      ...optionalField("orderId", result?.optionalNumber("OrderId")),
-      ...optionalField("transactionId", result?.optionalNumber("TransactionId")),
-      ...optionalField("chargedAmount", result?.optionalNumber("ChargedAmount")),
+      ...optionalField("whoisguardId", result?.lenientNumber("WhoisguardId")),
+      ...optionalField("years", result?.lenientNumber("Years")),
+      ...optionalField("renew", result?.lenientBoolean("Renew")),
+      ...optionalField("orderId", result?.lenientNumber("OrderId")),
+      ...optionalField("transactionId", result?.lenientNumber("TransactionId")),
+      ...optionalField("chargedAmount", result?.lenientNumber("ChargedAmount")),
     };
   },
 });

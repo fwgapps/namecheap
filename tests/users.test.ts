@@ -276,6 +276,28 @@ describe("users", () => {
     expect(JSON.stringify(result)).not.toContain("pw-SECRET-login");
   });
 
+  it("login and resetPassword do not throw on unacceptable boolean values and omit the field", async () => {
+    const wrap = (cmd: string, body: string) => `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<CommandResponse Type="${cmd}">${body}</CommandResponse>
+</ApiResponse>`;
+    const login = createTestClient(
+      wrap("namecheap.users.login", '<R Username="u" LoginSuccess="maybe" />'),
+    );
+    expect(await login.client.users.login({ password: "pw" })).toEqual({ username: "u" });
+    const reset = createTestClient(wrap("namecheap.users.resetPassword", '<R Success="yes" />'));
+    expect(
+      await reset.client.users.resetPassword({
+        findBy: "USERNAME",
+        findByValue: "u",
+        emailFromName: "E",
+        emailFrom: "a@example.com",
+        urlPattern: "https://example.com/[RESETCODE]",
+      }),
+    ).toEqual({});
+  });
+
   it("resetPassword sends the documented request and parses the docs-derived fixture", async () => {
     const { client, calls } = createTestClient(loadFixture("users", "resetPassword"));
     const result = await client.users.resetPassword({

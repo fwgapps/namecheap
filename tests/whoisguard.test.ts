@@ -126,6 +126,25 @@ describe("whoisguard", () => {
     expect(result).toEqual({ orderId: 77, chargedAmount: 2.5 });
   });
 
+  it("renew never throws on unacceptable attribute values and reads Renew case-insensitively", async () => {
+    const bad = `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+	<Errors />
+	<CommandResponse Type="namecheap.whoisguard.renew">
+		<R ChargedAmount="n/a" OrderId="abc" Years="1.0e0" Renew="maybe" TransactionId="9" />
+	</CommandResponse>
+</ApiResponse>`;
+    const first = createTestClient(bad);
+    expect(await first.client.whoisGuard.renew({ whoisguardID: 1, years: 1 })).toEqual({
+      transactionId: 9,
+    });
+    const second = createTestClient(bad.replace('Renew="maybe"', 'Renew="True"'));
+    expect(await second.client.whoisGuard.renew({ whoisguardID: 1, years: 1 })).toEqual({
+      transactionId: 9,
+      renew: true,
+    });
+  });
+
   it("renew returns an empty object for an empty CommandResponse", async () => {
     const xml = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
