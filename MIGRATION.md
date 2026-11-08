@@ -11,7 +11,7 @@ Version 1.0 is a complete rewrite of `@fwgapps/namecheap`. It is not backwards c
 - **POST transport.** Every command is a `POST` with an `application/x-www-form-urlencoded` body. The URL has no query string, so the API key never appears in it. (0.6 used GET with the credentials in the query string, and POST only for `setHosts` with more than 10 hosts and `ssl.parseCSR`.)
 - **Error classes.** Failures are `NamecheapError`, `NamecheapHttpError` or `NamecheapParseError` instances ([section 5](#5-error-handling)).
 - **Typed values.** Booleans and numbers in results are real `boolean` and `number` values (the parser never coerces; commands read fields with typed accessors). Result objects are flattened and renamed per command, see the method table.
-- **Tolerant parsing of undocumented responses.** `users.create`, `users.login`, `users.resetPassword` and `whoisGuard.renew` return loosely typed results and never throw on an unexpected shape.
+- **Tolerant parsing of undocumented responses.** `users.create`, `users.login`, `users.resetPassword`, `whoisGuard.renew`, `ssl.create`, `ssl.renew` and `ssl.purchaseMoreSans` return loosely typed results and never throw on an unexpected shape.
 - **`sandbox` is strictly boolean.** 0.6 treated any truthy value as the sandbox (`!isSandbox`), so an environment string such as `"true"` selected it. 1.0 accepts only `true` (sandbox), `false` or omitted (**production**), and throws a `TypeError` for anything else. Convert environment variables yourself: `sandbox: process.env.X === "true"`.
 - **No automatic retries**, no logging, and a `timeoutMs` option.
 
@@ -114,7 +114,7 @@ Result shapes: "was `X`" refers to the 0.6 return type. Billed commands are mark
 | `ssl.getApproverEmailList(domainName, certificateType?)` | `ssl.getApproverEmailList({ domainName, certificateType })` | Positional becomes object; `certificateType` is now required. | `{ domainEmails, genericEmails, manualEmails }` (string arrays). |
 | `ssl.activate(certificateId, params)` | `ssl.activate({ certificateID, csr, adminEmailAddress, webServerType?, uniqueValue? })` | Certificate id moves into the params object and is renamed `certificateID`. The 0.6 DCV and OV/EV organisation option sets are not exposed (see the README's known gaps). | `{ id, isSuccess, httpDCValidation? }`. |
 | `ssl.resendApproverEmail(certificateId)` | `ssl.resendApproverEmail({ certificateID })` | Positional becomes object. | Was `number`, now `{ id, isSuccess }`. |
-| `ssl.getInfo(certificateId)` | `ssl.getInfo({ certificateID, returnCertificate?, returnType? })` | Positional becomes object; new optional params. | `{ certificateID, status, type?, commonName?, provider?, issuedOn?, expires? }`. |
+| `ssl.getInfo(certificateId)` | `ssl.getInfo({ certificateID, returnCertificate?, returnType? })` | Positional becomes object; new optional params; the certificate body requested with `returnCertificate` is not parsed in 1.0 (undocumented response). | `{ certificateID, status, type?, commonName?, provider?, issuedOn?, expires? }`. |
 | `ssl.renew(certificateId, params)` (billed) | `ssl.renew({ certificateID, years, sslType, promotionCode? })` | Certificate id moves into the params object. | `{ certificateID?, years?, orderID?, transactionID?, chargedAmount? }` (every field optional, parsed tolerantly). |
 | `ssl.reissue(certificateId, params)` | `ssl.reissue({ certificateID, csr, adminEmailAddress?, webServerType?, uniqueValue? })` | Certificate id moves into the params object; the 0.6 DCV and OV/EV organisation option sets are not exposed (see the README's known gaps). | Same as `ssl.activate`: `{ id, isSuccess, httpDCValidation? }`. |
 | `ssl.resendFulfillmentEmail(certificateId)` | `ssl.resendFulfillmentEmail({ certificateID })` | Positional becomes object. | Was `number`, now `{ id, isSuccess }`. |
@@ -155,7 +155,7 @@ Result shapes: "was `X`" refers to the 0.6 return type. Billed commands are mark
 | `whoIsGuard.enable(whoIsGuardId, forwardedToEmail)` | `whoisGuard.enable({ whoisguardID, forwardedToEmail })` | Positional becomes object. | Was `string`, now `{ domainName, isSuccess }`. |
 | `whoIsGuard.disable(whoIsGuardId)` | `whoisGuard.disable({ whoisguardID })` | Positional becomes object. | Was `string`, now `{ domainName, isSuccess }`. |
 | `whoIsGuard.getList(params)` | `whoisGuard.getList(params?)` | Params now optional. | `{ data, paging }` becomes `{ whoisguards, paging }`; items are `{ id, domainName, created, expires, status }`. |
-| `whoIsGuard.renew(whoIsGuardId: string, year, promotionCode?: number)` (billed) | `whoisGuard.renew({ whoisguardID, years, promotionCode? })` | `whoIsGuardId` (string) becomes numeric `whoisguardID`; `year` becomes `years`; `promotionCode` is a string. | Loosely typed (undocumented response): `{ whoisguardId?, years?, renew?, orderId?, transactionId?, chargedAmount? }`. |
+| `whoIsGuard.renew(whoIsGuardId: string, year, promotionCode?: number)` (billed) | `whoisGuard.renew({ whoisguardID, years, promotionCode? })` | `whoIsGuardId` (string) becomes numeric `whoisguardID`; `year` becomes `years`; `promotionCode` is a string. | Loosely typed (undocumented response): `{ whoisguardID?, years?, renew?, orderID?, transactionID?, chargedAmount? }` (reads both `OrderId` and `OrderID`). |
 
 ### Methods with no 1.0 equivalent
 
@@ -167,7 +167,9 @@ None of the 0.6 methods was removed. The `domainPrivacy` getter (alias of `whoIs
 
 - `NamecheapError`: the API answered `Status="ERROR"`. Has `code` (first error number) and `errors` (all `{ code, message }` items).
 - `NamecheapHttpError`: network failure, timeout, redirect or non-2xx status. Has `status`, `statusText` and `cause`.
-- `NamecheapParseError`: the body is not valid XML or lacks a documented field.
+- `NamecheapParseError`: the body is not valid XML or lacks a documented field. When Namecheap answered OK but the response of a command could not be read, the message says the action may have been performed (the original error is the `cause`). After a billed or account-changing command, such an error or a `timeoutMs` abort means the outcome is unknown: reconcile with `getList`/`getInfo` before retrying.
+
+Programmer or configuration mistakes (invalid `sandbox`, `dns.setHosts` validation, reserved parameter names) throw a plain `TypeError`.
 
 ```ts
 // 0.6

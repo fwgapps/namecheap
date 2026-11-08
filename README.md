@@ -209,7 +209,7 @@ if (subscription) {
 
 ## Error handling
 
-All failures are instances of one of three `Error` subclasses, exported from the package:
+All API, HTTP and response failures are instances of one of three `Error` subclasses, exported from the package. Programmer or configuration mistakes (an invalid `sandbox`, `dns.setHosts` validation, serializer rejections, reserved parameter names) throw a plain `TypeError` instead.
 
 | Class                  | Thrown when                                                                              | Useful fields                                  |
 | ---------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------- |
@@ -237,15 +237,18 @@ try {
 }
 ```
 
-Error messages never contain the URL, the API key, the request body or the response body.
+Error messages contain at most short fragments of the response (element names, a truncated entity name) and never request data or credentials.
 
 **There are no automatic retries, on purpose.** Many commands are billed (register, renew, transfer, purchase). Retrying a request whose outcome is unknown could charge you twice. Decide per call whether a retry is safe; read-only commands such as `getList` or `check` usually are.
+
+After a billed or account-changing command, a `NamecheapParseError` (Namecheap answered OK but the response could not be read) or a `timeoutMs` abort means the outcome is **unknown**: the action may have been performed. Reconcile with `getList` or `getInfo` before retrying.
 
 **HTTP 405 means rate limiting.** Namecheap answers 405 when you exceed its request limits, so a `NamecheapHttpError` with `status === 405` is a signal to slow down, not a bug in your request.
 
 ## Safety notes
 
 - `dns.setHosts` **replaces the whole zone**: every record you do not list is deleted. Read the current records with `dns.getHosts` first and send the complete desired list. The library rejects an empty `hosts` list with a `TypeError` before sending anything.
+- `dns.setHosts` with `emailType` other than `MX`: the reference says MX records are silently discarded unless the resulting email mode is `MX`. Because `setHosts` replaces the whole zone, listing MX hosts under another mode loses your mail routing.
 - Credentials travel in the POST body (`application/x-www-form-urlencoded`), never in the URL, so they do not end up in access logs or proxies that record URLs.
 - The library never logs anything. Do not log the client config or error `cause` objects from your own code in production.
 - `sandbox` defaults to production. See the [warning above](#configuration).
@@ -280,12 +283,13 @@ console.log(result.updated, calls[0]?.url);
 ## Known gaps
 
 1. `ssl.activate` and `ssl.reissue` do not expose domain control validation (DCV) parameters or the 0.6 OV/EV organisation option sets (organisation, department, admin address, company registration fields), because the API reference does not document them. Confirm the activation flow in the sandbox before relying on it.
-2. `users.create`, `users.login`, `users.resetPassword` and `whoisGuard.renew` have undocumented response shapes. They return loosely typed results parsed tolerantly: they never throw on an unexpected shape, and fields that cannot be read are simply absent.
+2. `users.create`, `users.login`, `users.resetPassword`, `whoisGuard.renew`, `ssl.create`, `ssl.renew` and `ssl.purchaseMoreSans` have undocumented response shapes. They return loosely typed results parsed tolerantly: they never throw on an unexpected shape, and fields that cannot be read are simply absent.
 3. `dns.setEmailForwarding` sends `MailBox<n>` as spelled in the API reference; the Go SDK sends lowercase. This is unverified against the live API.
 4. CAA (`Flag`/`Tag`) records are not supported by `dns.setHosts`.
-5. WhoisGuard `allot`, `unallot` and `discard` are not implemented.
-6. `domains.create` no longer exposes `idnCode`, the billing contact and `extendedAttributes`, which 0.6 did. IDN registrations and some ccTLDs (such as .us, .ca, .eu) need them, and the API reference does not document them. Unknown extra keys still pass through the serializer, so you can try a workaround such as `nc.domains.create({ ...params, ExtendedAttributes: "..." } as never)`, unverified against the live API.
-7. Test fixtures marked `source: docs` or `source: go-namecheap-sdk` have not all been verified against the live sandbox. `scripts/record-fixtures.mjs` re-records them from a real sandbox account.
+5. `ssl.getInfo` accepts `returnCertificate` and sends it, but 1.0 does not parse the certificate body (its response shape is undocumented), so the result never contains the certificate.
+6. WhoisGuard `allot`, `unallot` and `discard` are not implemented.
+7. `domains.create` no longer exposes `idnCode`, the billing contact and `extendedAttributes`, which 0.6 did. IDN registrations and some ccTLDs (such as .us, .ca, .eu) need them, and the API reference does not document them. Unknown extra keys still pass through the serializer, so you can try a workaround such as `nc.domains.create({ ...params, ExtendedAttributes: "..." } as never)`, unverified against the live API.
+8. Test fixtures marked `source: docs` or `source: go-namecheap-sdk` have not all been verified against the live sandbox. `scripts/record-fixtures.mjs` re-records them from a real sandbox account.
 
 ## Examples
 
