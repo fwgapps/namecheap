@@ -12,7 +12,7 @@ Version 1.0 is a complete rewrite of `@fwgapps/namecheap`. It is not backwards c
 - **Error classes.** Failures are `NamecheapError`, `NamecheapHttpError` or `NamecheapParseError` instances ([section 5](#5-error-handling)).
 - **Typed values.** Booleans and numbers in results are real `boolean` and `number` values (the parser never coerces; commands read fields with typed accessors). Result objects are flattened and renamed per command, see the method table.
 - **Tolerant parsing of undocumented responses.** `users.create`, `users.login`, `users.resetPassword` and `whoisGuard.renew` return loosely typed results and never throw on an unexpected shape.
-- **`sandbox` semantics are unchanged: falsy means production.** The only difference is that `sandbox` is now optional. Omitting it is the same as `sandbox: false`, which talks to **production**.
+- **`sandbox` is strictly boolean.** 0.6 treated any truthy value as the sandbox (`!isSandbox`), so an environment string such as `"true"` selected it. 1.0 accepts only `true` (sandbox), `false` or omitted (**production**), and throws a `TypeError` for anything else. Convert environment variables yourself: `sandbox: process.env.X === "true"`.
 - **No automatic retries**, no logging, and a `timeoutMs` option.
 
 ## 2. Client and configuration
@@ -21,7 +21,7 @@ Version 1.0 is a complete rewrite of `@fwgapps/namecheap`. It is not backwards c
 | ---------------------------------- | ----------------------------------------- |
 | `new Namecheap({ apiUser, apiKey, clientIp, sandbox, username? })` | `new Namecheap({ apiUser, apiKey, clientIp, userName?, sandbox?, fetch?, timeoutMs? })` |
 | `username`                         | `userName` (renamed, still defaults to `apiUser`) |
-| `sandbox` required                 | `sandbox` optional (falsy = production)   |
+| `sandbox` required, any truthy value = sandbox | `sandbox` optional boolean: `true` = sandbox, `false`/omitted = production, non-boolean throws `TypeError` |
 | -                                  | `fetch` (inject a custom or fake fetch), `timeoutMs` |
 
 ### Renamed client properties
@@ -64,9 +64,9 @@ Result shapes: "was `X`" refers to the 0.6 return type. Billed commands are mark
 | --- | --- | --- | --- |
 | `domains.getList(params?)` | `domains.getList(params?)` | Same params object. 0.6 defaulted `listType`/`page`/`pageSize`; 1.0 sends only what you pass. | `{ data, paging }` becomes `{ domains, paging }`. Item field `isOurDns` becomes `isOurDNS`. |
 | `domains.getContacts(domainName)` | `domains.getContacts({ domainName })` | Positional string becomes object. | Flattened to `{ domain, domainnameid, readonly, registrant?, tech?, admin?, auxBilling? }`. |
-| `domains.create(domain, params)` (billed) | `domains.create({ domainName, years, registrant, tech, admin, auxBilling, ... })` | Domain moves into the params object. `addFreeWhoisguard` and `wgEnabled` are the strings `Yes`/`No`. 0.6 `promoCode` becomes `promotionCode` and `WGEnabled` becomes `wgEnabled`; the 0.6 `billing`, `idnCode` and `extendedAttributes` parameters are not supported in 1.0. | Typed `{ domain, registered, chargedAmount, domainID, orderID, transactionID, whoisguardEnable?, nonRealTimeDomain? }`. |
+| `domains.create(domain, params)` (billed) | `domains.create({ domainName, years, registrant, tech, admin, auxBilling, ... })` | Domain moves into the params object. `addFreeWhoisguard` and `wgEnabled` are the strings `Yes`/`No`. 0.6 `promoCode` becomes `promotionCode` and `WGEnabled` becomes `wgEnabled`; the 0.6 `billing`, `idnCode` and `extendedAttributes` parameters are not supported in 1.0 (IDN and some ccTLDs need them; unknown extra keys still pass through the serializer as an unverified workaround). | Typed `{ domain, registered, chargedAmount, domainID, orderID, transactionID, whoisguardEnable?, nonRealTimeDomain? }`. |
 | `domains.getTldList()` | `domains.getTldList()` | Unchanged. | Array of `DomainsTld` with typed numbers and booleans. |
-| `domains.setContacts(domain, params)` | `domains.setContacts({ domainName, registrant, tech, admin, auxBilling })` | Domain moves into the params object. | Was `string`, now `{ domain, isSuccess }`. |
+| `domains.setContacts(domain, params)` | `domains.setContacts({ domainName, registrant, tech, admin, auxBilling })` | Domain moves into the params object. The 0.6 `extendedAttributes` parameter is not supported in 1.0. | Was `string`, now `{ domain, isSuccess }`. |
 | `domains.check(domains[])` | `domains.check({ domainList })` | The array becomes a comma-separated string (`"a.com,b.com"`). | Array of `{ domain, available, isPremiumName, premium*Price, icannFee, eapFee, errorNo?, description? }` with real booleans and numbers. |
 | `domains.reactivate(domain, params?)` (billed) | `domains.reactivate({ domainName, ... })` | Domain moves into the params object. | `{ domain, isSuccess, chargedAmount, orderID, transactionID }`. |
 | `domains.renew(domain, params)` (billed) | `domains.renew({ domainName, years, ... })` | Domain moves into the params object. | `{ domainName, domainID, renew, chargedAmount, orderID, transactionID, domainDetails: { expiredDate, numYears } }`. |
@@ -82,7 +82,7 @@ Result shapes: "was `X`" refers to the 0.6 return type. Billed commands are mark
 | `domainsDns.setCustom(sld, tld, nameservers[])` | `dns.setCustom({ sld, tld, nameservers })` | The array becomes a comma-separated string. | Was `string`, now `{ domain, updated }`. |
 | `domainsDns.getList(sld, tld)` | `dns.getList({ sld, tld })` | Positional becomes object. | `{ domain, isUsingOurDNS, nameservers: string[], isPremiumDNS?, isUsingFreeDNS? }`. |
 | `domainsDns.getHosts(sld, tld)` | `dns.getHosts({ sld, tld })` | Positional becomes object. | `{ domain, isUsingOurDNS, hosts: DnsHost[], emailType? }`; host fields are `hostId`, `name`, `type`, `address`, `mxPref`, `ttl`. |
-| `domainsDns.getEmailForwarding(domain)` | `dns.getEmailForwarding({ domainName })` | Positional string becomes object. | `{ domain, forwards: { mailBox, forwardTo }[] }`. |
+| `domainsDns.getEmailForwarding(domain)` | `dns.getEmailForwarding({ domainName })` | Positional string becomes object. | `{ domain, forwards: { mailbox, forwardTo? }[] }` (note the lowercase `mailbox` in results; `forwardTo` is optional). |
 | `domainsDns.setEmailForwarding(domain, { mailBox[], forwardTo[] })` | `dns.setEmailForwarding({ domainName, forwards })` | Two parallel arrays become one list of `{ mailBox, forwardTo }` records. An empty list clears forwarding. | Was `string`, now `{ domain, isSuccess }`. |
 | `domainsDns.setHosts(sld, tld, { hosts, emailType?, tag?, flag? })` | `dns.setHosts({ sld, tld, hosts, emailType? })` | Host fields renamed: `hostname` to `hostName`, `mxpref` (string) to `mxPref` (number), `recordType` and `address` and `ttl` unchanged. At least one host is required (empty list rejected). `tag` and `flag` (CAA) are not supported. `emailType` also accepts `"NONE"` and `"GMAIL"`. | Was `string[]`, now `{ domain, isSuccess, emailType? }`. |
 
@@ -112,11 +112,11 @@ Result shapes: "was `X`" refers to the 0.6 return type. Billed commands are mark
 | `ssl.getList(params)` | `ssl.getList(params?)` | Params now optional. | Was `SSLResult[]`, now `{ certificates, paging }`. |
 | `ssl.parseCSR(csr, certificateType?)` | `ssl.parseCSR({ csr, certificateType? })` | Positional becomes object. | `{ commonName, domainName, country, organisationUnit, organisation, state, locality, email }`. |
 | `ssl.getApproverEmailList(domainName, certificateType?)` | `ssl.getApproverEmailList({ domainName, certificateType })` | Positional becomes object; `certificateType` is now required. | `{ domainEmails, genericEmails, manualEmails }` (string arrays). |
-| `ssl.activate(certificateId, params)` | `ssl.activate({ certificateID, csr, adminEmailAddress, webServerType?, uniqueValue? })` | Certificate id moves into the params object and is renamed `certificateID`. The OV/EV/DCV option sets of 0.6 are not exposed (see the README's known gaps). | `{ id, isSuccess, httpDCValidation? }`. |
+| `ssl.activate(certificateId, params)` | `ssl.activate({ certificateID, csr, adminEmailAddress, webServerType?, uniqueValue? })` | Certificate id moves into the params object and is renamed `certificateID`. The 0.6 DCV and OV/EV organisation option sets are not exposed (see the README's known gaps). | `{ id, isSuccess, httpDCValidation? }`. |
 | `ssl.resendApproverEmail(certificateId)` | `ssl.resendApproverEmail({ certificateID })` | Positional becomes object. | Was `number`, now `{ id, isSuccess }`. |
 | `ssl.getInfo(certificateId)` | `ssl.getInfo({ certificateID, returnCertificate?, returnType? })` | Positional becomes object; new optional params. | `{ certificateID, status, type?, commonName?, provider?, issuedOn?, expires? }`. |
 | `ssl.renew(certificateId, params)` (billed) | `ssl.renew({ certificateID, years, sslType, promotionCode? })` | Certificate id moves into the params object. | `{ certificateID, years, orderID, transactionID, chargedAmount }`. |
-| `ssl.reissue(certificateId, params)` | `ssl.reissue({ certificateID, csr, adminEmailAddress?, webServerType?, uniqueValue? })` | Certificate id moves into the params object; the extra OV/EV option sets are not exposed. | Same as `ssl.activate`: `{ id, isSuccess, httpDCValidation? }`. |
+| `ssl.reissue(certificateId, params)` | `ssl.reissue({ certificateID, csr, adminEmailAddress?, webServerType?, uniqueValue? })` | Certificate id moves into the params object; the 0.6 DCV and OV/EV organisation option sets are not exposed (see the README's known gaps). | Same as `ssl.activate`: `{ id, isSuccess, httpDCValidation? }`. |
 | `ssl.resendFulfillmentEmail(certificateId)` | `ssl.resendFulfillmentEmail({ certificateID })` | Positional becomes object. | Was `number`, now `{ id, isSuccess }`. |
 | `ssl.purchaseMoreSANS(certificateId, numberOfSANSToAdd)` (billed) | `ssl.purchaseMoreSans({ certificateID, numberOfSansToAdd })` | Method renamed (`SANS` to `Sans`); positional becomes object. | `{ isSuccess, orderID, transactionID, chargedAmount, certificateID, sslType, sansCount }`. |
 | `ssl.revokeCertificate(certificateId, certificateType)` | `ssl.revokeCertificate({ certificateID, certificateType })` | Positional becomes object. | Was `number`, now `{ isSuccess, certificateID }`. |
@@ -229,4 +229,4 @@ Alternatives:
 | `GetAddFundsStatus` | Gone: `users.getAddFundsStatus` returns `status` as a plain `string` |
 | `DomainDnsTag` | Gone: CAA `Flag`/`Tag` records are not supported by `dns.setHosts` |
 
-New in 1.0: `SslReturnType` (`"Individual" | "PKCS7"`), the error classes, the `NamecheapConfig` type, and a `Params`/`Result` type for every command (for example `DnsSetHostsParams`, `DomainsGetListResult`).
+New in 1.0: `SslReturnType` (`"Individual" | "PKCS7"`), the error classes (`NamecheapError`, `NamecheapHttpError`, `NamecheapParseError`), the `NamecheapConfig` type, the command definition objects `domainsCommands`, `dnsCommands`, `nsCommands`, `transferCommands`, `sslCommands`, `usersCommands`, `usersAddressCommands` and `whoisGuardCommands`, the default and named `Namecheap` exports, and a `Params`/`Result` type for every command (for example `DnsSetHostsParams`, `DomainsGetListResult`).

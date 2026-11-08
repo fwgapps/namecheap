@@ -82,11 +82,11 @@ const nc = new Namecheap({
 | `apiKey`    | `string`              | required           | Sent as `ApiKey`, in the POST body only.                                                |
 | `clientIp`  | `string`              | required           | Sent as `ClientIp`. Must match an IP on your Namecheap API whitelist.                   |
 | `userName`  | `string`              | `apiUser`          | Sent as `UserName`. Use it when acting on a different account than the API user.        |
-| `sandbox`   | `boolean`             | `false`            | `true` talks to `api.sandbox.namecheap.com`; anything else talks to **production**.     |
+| `sandbox`   | `boolean`             | `false`            | Must be a boolean. `true` talks to `api.sandbox.namecheap.com`; `false` or omitted talks to **production**. Any other value throws a `TypeError`. |
 | `fetch`     | `typeof fetch`        | `globalThis.fetch` | Inject a custom or fake `fetch` (tests, proxies, edge runtimes).                        |
 | `timeoutMs` | `number`              | no timeout         | Implemented with `AbortSignal.timeout`; a timeout surfaces as a `NamecheapHttpError`.   |
 
-> **WARNING: `sandbox` defaults to `false`, which means PRODUCTION.** Forgetting it sends real, billed commands (registrations, renewals, transfers) and changes real DNS. Set `sandbox: true` explicitly while developing, and drive it from configuration rather than a literal.
+> **WARNING: `sandbox` defaults to `false`, which means PRODUCTION.** Forgetting it sends real, billed commands (registrations, renewals, transfers) and changes real DNS. Set `sandbox: true` explicitly while developing. `sandbox` must be a real boolean: a string such as `"true"` throws a `TypeError` at construction instead of silently selecting production, so convert environment variables yourself (`sandbox: process.env.NAMECHEAP_SANDBOX === "true"`).
 
 > **IP whitelist.** Namecheap rejects requests from IP addresses that are not on your API whitelist, in the sandbox and in production. Enable API access and add your server's public IP in the Namecheap dashboard (Profile, Tools, Namecheap API Access), and pass the same address as `clientIp`.
 
@@ -279,12 +279,13 @@ console.log(result.updated, calls[0]?.url);
 
 ## Known gaps
 
-1. `ssl.activate` and `ssl.reissue` do not expose domain control validation (DCV) parameters because the API reference does not document them. Confirm the activation flow in the sandbox before relying on it.
+1. `ssl.activate` and `ssl.reissue` do not expose domain control validation (DCV) parameters or the 0.6 OV/EV organisation option sets (organisation, department, admin address, company registration fields), because the API reference does not document them. Confirm the activation flow in the sandbox before relying on it.
 2. `users.create`, `users.login`, `users.resetPassword` and `whoisGuard.renew` have undocumented response shapes. They return loosely typed results parsed tolerantly: they never throw on an unexpected shape, and fields that cannot be read are simply absent.
 3. `dns.setEmailForwarding` sends `MailBox<n>` as spelled in the API reference; the Go SDK sends lowercase. This is unverified against the live API.
 4. CAA (`Flag`/`Tag`) records are not supported by `dns.setHosts`.
 5. WhoisGuard `allot`, `unallot` and `discard` are not implemented.
-6. Test fixtures marked `source: docs` or `source: go-namecheap-sdk` have not all been verified against the live sandbox. `scripts/record-fixtures.mjs` re-records them from a real sandbox account.
+6. `domains.create` no longer exposes `idnCode`, the billing contact and `extendedAttributes`, which 0.6 did. IDN registrations and some ccTLDs (such as .us, .ca, .eu) need them, and the API reference does not document them. Unknown extra keys still pass through the serializer, so you can try a workaround such as `nc.domains.create({ ...params, ExtendedAttributes: "..." } as never)`, unverified against the live API.
+7. Test fixtures marked `source: docs` or `source: go-namecheap-sdk` have not all been verified against the live sandbox. `scripts/record-fixtures.mjs` re-records them from a real sandbox account.
 
 ## Examples
 

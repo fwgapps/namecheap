@@ -28,6 +28,9 @@ const SANDBOX_URL = "https://api.sandbox.namecheap.com/xml.response";
  * URL, the API key, the request body or the response body.
  */
 export function createTransport(config: TransportConfig): Send {
+  if (config.sandbox !== undefined && typeof config.sandbox !== "boolean") {
+    throw new TypeError("NamecheapConfig.sandbox must be a boolean");
+  }
   const url = config.sandbox === true ? SANDBOX_URL : PRODUCTION_URL;
   const fetchImpl = config.fetch ?? globalThis.fetch;
 

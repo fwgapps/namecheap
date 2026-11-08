@@ -191,4 +191,35 @@ describe("createTransport", () => {
     expect(error).toBeInstanceOf(NamecheapParseError);
     expectNoKey(error, f.calls);
   });
+
+  describe("sandbox option validation", () => {
+    const noop = fakeFetch(async () => new Response(OK_BODY)).fetch;
+
+    it.each([["true"], ["false"], ["1"], [0], [1], [null]])(
+      "throws a TypeError for the non-boolean value %j",
+      (value) => {
+        const attempt = () => createTransport(config(noop, { sandbox: value as never }));
+        expect(attempt).toThrow(TypeError);
+        expect(attempt).toThrow("NamecheapConfig.sandbox must be a boolean");
+        try {
+          attempt();
+        } catch (error) {
+          expect((error as Error).message).not.toContain(String(value));
+        }
+      },
+    );
+
+    it("selects the sandbox host for true", async () => {
+      const f = fakeFetch(async () => new Response(OK_BODY));
+      await createTransport(config(f.fetch, { sandbox: true }))({ command: "c", params: [] });
+      expect(f.calls[0]?.url).toBe(SANDBOX);
+    });
+
+    it.each([[false], [undefined]])("selects production for %s", async (value) => {
+      const f = fakeFetch(async () => new Response(OK_BODY));
+      const extra: Partial<TransportConfig> = value === undefined ? {} : { sandbox: value };
+      await createTransport(config(f.fetch, extra))({ command: "c", params: [] });
+      expect(f.calls[0]?.url).toBe(PROD);
+    });
+  });
 });

@@ -54,4 +54,11 @@ describe("Namecheap client", () => {
     expect(calls[0]?.body.get("Command")).toBe("namecheap.test.run");
     expect(calls[0]?.url).toContain("sandbox");
   });
+
+  it("throws a TypeError when sandbox is not a boolean", () => {
+    expect(
+      () =>
+        new Namecheap({ apiUser: "u", apiKey: "k", clientIp: "1.2.3.4", sandbox: "true" as never }),
+    ).toThrow(TypeError);
+  });
 });
