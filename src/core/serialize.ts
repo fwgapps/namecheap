@@ -1,4 +1,4 @@
-export const ACRONYMS: readonly string[] = ["SLD", "TLD", "IP", "ID", "DNS", "WG"];
+export const ACRONYMS: readonly string[] = ["SLD", "TLD", "IP", "ID", "DNS", "WG", "MX", "TTL"];
 
 export type ArrayStyle = "bracket" | "suffix";
 
@@ -29,6 +29,12 @@ export function toParamName(key: string): string {
   return splitWords(key).map(toWord).join("");
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null) return false;
+  const proto: unknown = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
 function isObject(value: unknown): value is object {
   return typeof value === "object" && value !== null;
 }
@@ -49,11 +55,33 @@ export function serializeParams(
       const name = (hasOwn(keys, dotted) ? keys[dotted] : undefined) ?? prefix + toParamName(key);
 
       if (Array.isArray(value)) {
+        if (value.some((item) => isPlainObject(item))) {
+          // Records: element i (1-based, by position) field f becomes `<Field><i>`; the
+          // array's own name is not part of the wire name.
+          value.forEach((item, position) => {
+            if (item === undefined || item === null) return;
+            if (!isPlainObject(item)) {
+              throw new TypeError(`Array parameter "${dotted}" cannot mix objects and scalars`);
+            }
+            for (const [field, fieldValue] of Object.entries(item)) {
+              if (fieldValue === undefined || fieldValue === null) continue;
+              if (isObject(fieldValue)) {
+                throw new TypeError(
+                  `Array parameter "${dotted}" field "${field}" must be a scalar value`,
+                );
+              }
+              out.push([`${toParamName(field)}${position + 1}`, String(fieldValue)]);
+            }
+          });
+          continue;
+        }
         let index = 0;
         for (const item of value) {
           if (item === undefined || item === null) continue;
           if (isObject(item)) {
-            throw new TypeError(`Array parameter "${dotted}" cannot contain objects`);
+            throw new TypeError(
+              `Array parameter "${dotted}" cannot contain nested arrays or non-plain objects`,
+            );
           }
           index += 1;
           out.push([

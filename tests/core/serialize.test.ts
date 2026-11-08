@@ -17,6 +17,8 @@ describe("toParamName", () => {
     expect(toParamName("ipAddress")).toBe("IPAddress");
     expect(toParamName("IPAddress")).toBe("IPAddress");
     expect(toParamName("wgEnabled")).toBe("WGEnabled");
+    expect(toParamName("mxPref")).toBe("MXPref");
+    expect(toParamName("ttl")).toBe("TTL");
   });
 
   it("leaves the rest of non-acronym words as written", () => {
@@ -25,7 +27,7 @@ describe("toParamName", () => {
   });
 
   it("exposes the acronym list", () => {
-    expect(ACRONYMS).toEqual(["SLD", "TLD", "IP", "ID", "DNS", "WG"]);
+    expect(ACRONYMS).toEqual(["SLD", "TLD", "IP", "ID", "DNS", "WG", "MX", "TTL"]);
   });
 });
 
@@ -106,8 +108,51 @@ describe("serializeParams", () => {
     expect(serializeParams({ toString: "x" })).toEqual([["ToString", "x"]]);
   });
 
-  it("throws a TypeError naming the key for object array elements", () => {
-    expect(() => serializeParams({ contacts: [{ a: 1 }] })).toThrow(TypeError);
-    expect(() => serializeParams({ contacts: [{ a: 1 }] })).toThrow(/contacts/);
+  it("serializes arrays of plain objects as <Field><index> in both array styles", () => {
+    const hosts = [
+      { hostName: "@", recordType: "A", address: "1.2.3.4", mxPref: 10, ttl: 1800 },
+      { hostName: "www", recordType: "CNAME", address: "example.com." },
+    ];
+    const expected = [
+      ["HostName1", "@"],
+      ["RecordType1", "A"],
+      ["Address1", "1.2.3.4"],
+      ["MXPref1", "10"],
+      ["TTL1", "1800"],
+      ["HostName2", "www"],
+      ["RecordType2", "CNAME"],
+      ["Address2", "example.com."],
+    ];
+    expect(serializeParams({ sld: "a", hosts })).toEqual([["SLD", "a"], ...expected]);
+    expect(serializeParams({ hosts }, { arrayStyle: "bracket" })).toEqual(expected);
+    expect(serializeParams({ hosts }, { arrayStyle: "suffix" })).toEqual(expected);
+  });
+
+  it("numbers object array elements by position and skips undefined and null fields", () => {
+    expect(
+      serializeParams({
+        hosts: [{ hostName: "a", ttl: undefined }, null, { hostName: "c", ttl: null, mxPref: 0 }],
+      }),
+    ).toEqual([
+      ["HostName1", "a"],
+      ["HostName3", "c"],
+      ["MXPref3", "0"],
+    ]);
+  });
+
+  it("throws a TypeError naming the key for nested arrays and non-plain objects", () => {
+    expect(() => serializeParams({ rows: [["a"]] })).toThrow(TypeError);
+    expect(() => serializeParams({ rows: [["a"]] })).toThrow(/rows/);
+    expect(() => serializeParams({ when: [new Date(0)] })).toThrow(/when/);
+  });
+
+  it("throws a TypeError naming the key for arrays or objects inside array objects", () => {
+    expect(() => serializeParams({ hosts: [{ address: ["a"] }] })).toThrow(TypeError);
+    expect(() => serializeParams({ hosts: [{ address: ["a"] }] })).toThrow(/hosts.*address/);
+    expect(() => serializeParams({ hosts: [{ address: { a: 1 } }] })).toThrow(/hosts.*address/);
+  });
+
+  it("throws a TypeError for arrays mixing scalars and objects", () => {
+    expect(() => serializeParams({ mixed: ["a", { b: 1 }] })).toThrow(/mixed/);
   });
 });
