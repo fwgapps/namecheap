@@ -311,6 +311,84 @@ describe("ssl", () => {
     });
   });
 
+  describe("billed commands parse tolerantly", () => {
+    const wrap = (inner: string): string =>
+      `<?xml version="1.0"?><ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response"><Errors /><CommandResponse Type="x">${inner}</CommandResponse></ApiResponse>`;
+
+    it("create accepts a different wrapper element name", async () => {
+      const xml = wrap(
+        '<SomethingElse IsSuccess="true" OrderID="1" TransactionID="2" ChargedAmount="3.5" CertificateID="4" Created="c" SSLType="t" />',
+      );
+      const result = await createTestClient(xml).client.ssl.create({ years: 1, type: "t" });
+      expect(result).toEqual({
+        isSuccess: true,
+        orderID: 1,
+        transactionID: 2,
+        chargedAmount: 3.5,
+        certificateID: 4,
+        created: "c",
+        sslType: "t",
+      });
+    });
+
+    it("create reads certificate fields from a nested SSLCertificate child", async () => {
+      const xml = wrap(
+        '<SSLCreateResult IsSuccess="true" OrderId="1" TransactionId="2"><SSLCertificate CertificateID="9" Created="c" SSLType="t" Status="Purchased" /></SSLCreateResult>',
+      );
+      const result = await createTestClient(xml).client.ssl.create({ years: 1, type: "t" });
+      expect(result).toEqual({
+        isSuccess: true,
+        orderID: 1,
+        transactionID: 2,
+        certificateID: 9,
+        created: "c",
+        sslType: "t",
+        status: "Purchased",
+      });
+    });
+
+    it("renew accepts OrderId/TransactionId spellings", async () => {
+      const xml = wrap('<SSLRenewResult CertificateID="1" OrderId="5" TransactionId="6" />');
+      const result = await createTestClient(xml).client.ssl.renew({
+        certificateID: 1,
+        years: 1,
+        sslType: "t",
+      });
+      expect(result).toEqual({ certificateID: 1, orderID: 5, transactionID: 6 });
+    });
+
+    it("purchaseMoreSans accepts OrderId/TransactionId spellings and another wrapper", async () => {
+      const xml = wrap('<Other OrderId="5" TransactionId="6" SANSCount="2" />');
+      const result = await createTestClient(xml).client.ssl.purchaseMoreSans({
+        certificateID: 1,
+        numberOfSansToAdd: 2,
+      });
+      expect(result).toEqual({ orderID: 5, transactionID: 6, sansCount: 2 });
+    });
+
+    it("does not throw on a malformed charged amount or flag", async () => {
+      const xml = wrap(
+        '<SSLCreateResult IsSuccess="maybe" OrderID="1" ChargedAmount="n/a" CertificateID="x" />',
+      );
+      const result = await createTestClient(xml).client.ssl.create({ years: 1, type: "t" });
+      expect(result).toEqual({ orderID: 1 });
+      const renewed = await createTestClient(
+        wrap('<SSLRenewResult Years="1e3" ChargedAmount="n/a" />'),
+      ).client.ssl.renew({ certificateID: 1, years: 1, sslType: "t" });
+      expect(renewed).toEqual({});
+    });
+
+    it("returns an empty result for an empty CommandResponse", async () => {
+      const xml = wrap("");
+      const { client } = createTestClient(xml);
+      expect(await client.ssl.create({ years: 1, type: "t" })).toEqual({});
+      expect(await client.ssl.renew({ certificateID: 1, years: 1, sslType: "t" })).toEqual({});
+      expect(await client.ssl.purchaseMoreSans({ certificateID: 1, numberOfSansToAdd: 1 })).toEqual(
+        {},
+      );
+    });
+  });
+
   it("revokeCertificate sends the documented request and parses the fixture", async () => {
     const { client, calls } = createTestClient(loadFixture("ssl", "revokeCertificate"));
     const result = await client.ssl.revokeCertificate({

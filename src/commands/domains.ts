@@ -344,8 +344,8 @@ const create = defineCommand<DomainsCreateParams, DomainsCreateResult>({
       domainID: result.number("DomainID"),
       orderID: result.number("OrderID"),
       transactionID: result.number("TransactionID"),
-      ...optionalField("whoisguardEnable", result.optionalBoolean("WhoisguardEnable")),
-      ...optionalField("nonRealTimeDomain", result.optionalBoolean("NonRealTimeDomain")),
+      ...optionalField("whoisguardEnable", result.lenientBoolean("WhoisguardEnable")),
+      ...optionalField("nonRealTimeDomain", result.lenientBoolean("NonRealTimeDomain")),
     };
   },
 });

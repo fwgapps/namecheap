@@ -283,6 +283,29 @@ describe("domains", () => {
     });
   });
 
+  it("create does not throw on a malformed fixture-only optional flag", async () => {
+    const xml = loadFixture("domains", "create")
+      .replace('WhoisguardEnable="true"', 'WhoisguardEnable="maybe"')
+      .replace('NonRealTimeDomain="false"', 'NonRealTimeDomain="2"');
+    const { client } = createTestClient(xml);
+    const result = await client.domains.create({
+      domainName: "example.com",
+      years: 1,
+      registrant: contactParams("Registrant", true),
+      tech: contactParams("Tech"),
+      admin: contactParams("Admin"),
+      auxBilling: contactParams("AuxBilling"),
+    });
+    expect(result).toEqual({
+      domain: "example.com",
+      registered: true,
+      chargedAmount: 10.87,
+      domainID: 1234567,
+      orderID: 987654,
+      transactionID: 112233,
+    });
+  });
+
   it("getTldList sends the documented request and parses the fixture", async () => {
     const { client, calls } = createTestClient(loadFixture("domains", "getTldList"));
     const result = await client.domains.getTldList();

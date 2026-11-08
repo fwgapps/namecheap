@@ -1,6 +1,6 @@
 import { defineCommand } from "../core/define";
 import type { El } from "../core/element";
-import { optionalField } from "../core/fields";
+import { firstLenientNumber, optionalField } from "../core/fields";
 import { parsePaging } from "../core/paging";
 import type { Paging } from "../core/paging";
 
@@ -18,29 +18,52 @@ export interface SslCreateParams {
   promotionCode?: string;
 }
 
+/** Every field is optional: the response shape of this billed command is not documented. */
 export interface SslCreateResult {
-  isSuccess: boolean;
-  orderID: number;
-  transactionID: number;
-  chargedAmount: number;
-  certificateID: number;
-  created: string;
-  sslType: string;
+  isSuccess?: boolean;
+  orderID?: number;
+  transactionID?: number;
+  chargedAmount?: number;
+  certificateID?: number;
+  created?: string;
+  sslType?: string;
+  status?: string;
 }
 
 const create = defineCommand<SslCreateParams, SslCreateResult>({
   name: "namecheap.ssl.create",
   keys: { sansToAdd: "SANStoADD" },
   parse: (cr) => {
-    const result = cr.one("SSLCreateResult");
+    const wrapper = cr.optional("SSLCreateResult") ?? cr.children()[0];
+    if (wrapper === undefined) return {};
+    const nested = wrapper.optional("SSLCertificate");
+    const sources = nested === undefined ? [wrapper] : [wrapper, nested];
+    const pick = <T>(read: (el: El) => T | undefined): T | undefined =>
+      sources.map(read).find((value) => value !== undefined);
     return {
-      isSuccess: result.boolean("IsSuccess"),
-      orderID: result.number("OrderID"),
-      transactionID: result.number("TransactionID"),
-      chargedAmount: result.number("ChargedAmount"),
-      certificateID: result.number("CertificateID"),
-      created: result.string("Created"),
-      sslType: result.string("SSLType"),
+      ...optionalField("isSuccess", wrapper.lenientBoolean("IsSuccess")),
+      ...optionalField("orderID", firstLenientNumber(wrapper, "OrderID", "OrderId")),
+      ...optionalField(
+        "transactionID",
+        firstLenientNumber(wrapper, "TransactionID", "TransactionId"),
+      ),
+      ...optionalField("chargedAmount", wrapper.lenientNumber("ChargedAmount")),
+      ...optionalField(
+        "certificateID",
+        pick((el) => el.lenientNumber("CertificateID")),
+      ),
+      ...optionalField(
+        "created",
+        pick((el) => el.optionalString("Created")),
+      ),
+      ...optionalField(
+        "sslType",
+        pick((el) => el.optionalString("SSLType")),
+      ),
+      ...optionalField(
+        "status",
+        pick((el) => el.optionalString("Status")),
+      ),
     };
   },
 });
@@ -400,24 +423,29 @@ export interface SslRenewParams {
   promotionCode?: string;
 }
 
+/** Every field is optional: the response shape of this billed command is not documented. */
 export interface SslRenewResult {
-  certificateID: number;
-  years: number;
-  orderID: number;
-  transactionID: number;
-  chargedAmount: number;
+  certificateID?: number;
+  years?: number;
+  orderID?: number;
+  transactionID?: number;
+  chargedAmount?: number;
 }
 
 const renew = defineCommand<SslRenewParams, SslRenewResult>({
   name: "namecheap.ssl.renew",
   parse: (cr) => {
-    const result = cr.one("SSLRenewResult");
+    const result = cr.optional("SSLRenewResult") ?? cr.children()[0];
+    if (result === undefined) return {};
     return {
-      certificateID: result.number("CertificateID"),
-      years: result.number("Years"),
-      orderID: result.number("OrderID"),
-      transactionID: result.number("TransactionID"),
-      chargedAmount: result.number("ChargedAmount"),
+      ...optionalField("certificateID", result.lenientNumber("CertificateID")),
+      ...optionalField("years", result.lenientNumber("Years")),
+      ...optionalField("orderID", firstLenientNumber(result, "OrderID", "OrderId")),
+      ...optionalField(
+        "transactionID",
+        firstLenientNumber(result, "TransactionID", "TransactionId"),
+      ),
+      ...optionalField("chargedAmount", result.lenientNumber("ChargedAmount")),
     };
   },
 });
@@ -432,30 +460,35 @@ export interface SslPurchaseMoreSansParams {
   numberOfSansToAdd: number;
 }
 
+/** Every field is optional: the response shape of this billed command is not documented. */
 export interface SslPurchaseMoreSansResult {
-  isSuccess: boolean;
-  orderID: number;
-  transactionID: number;
-  chargedAmount: number;
-  certificateID: number;
-  sslType: string;
+  isSuccess?: boolean;
+  orderID?: number;
+  transactionID?: number;
+  chargedAmount?: number;
+  certificateID?: number;
+  sslType?: string;
   /** Number of add-on domains (`SANSCount`). */
-  sansCount: number;
+  sansCount?: number;
 }
 
 const purchaseMoreSans = defineCommand<SslPurchaseMoreSansParams, SslPurchaseMoreSansResult>({
   name: "namecheap.ssl.purchasemoresans",
   keys: { numberOfSansToAdd: "NumberOfSANSToAdd" },
   parse: (cr) => {
-    const result = cr.one("SSLPurchaseMoreSansResult");
+    const result = cr.optional("SSLPurchaseMoreSansResult") ?? cr.children()[0];
+    if (result === undefined) return {};
     return {
-      isSuccess: result.boolean("IsSuccess"),
-      orderID: result.number("OrderID"),
-      transactionID: result.number("TransactionID"),
-      chargedAmount: result.number("ChargedAmount"),
-      certificateID: result.number("CertificateID"),
-      sslType: result.string("SSLType"),
-      sansCount: result.number("SANSCount"),
+      ...optionalField("isSuccess", result.lenientBoolean("IsSuccess")),
+      ...optionalField("orderID", firstLenientNumber(result, "OrderID", "OrderId")),
+      ...optionalField(
+        "transactionID",
+        firstLenientNumber(result, "TransactionID", "TransactionId"),
+      ),
+      ...optionalField("chargedAmount", result.lenientNumber("ChargedAmount")),
+      ...optionalField("certificateID", result.lenientNumber("CertificateID")),
+      ...optionalField("sslType", result.optionalString("SSLType")),
+      ...optionalField("sansCount", result.lenientNumber("SANSCount")),
     };
   },
 });
