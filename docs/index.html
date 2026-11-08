@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@fwgapps/namecheap docs</title>
+<meta name="description" content="A typed, zero-dependency TypeScript client for the Namecheap XML API.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <a class="brand" href="index.html">@fwgapps/namecheap</a>
+  <div class="ver">Namecheap API client for TypeScript</div>
+  <nav aria-label="Documentation"><a href="index.html" aria-current="page">Overview</a><a href="configuration.html">Configuration</a><a href="usage.html">Usage</a><a href="commands.html">API coverage</a><a href="errors.html">Errors & safety</a><a href="advanced.html">Advanced</a><a href="known-gaps.html">Known gaps</a></nav>
+  <div class="ext">
+    <a href="https://github.com/fwgapps/namecheap">GitHub repository</a>
+    <a href="https://www.npmjs.com/package/@fwgapps/namecheap">npm package</a>
+    <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">Migration guide (0.x &rarr; 1.0)</a>
+    <a href="https://www.namecheap.com/support/api/intro/">Namecheap API reference</a>
+  </div>
+</aside>
+<main>
+<h1>@fwgapps/namecheap</h1>
+<p class="lead">A typed, zero-dependency client for the Namecheap XML API.</p>
+
+<div class="badges">
+<a href="https://github.com/fwgapps/namecheap/actions/workflows/publish.yml"><img alt="CI/CD Pipeline" src="https://github.com/fwgapps/namecheap/actions/workflows/publish.yml/badge.svg"></a>
+<a href="https://www.npmjs.com/package/@fwgapps/namecheap"><img alt="npm version" src="https://img.shields.io/npm/v/@fwgapps/namecheap"></a>
+<img alt="license" src="https://img.shields.io/npm/l/@fwgapps/namecheap">
+</div>
+<div class="callout note"><strong>Note.</strong> Upgrading from 0.x? Read the <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">migration guide</a>. Version 1.0 is a complete rewrite and is not backwards compatible.</div>
+
+<h2>Features</h2>
+<ul>
+<li>Fully typed parameters and results for <strong>59 Namecheap commands</strong>.</li>
+<li><strong>Zero runtime dependencies</strong>: the XML parser is built in (no DTD or external entity support).</li>
+<li>ESM and CommonJS builds with bundled type declarations.</li>
+<li><strong>Tree-shakeable</strong>: import just the commands you use (see <a href="advanced.html#tree-shaking">Advanced</a>).</li>
+<li>Node.js &ge; 20 and edge runtimes that provide <code>fetch</code> (Cloudflare Workers, Deno, Bun, &hellip;).</li>
+<li>No automatic retries and no logging.</li>
+<li><strong>No browser support, on purpose.</strong> The API key must never reach a browser, and Namecheap only accepts requests from an allow-listed server IP. Call this library from your backend.</li>
+</ul>
+
+<h2>Installation</h2>
+<pre><code class="language-bash">npm install @fwgapps/namecheap</code></pre>
+<pre><code class="language-bash">yarn add @fwgapps/namecheap</code></pre>
+
+<h2>Quick start</h2>
+<p>Before you start, enable API access in the Namecheap dashboard and whitelist your server's public IP
+(see <a href="configuration.html#whitelist">Configuration</a>). Use the sandbox while you experiment.</p>
+<pre><code class="language-ts">import { Namecheap } from &quot;@fwgapps/namecheap&quot;;
+
+const nc = new Namecheap({
+  apiUser: &quot;your-api-user&quot;,
+  apiKey: process.env.NAMECHEAP_API_KEY ?? &quot;&quot;,
+  clientIp: &quot;203.0.113.10&quot;, // the public IP you whitelisted at Namecheap
+  sandbox: true, // use the sandbox while you experiment
+});
+
+const { domains, paging } = await nc.domains.getList({ pageSize: 20 });
+console.log(paging.totalItems, domains.map((d) =&gt; d.name));
+
+const results = await nc.domains.check({ domainList: &quot;example.com,example.net&quot; });
+console.log(results.map((r) =&gt; `${r.domain}: ${r.available}`));</code></pre>
+<p><code>Namecheap</code> is both the default export and a named export. Every command returns a plain, fully typed object instead of raw XML.</p>
+<div class="callout warn"><strong>Warning.</strong> <code>sandbox</code> defaults to <code>false</code>, which means <strong>production</strong>. Forgetting it sends real, billed commands. Always set it explicitly while developing.</div>
+
+<h2>Where to go next</h2>
+<div class="cards">
+<a class="card" href="configuration.html"><strong>Configuration</strong><span>Client options, sandbox vs production, IP whitelist.</span></a>
+<a class="card" href="usage.html"><strong>Usage</strong><span>Examples for every command group.</span></a>
+<a class="card" href="commands.html"><strong>API coverage</strong><span>All 59 commands by group.</span></a>
+<a class="card" href="errors.html"><strong>Errors &amp; safety</strong><span>Error classes, retries, destructive commands.</span></a>
+<a class="card" href="advanced.html"><strong>Advanced</strong><span>Tree shaking, fake fetch for tests, Express example.</span></a>
+<a class="card" href="known-gaps.html"><strong>Known gaps</strong><span>What is not covered yet.</span></a>
+</div>
+
+<div class="pager"><span></span><a href="configuration.html">Configuration &rarr;</a></div>
+<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>.</footer>
+</main>
+</div>
+</body>
+</html>

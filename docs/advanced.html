@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Advanced · @fwgapps/namecheap</title>
+<meta name="description" content="A typed, zero-dependency TypeScript client for the Namecheap XML API.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <a class="brand" href="index.html">@fwgapps/namecheap</a>
+  <div class="ver">Namecheap API client for TypeScript</div>
+  <nav aria-label="Documentation"><a href="index.html">Overview</a><a href="configuration.html">Configuration</a><a href="usage.html">Usage</a><a href="commands.html">API coverage</a><a href="errors.html">Errors & safety</a><a href="advanced.html" aria-current="page">Advanced</a><a href="known-gaps.html">Known gaps</a></nav>
+  <div class="ext">
+    <a href="https://github.com/fwgapps/namecheap">GitHub repository</a>
+    <a href="https://www.npmjs.com/package/@fwgapps/namecheap">npm package</a>
+    <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">Migration guide (0.x &rarr; 1.0)</a>
+    <a href="https://www.namecheap.com/support/api/intro/">Namecheap API reference</a>
+  </div>
+</aside>
+<main>
+<h1>Advanced</h1>
+<p class="lead">Tree shaking, testing, the Express example and contributing.</p>
+
+<h2 id="tree-shaking">Using a single command (tree shaking)</h2>
+<p><code>new Namecheap(...)</code> is the convenient entry point, but it carries all 59 commands, because the client object
+exposes every group. If you only need a few commands (a serverless function, an edge worker), import them one by one and
+run them with <code>run</code>. A bundler then keeps only what you use:</p>
+<pre><code class="language-ts">import { createTransport, domainsCheck, run } from &quot;@fwgapps/namecheap&quot;;
+
+const send = createTransport({ apiUser: &quot;user&quot;, apiKey: &quot;key&quot;, clientIp: &quot;203.0.113.10&quot;, sandbox: true });
+
+const result = await run(domainsCheck, send, { domainList: &quot;example.com,example.net&quot; });</code></pre>
+<p>Every command is also exported on its own, named <code>&lt;group&gt;&lt;Method&gt;</code>: <code>domainsCheck</code>, <code>dnsSetHosts</code>,
+<code>nsDelete</code>, <code>transferGetList</code>, <code>sslGetList</code>, <code>sslParseCSR</code>, <code>usersGetBalances</code>,
+<code>usersAddressCreate</code>, <code>whoisGuardRenew</code>, and so on. <code>run</code> behaves exactly like the client methods: same
+validation, same errors, same typing of the parameters.</p>
+<p>Approximate sizes of a minified bundle (esbuild, measured on this package):</p>
+<div class="table-wrap"><table><thead><tr><th>What you import</th><th>Minified</th><th>Gzip</th></tr></thead><tbody><tr><td>only the error classes</td><td>~0.3 KB</td><td>~0.2 KB</td></tr><tr><td><code>createTransport</code> + one command + <code>run</code></td><td>~9.4 KB</td><td>~3.8 KB</td></tr><tr><td><code>createTransport</code> + two commands + <code>run</code></td><td>~9.9 KB</td><td>~4.0 KB</td></tr><tr><td>the <code>Namecheap</code> class (any use of it)</td><td>~29.6 KB</td><td>~8.4 KB</td></tr></tbody></table></div>
+<p>The package declares <code>&quot;sideEffects&quot;: false</code>, and a test in the repository bundles a single-command consumer to make sure the other commands stay out of the bundle.</p>
+
+<h2 id="testing">Testing with a fake fetch</h2>
+<p>Pass your own <code>fetch</code> to test your code without network access or credentials:</p>
+<pre><code class="language-ts">import { Namecheap } from &quot;@fwgapps/namecheap&quot;;
+
+const xml = `&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;ApiResponse Status=&quot;OK&quot; xmlns=&quot;http://api.namecheap.com/xml.response&quot;&gt;
+  &lt;Errors /&gt;
+  &lt;RequestedCommand&gt;namecheap.domains.dns.setDefault&lt;/RequestedCommand&gt;
+  &lt;CommandResponse Type=&quot;namecheap.domains.dns.setDefault&quot;&gt;
+    &lt;DomainDNSSetDefaultResult Domain=&quot;example.com&quot; Updated=&quot;true&quot; /&gt;
+  &lt;/CommandResponse&gt;
+&lt;/ApiResponse&gt;`;
+
+const calls: Array&lt;{ url: string; body: string }&gt; = [];
+const fakeFetch: typeof fetch = async (input, init) =&gt; {
+  calls.push({ url: String(input), body: String(init?.body) });
+  return new Response(xml, { status: 200 });
+};
+
+const nc = new Namecheap({ apiUser: &quot;u&quot;, apiKey: &quot;k&quot;, clientIp: &quot;127.0.0.1&quot;, sandbox: true, fetch: fakeFetch });
+const result = await nc.dns.setDefault({ sld: &quot;example&quot;, tld: &quot;com&quot; });
+console.log(result.updated, calls[0]?.url);</code></pre>
+
+<h2 id="examples">Express example</h2>
+<p><a href="https://github.com/fwgapps/namecheap/tree/main/examples/express"><code>examples/express</code></a> is a REST bridge that exposes the client through
+Express routes and maps the three error classes to HTTP status codes.</p>
+<div class="callout warn"><strong>Warning.</strong> It is an example, not a service: it has no authentication or rate limiting. Anyone who can reach it can spend your Namecheap balance and change your DNS. Do not expose it publicly.</div>
+
+<h2 id="contributing">Contributing</h2>
+<p>Issues and pull requests are welcome. The project uses Conventional Commits (<code>yarn commit</code> starts Commitizen) and
+semantic-release. Before opening a pull request, run:</p>
+<pre><code class="language-bash">yarn lint &amp;&amp; yarn typecheck &amp;&amp; yarn test --run --coverage &amp;&amp; yarn build</code></pre>
+<p>Some test fixtures are copied or derived from <a href="https://github.com/namecheap/go-namecheap-sdk">namecheap/go-namecheap-sdk</a>
+(Apache-2.0). See <a href="https://github.com/fwgapps/namecheap/blob/main/NOTICE">NOTICE</a>.</p>
+
+<div class="pager"><a href="errors.html">&larr; Errors & safety</a><a href="known-gaps.html">Known gaps &rarr;</a></div>
+<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>.</footer>
+</main>
+</div>
+</body>
+</html>

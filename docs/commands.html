@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>API coverage · @fwgapps/namecheap</title>
+<meta name="description" content="A typed, zero-dependency TypeScript client for the Namecheap XML API.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <a class="brand" href="index.html">@fwgapps/namecheap</a>
+  <div class="ver">Namecheap API client for TypeScript</div>
+  <nav aria-label="Documentation"><a href="index.html">Overview</a><a href="configuration.html">Configuration</a><a href="usage.html">Usage</a><a href="commands.html" aria-current="page">API coverage</a><a href="errors.html">Errors & safety</a><a href="advanced.html">Advanced</a><a href="known-gaps.html">Known gaps</a></nav>
+  <div class="ext">
+    <a href="https://github.com/fwgapps/namecheap">GitHub repository</a>
+    <a href="https://www.npmjs.com/package/@fwgapps/namecheap">npm package</a>
+    <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">Migration guide (0.x &rarr; 1.0)</a>
+    <a href="https://www.namecheap.com/support/api/intro/">Namecheap API reference</a>
+  </div>
+</aside>
+<main>
+<h1>API coverage</h1>
+<p class="lead">Every command, grouped as it appears on the client.</p>
+
+<p>59 commands, all reachable as <code>nc.&lt;group&gt;.&lt;method&gt;</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Group (<code>nc.</code>)</th><th>Methods</th><th>Count</th></tr></thead><tbody><tr><td><code>domains</code></td><td><code>getList</code>, <code>check</code>, <code>getRegistrarLock</code>, <code>setRegistrarLock</code>, <code>reactivate</code>, <code>renew</code>, <code>setContacts</code>, <code>create</code>, <code>getTldList</code>, <code>getContacts</code>, <code>getInfo</code></td><td>11</td></tr><tr><td><code>dns</code></td><td><code>setDefault</code>, <code>setCustom</code>, <code>getList</code>, <code>getHosts</code>, <code>getEmailForwarding</code>, <code>setEmailForwarding</code>, <code>setHosts</code></td><td>7</td></tr><tr><td><code>ns</code></td><td><code>create</code>, <code>delete</code>, <code>getInfo</code>, <code>update</code></td><td>4</td></tr><tr><td><code>transfer</code></td><td><code>create</code>, <code>getStatus</code>, <code>updateStatus</code>, <code>getList</code></td><td>4</td></tr><tr><td><code>ssl</code></td><td><code>create</code>, <code>getList</code>, <code>parseCSR</code>, <code>getApproverEmailList</code>, <code>activate</code>, <code>resendApproverEmail</code>, <code>reissue</code>, <code>resendFulfillmentEmail</code>, <code>editDCVMethod</code>, <code>getInfo</code>, <code>renew</code>, <code>purchaseMoreSans</code>, <code>revokeCertificate</code></td><td>13</td></tr><tr><td><code>users</code></td><td><code>getBalances</code>, <code>getPricing</code>, <code>changePassword</code>, <code>update</code>, <code>createAddFundsRequest</code>, <code>getAddFundsStatus</code>, <code>create</code>, <code>login</code>, <code>resetPassword</code></td><td>9</td></tr><tr><td><code>usersAddress</code></td><td><code>create</code>, <code>delete</code>, <code>getInfo</code>, <code>getList</code>, <code>setDefault</code>, <code>update</code></td><td>6</td></tr><tr><td><code>whoisGuard</code></td><td><code>changeEmailAddress</code>, <code>enable</code>, <code>disable</code>, <code>getList</code>, <code>renew</code></td><td>5</td></tr></tbody></table></div>
+<p>Commands that spend money or change ownership or DNS (for example <code>domains.create</code>, <code>domains.renew</code>,
+<code>transfer.create</code>, <code>ssl.create</code> and <code>dns.setHosts</code>) deserve extra care; see <a href="errors.html">Errors &amp; safety</a>.</p>
+
+<h2>Command tables</h2>
+<p>The package also exports the command tables behind each group (<code>domainsCommands</code>, <code>dnsCommands</code>, and so on)
+for custom integrations. They are advanced API and are <strong>not covered by semver stability</strong>, so prefer
+<code>nc.&lt;group&gt;.&lt;method&gt;</code>.</p>
+
+<div class="pager"><a href="usage.html">&larr; Usage</a><a href="errors.html">Errors & safety &rarr;</a></div>
+<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>.</footer>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configuration · @fwgapps/namecheap</title>
+<meta name="description" content="A typed, zero-dependency TypeScript client for the Namecheap XML API.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <a class="brand" href="index.html">@fwgapps/namecheap</a>
+  <div class="ver">Namecheap API client for TypeScript</div>
+  <nav aria-label="Documentation"><a href="index.html">Overview</a><a href="configuration.html" aria-current="page">Configuration</a><a href="usage.html">Usage</a><a href="commands.html">API coverage</a><a href="errors.html">Errors & safety</a><a href="advanced.html">Advanced</a><a href="known-gaps.html">Known gaps</a></nav>
+  <div class="ext">
+    <a href="https://github.com/fwgapps/namecheap">GitHub repository</a>
+    <a href="https://www.npmjs.com/package/@fwgapps/namecheap">npm package</a>
+    <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">Migration guide (0.x &rarr; 1.0)</a>
+    <a href="https://www.namecheap.com/support/api/intro/">Namecheap API reference</a>
+  </div>
+</aside>
+<main>
+<h1>Configuration</h1>
+<p class="lead">Every option accepted by the Namecheap client.</p>
+
+<pre><code class="language-ts">const nc = new Namecheap({
+  apiUser: &quot;your-api-user&quot;, // string, required: your API user name
+  apiKey: &quot;your-api-key&quot;, // string, required: your API key
+  clientIp: &quot;203.0.113.10&quot;, // string, required: the whitelisted IP the requests come from
+  userName: &quot;account-name&quot;, // string, optional: the account to act on, defaults to apiUser
+  sandbox: true, // boolean, optional: defaults to false (PRODUCTION)
+  fetch: globalThis.fetch, // optional: your own fetch implementation
+  timeoutMs: 15_000, // number, optional: abort a request after this many milliseconds
+});</code></pre>
+
+<h2>Options</h2>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Notes</th></tr></thead><tbody><tr><td><code>apiUser</code></td><td><code>string</code></td><td>required</td><td>Sent as <code>ApiUser</code>.</td></tr><tr><td><code>apiKey</code></td><td><code>string</code></td><td>required</td><td>Sent as <code>ApiKey</code>, in the POST body only.</td></tr><tr><td><code>clientIp</code></td><td><code>string</code></td><td>required</td><td>Sent as <code>ClientIp</code>. Must match an IP on your Namecheap API whitelist.</td></tr><tr><td><code>userName</code></td><td><code>string</code></td><td><code>apiUser</code></td><td>Sent as <code>UserName</code>. Use it when acting on a different account than the API user.</td></tr><tr><td><code>sandbox</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Must be a boolean. <code>true</code> talks to <code>api.sandbox.namecheap.com</code>; <code>false</code> or omitted talks to <strong>production</strong>. Any other value throws a <code>TypeError</code>.</td></tr><tr><td><code>fetch</code></td><td><code>typeof fetch</code></td><td><code>globalThis.fetch</code></td><td>Inject a custom or fake <code>fetch</code> (tests, proxies, edge runtimes).</td></tr><tr><td><code>timeoutMs</code></td><td><code>number</code></td><td>no timeout</td><td>Implemented with <code>AbortSignal.timeout</code>; a timeout surfaces as a <code>NamecheapHttpError</code>.</td></tr></tbody></table></div>
+
+<h2 id="sandbox">Sandbox vs production</h2>
+<div class="callout warn"><strong>Warning.</strong> <code>sandbox</code> defaults to <code>false</code>, which means <strong>PRODUCTION</strong>. Forgetting it sends real, billed commands (registrations, renewals, transfers) and changes real DNS. Set <code>sandbox: true</code> explicitly while developing.</div>
+<p><code>sandbox</code> must be a real boolean: a string such as <code>&quot;true&quot;</code> throws a <code>TypeError</code> at construction instead of silently selecting production. Convert environment variables yourself:</p>
+<pre><code class="language-ts">sandbox: process.env.NAMECHEAP_SANDBOX === &quot;true&quot;</code></pre>
+
+<h2 id="whitelist">IP whitelist</h2>
+<p>Namecheap rejects requests from IP addresses that are not on your API whitelist, in the sandbox and in production.
+Enable API access and add your server's public IP in the Namecheap dashboard
+(<em>Profile &rarr; Tools &rarr; Namecheap API Access</em>), and pass the same address as <code>clientIp</code>.</p>
+<p>Credentials travel in the POST body (<code>application/x-www-form-urlencoded</code>), never in the URL, so they do not end up in access logs or proxies that record URLs.</p>
+
+<div class="pager"><a href="index.html">&larr; Overview</a><a href="usage.html">Usage &rarr;</a></div>
+<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>.</footer>
+</main>
+</div>
+</body>
+</html>
