@@ -8,6 +8,9 @@ export const ACRONYMS: readonly string[] = [
   "MX",
   "TTL",
   "EPP",
+  "CSR",
+  "DCV",
+  "SSL",
 ];
 
 export type ArrayStyle = "bracket" | "suffix";

@@ -20,6 +20,10 @@ describe("toParamName", () => {
     expect(toParamName("mxPref")).toBe("MXPref");
     expect(toParamName("ttl")).toBe("TTL");
     expect(toParamName("eppCode")).toBe("EPPCode");
+    expect(toParamName("csr")).toBe("CSR");
+    expect(toParamName("dcvMethod")).toBe("DCVMethod");
+    expect(toParamName("dcvMethods")).toBe("DCVMethods");
+    expect(toParamName("sslType")).toBe("SSLType");
   });
 
   it("leaves the rest of non-acronym words as written", () => {
@@ -28,7 +32,20 @@ describe("toParamName", () => {
   });
 
   it("exposes the acronym list", () => {
-    expect(ACRONYMS).toEqual(["SLD", "TLD", "IP", "ID", "DNS", "WG", "MX", "TTL", "EPP"]);
+    expect(ACRONYMS).toEqual([
+      "SLD",
+      "TLD",
+      "IP",
+      "ID",
+      "DNS",
+      "WG",
+      "MX",
+      "TTL",
+      "EPP",
+      "CSR",
+      "DCV",
+      "SSL",
+    ]);
   });
 });
 
