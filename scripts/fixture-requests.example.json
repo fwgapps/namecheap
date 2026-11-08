@@ -1,0 +1,18 @@
+[
+  {
+    "fixture": "domains/getList",
+    "command": "namecheap.domains.getList",
+    "params": { "Page": "1", "PageSize": "20" }
+  },
+  {
+    "fixture": "domains/check",
+    "command": "namecheap.domains.check",
+    "params": { "DomainList": "example-not-real-12345.com,example-not-real-12345.net" }
+  },
+  {
+    "fixture": "domains/getInfoError",
+    "command": "namecheap.domains.getInfo",
+    "params": { "DomainName": "not-my-domain-12345.com" },
+    "allowError": true
+  }
+]
