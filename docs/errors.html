@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Errors &amp; safety · @fwgapps/namecheap</title>
+<meta name="description" content="A typed, zero-dependency TypeScript client for the Namecheap XML API.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <a class="brand" href="index.html">@fwgapps/namecheap</a>
+  <div class="ver">Namecheap API client for TypeScript</div>
+  <nav aria-label="Documentation"><a href="index.html">Overview</a><a href="configuration.html">Configuration</a><a href="usage.html">Usage</a><a href="commands.html">API coverage</a><a href="errors.html" aria-current="page">Errors & safety</a><a href="advanced.html">Advanced</a><a href="known-gaps.html">Known gaps</a></nav>
+  <div class="ext">
+    <a href="https://github.com/fwgapps/namecheap">GitHub repository</a>
+    <a href="https://www.npmjs.com/package/@fwgapps/namecheap">npm package</a>
+    <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">Migration guide (0.x &rarr; 1.0)</a>
+    <a href="https://www.namecheap.com/support/api/intro/">Namecheap API reference</a>
+  </div>
+</aside>
+<main>
+<h1>Errors &amp; safety</h1>
+<p class="lead">Error classes, retry policy and the commands that deserve extra care.</p>
+
+<p>All API, HTTP and response failures are instances of one of three <code>Error</code> subclasses, exported from the package.
+Programmer or configuration mistakes (an invalid <code>sandbox</code>, <code>dns.setHosts</code> validation, serializer rejections,
+reserved parameter names) throw a plain <code>TypeError</code> instead.</p>
+<div class="table-wrap"><table><thead><tr><th>Class</th><th>Thrown when</th><th>Useful fields</th></tr></thead><tbody><tr><td><code>NamecheapError</code></td><td>The API answered with <code>Status=&quot;ERROR&quot;</code>.</td><td><code>code</code> (first error number), <code>errors</code> (all)</td></tr><tr><td><code>NamecheapHttpError</code></td><td>The request failed (network, timeout, redirect) or the HTTP status is not 2xx.</td><td><code>status</code>, <code>statusText</code>, <code>cause</code></td></tr><tr><td><code>NamecheapParseError</code></td><td>The body is not valid XML, is not a Namecheap envelope, or lacks a documented field.</td><td><code>message</code>, <code>cause</code></td></tr></tbody></table></div>
+<pre><code class="language-ts">import { Namecheap, NamecheapError, NamecheapHttpError, NamecheapParseError } from &quot;@fwgapps/namecheap&quot;;
+
+const nc = new Namecheap({ apiUser: &quot;user&quot;, apiKey: &quot;key&quot;, clientIp: &quot;203.0.113.10&quot;, sandbox: true });
+
+try {
+  await nc.dns.getHosts({ sld: &quot;example&quot;, tld: &quot;com&quot; });
+} catch (error) {
+  if (error instanceof NamecheapError) {
+    console.error(error.code, error.message, error.errors);
+  } else if (error instanceof NamecheapHttpError) {
+    console.error(error.status, error.statusText);
+  } else if (error instanceof NamecheapParseError) {
+    console.error(&quot;Unexpected response shape:&quot;, error.message);
+  } else {
+    throw error;
+  }
+}</code></pre>
+<p>Error messages never contain request data or credentials. Apart from <code>NamecheapError</code>, whose message is
+Namecheap's own error text, they contain at most short fragments of the response.</p>
+
+<h2 id="retries">Retries and unknown outcomes</h2>
+<div class="callout warn"><strong>Warning.</strong> <strong>There are no automatic retries, on purpose.</strong> Many commands are billed (register, renew, transfer, purchase). Retrying a request whose outcome is unknown could charge you twice. Decide per call whether a retry is safe; read-only commands such as <code>getList</code> or <code>check</code> usually are.</div>
+<p>After a billed or account-changing command, a <code>NamecheapParseError</code> (Namecheap answered OK but the response could not be
+read) or a <code>timeoutMs</code> abort means the outcome is <strong>unknown</strong>: the action may have been performed.
+Reconcile with <code>getList</code> or <code>getInfo</code> before retrying.</p>
+<p><strong>HTTP 405 means rate limiting.</strong> Namecheap answers 405 when you exceed its request limits, so a
+<code>NamecheapHttpError</code> with <code>status === 405</code> is a signal to slow down, not a bug in your request.</p>
+
+<h2 id="safety">Safety notes</h2>
+<ul>
+<li><code>dns.setHosts</code> <strong>replaces the whole zone</strong>: every record you do not list is deleted. Read the current records with <code>dns.getHosts</code> first and send the complete desired list. An empty <code>hosts</code> list is rejected with a <code>TypeError</code> before anything is sent.</li>
+<li><code>dns.setHosts</code> with <code>emailType</code> other than <code>MX</code>: MX records are silently discarded unless the resulting email mode is <code>MX</code>. Because <code>setHosts</code> replaces the whole zone, listing MX hosts under another mode loses your mail routing.</li>
+<li>Credentials travel in the POST body, never in the URL.</li>
+<li>The library never logs anything. Do not log the client config or error <code>cause</code> objects from your own code in production.</li>
+<li><code>sandbox</code> defaults to production. See <a href="configuration.html#sandbox">Configuration</a>.</li>
+</ul>
+
+<div class="pager"><a href="commands.html">&larr; API coverage</a><a href="advanced.html">Advanced &rarr;</a></div>
+<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>.</footer>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Usage · @fwgapps/namecheap</title>
+<meta name="description" content="A typed, zero-dependency TypeScript client for the Namecheap XML API.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <a class="brand" href="index.html">@fwgapps/namecheap</a>
+  <div class="ver">Namecheap API client for TypeScript</div>
+  <nav aria-label="Documentation"><a href="index.html">Overview</a><a href="configuration.html">Configuration</a><a href="usage.html" aria-current="page">Usage</a><a href="commands.html">API coverage</a><a href="errors.html">Errors & safety</a><a href="advanced.html">Advanced</a><a href="known-gaps.html">Known gaps</a></nav>
+  <div class="ext">
+    <a href="https://github.com/fwgapps/namecheap">GitHub repository</a>
+    <a href="https://www.npmjs.com/package/@fwgapps/namecheap">npm package</a>
+    <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">Migration guide (0.x &rarr; 1.0)</a>
+    <a href="https://www.namecheap.com/support/api/intro/">Namecheap API reference</a>
+  </div>
+</aside>
+<main>
+<h1>Usage</h1>
+<p class="lead">Examples for every command group.</p>
+
+<p>Every group is a property of the client, and every method takes a single params object. Optional parameters can be
+left out; a method with only optional parameters can be called with no argument. The snippets below assume <code>nc</code> is
+the client from the <a href="index.html#quick-start">quick start</a>.</p>
+
+<h2 id="domains">domains</h2>
+<pre><code class="language-ts">const { domains, paging } = await nc.domains.getList({ listType: &quot;EXPIRING&quot;, page: 1, pageSize: 50 });
+const availability = await nc.domains.check({ domainList: &quot;example.com,example.org&quot; });
+const info = await nc.domains.getInfo({ domainName: &quot;example.com&quot; });
+const lock = await nc.domains.getRegistrarLock({ domainName: &quot;example.com&quot; });
+await nc.domains.setRegistrarLock({ domainName: &quot;example.com&quot;, lockAction: &quot;LOCK&quot; });
+const tlds = await nc.domains.getTldList();</code></pre>
+<p><code>domains.create</code>, <code>domains.renew</code>, <code>domains.reactivate</code> and <code>domains.setContacts</code> are billed or change ownership data; see the type definitions for their parameters.</p>
+
+<h2 id="dns">dns</h2>
+<pre><code class="language-ts">const dnsList = await nc.dns.getList({ sld: &quot;example&quot;, tld: &quot;com&quot; });
+const current = await nc.dns.getHosts({ sld: &quot;example&quot;, tld: &quot;com&quot; });
+
+// Replaces the WHOLE zone, see &quot;Errors &amp; safety&quot;.
+await nc.dns.setHosts({
+  sld: &quot;example&quot;,
+  tld: &quot;com&quot;,
+  emailType: &quot;MX&quot;,
+  hosts: [
+    { hostName: &quot;@&quot;, recordType: &quot;A&quot;, address: &quot;203.0.113.5&quot;, ttl: 1800 },
+    { hostName: &quot;www&quot;, recordType: &quot;CNAME&quot;, address: &quot;example.com.&quot;, ttl: 1800 },
+    { hostName: &quot;@&quot;, recordType: &quot;MX&quot;, address: &quot;mail.example.com.&quot;, mxPref: 10 },
+  ],
+});
+
+await nc.dns.setDefault({ sld: &quot;example&quot;, tld: &quot;com&quot; });
+await nc.dns.setCustom({ sld: &quot;example&quot;, tld: &quot;com&quot;, nameservers: &quot;ns1.example.net,ns2.example.net&quot; });
+await nc.dns.setEmailForwarding({
+  domainName: &quot;example.com&quot;,
+  forwards: [{ mailBox: &quot;info&quot;, forwardTo: &quot;me@example.net&quot; }],
+});
+const forwarding = await nc.dns.getEmailForwarding({ domainName: &quot;example.com&quot; });</code></pre>
+<div class="callout warn"><strong>Warning.</strong> <code>dns.setHosts</code> replaces the whole zone: every record you do not list is deleted. Read the current records with <code>dns.getHosts</code> first.</div>
+
+<h2 id="ns">ns</h2>
+<pre><code class="language-ts">await nc.ns.create({ sld: &quot;example&quot;, tld: &quot;com&quot;, nameserver: &quot;ns1.example.com&quot;, ip: &quot;203.0.113.20&quot; });
+const ns = await nc.ns.getInfo({ sld: &quot;example&quot;, tld: &quot;com&quot;, nameserver: &quot;ns1.example.com&quot; });
+await nc.ns.update({ sld: &quot;example&quot;, tld: &quot;com&quot;, nameserver: &quot;ns1.example.com&quot;, oldIP: &quot;203.0.113.20&quot;, ip: &quot;203.0.113.21&quot; });
+await nc.ns.delete({ sld: &quot;example&quot;, tld: &quot;com&quot;, nameserver: &quot;ns1.example.com&quot; });</code></pre>
+
+<h2 id="transfer">transfer</h2>
+<pre><code class="language-ts">const started = await nc.transfer.create({ domainName: &quot;example.com&quot;, years: 1, eppCode: &quot;the-epp-code&quot; });
+const status = await nc.transfer.getStatus({ transferID: started.transferID });
+const { transfers } = await nc.transfer.getList({ listType: &quot;INPROGRESS&quot; });
+await nc.transfer.updateStatus({ transferID: started.transferID, resubmit: true });</code></pre>
+
+<h2 id="ssl">ssl</h2>
+<pre><code class="language-ts">const csrInfo = await nc.ssl.parseCSR({ csr: &quot;-----BEGIN CERTIFICATE REQUEST-----\n...&quot; });
+const { certificates } = await nc.ssl.getList({ listType: &quot;Active&quot; });
+const emails = await nc.ssl.getApproverEmailList({ domainName: &quot;example.com&quot;, certificateType: &quot;PositiveSSL&quot; });
+const cert = await nc.ssl.getInfo({ certificateID: 12345 });</code></pre>
+<p>Activation, reissue, renewal and purchase (<code>ssl.create</code>, <code>ssl.activate</code>, <code>ssl.reissue</code>, <code>ssl.renew</code>, <code>ssl.purchaseMoreSans</code>) are available too; see <a href="known-gaps.html">Known gaps</a> before relying on the activation flow.</p>
+
+<h2 id="users">users</h2>
+<pre><code class="language-ts">const balances = await nc.users.getBalances();
+const pricing = await nc.users.getPricing({
+  productType: &quot;DOMAIN&quot;,
+  productCategory: &quot;DOMAINS&quot;,
+  actionName: &quot;REGISTER&quot;,
+  productName: &quot;COM&quot;,
+});
+const funds = await nc.users.createAddFundsRequest({
+  paymentType: &quot;Creditcard&quot;,
+  amount: 50,
+  returnUrl: &quot;https://example.com/funds-done&quot;,
+});
+const fundsStatus = await nc.users.getAddFundsStatus({ tokenId: funds.tokenID });</code></pre>
+
+<h2 id="usersAddress">usersAddress</h2>
+<pre><code class="language-ts">const addresses = await nc.usersAddress.getList();
+const first = addresses[0];
+if (first) {
+  const address = await nc.usersAddress.getInfo({ addressId: first.addressId });
+  await nc.usersAddress.setDefault({ addressId: first.addressId });
+}</code></pre>
+
+<h2 id="whoisGuard">whoisGuard</h2>
+<p>The client property is <code>whoisGuard</code>. The 0.x name <code>whoIsGuard</code> is gone; see the migration guide.</p>
+<pre><code class="language-ts">const { whoisguards } = await nc.whoisGuard.getList({ listType: &quot;ALLOTED&quot; });
+const subscription = whoisguards[0];
+if (subscription) {
+  await nc.whoisGuard.enable({ whoisguardID: subscription.id, forwardedToEmail: &quot;me@example.net&quot; });
+  await nc.whoisGuard.changeEmailAddress({ whoisguardID: subscription.id });
+  await nc.whoisGuard.disable({ whoisguardID: subscription.id });
+}</code></pre>
+
+<div class="pager"><a href="configuration.html">&larr; Configuration</a><a href="commands.html">API coverage &rarr;</a></div>
+<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>.</footer>
+</main>
+</div>
+</body>
+</html>
