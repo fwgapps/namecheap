@@ -11,12 +11,7 @@ import type { Paging } from "../core/paging";
 export type DomainsListType = "ALL" | "EXPIRING" | "EXPIRED";
 
 export type DomainsSortBy =
-  | "NAME"
-  | "NAME_DESC"
-  | "EXPIREDATE"
-  | "EXPIREDATE_DESC"
-  | "CREATEDATE"
-  | "CREATEDATE_DESC";
+  "NAME" | "NAME_DESC" | "EXPIREDATE" | "EXPIREDATE_DESC" | "CREATEDATE" | "CREATEDATE_DESC";
 
 export interface DomainsGetListParams {
   listType?: DomainsListType;

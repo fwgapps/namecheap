@@ -24,7 +24,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - run: yarn install --frozen-lockfile
+      # Dev tooling (semantic-release) needs Node >=22.14 but only runs in the release job;
+      # the library itself supports Node 20, which this matrix still verifies.
+      - run: yarn install --frozen-lockfile --ignore-engines
 
       - run: yarn lint
 
@@ -48,7 +50,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - run: yarn install --frozen-lockfile
 
@@ -78,7 +80,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           registry-url: 'https://registry.npmjs.org/'
 
       - run: yarn install --frozen-lockfile

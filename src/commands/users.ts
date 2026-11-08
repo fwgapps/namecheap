@@ -122,8 +122,7 @@ const getPricing = /* @__PURE__ */ defineCommand<UsersGetPricingParams, UsersGet
  * password (method 1) or a reset code from `resetPassword` (method 2).
  */
 export type UsersChangePasswordParams =
-  | { oldPassword: string; newPassword: string }
-  | { resetCode: string; newPassword: string };
+  { oldPassword: string; newPassword: string } | { resetCode: string; newPassword: string };
 
 /** Never echoes a password or reset code. */
 export interface UsersChangePasswordResult {
