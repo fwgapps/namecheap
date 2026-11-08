@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import Namecheap, { NamecheapError, NamecheapHttpError, NamecheapParseError } from "../src";
 import { usersCommands } from "../src/commands/users";
-import { createTestClient, loadFixture } from "./helpers";
+import { createTestClient, loadFixture, okEnvelope } from "./helpers";
 
 describe("users", () => {
   it("getBalances sends the documented request and parses the fixture", async () => {
@@ -476,5 +476,23 @@ describe("users", () => {
       const empty = createTestClient(envelope(""));
       expect(await empty.client.users.create(createParams)).toEqual({});
     });
+  });
+
+  it("changePassword reads UserId, or no id at all, as the live API may send", async () => {
+    const spelled = createTestClient(
+      okEnvelope(
+        `<UserChangePasswordResult Success="true" UserId="9" />`,
+        "namecheap.users.changePassword",
+      ),
+    );
+    await expect(
+      spelled.client.users.changePassword({ oldPassword: "a", newPassword: "b" }),
+    ).resolves.toEqual({ success: true, userID: 9 });
+    const bare = createTestClient(
+      okEnvelope(`<UserChangePasswordResult Success="true" />`, "namecheap.users.changePassword"),
+    );
+    await expect(
+      bare.client.users.changePassword({ oldPassword: "a", newPassword: "b" }),
+    ).resolves.toEqual({ success: true });
   });
 });
