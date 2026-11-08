@@ -150,4 +150,16 @@ describe("transfer.getList with the result element absent", () => {
       paging: { totalItems: 0, currentPage: 1, pageSize: 10 },
     });
   });
+
+  it("getList reads the live ID attribute and an empty OrderID", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<TransferGetListResult><Transfer ID="7" DomainName="example.com" User="u" TransferDate="11/08/2026" OrderID="" StatusID="-1" Status="QUEUED" /></TransferGetListResult><Paging><TotalItems>1</TotalItems><CurrentPage>1</CurrentPage><PageSize>20</PageSize></Paging>`,
+        "namecheap.domains.transfer.getList",
+      ),
+    );
+    const [item] = (await client.transfer.getList()).transfers;
+    expect(item?.transferID).toBe(7);
+    expect(item).not.toHaveProperty("orderID");
+  });
 });

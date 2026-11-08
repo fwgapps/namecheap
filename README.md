@@ -168,7 +168,7 @@ console.log(status.status, transfers.length);
 ```ts
 const csrInfo = await nc.ssl.parseCSR({ csr: "-----BEGIN CERTIFICATE REQUEST-----\n..." });
 const { certificates } = await nc.ssl.getList({ listType: "Active" });
-const emails = await nc.ssl.getApproverEmailList({ domainName: "example.com", certificateType: "PositiveSSL" });
+const emails = await nc.ssl.getApproverEmailList({ domainName: "example.com", certificateType: "Standard SSL SSLcom" });
 const cert = await nc.ssl.getInfo({ certificateID: 12345 });
 console.log(csrInfo.commonName, certificates.length, emails.genericEmails, cert.status);
 ```
@@ -309,11 +309,27 @@ const result = await nc.dns.setDefault({ sld: "example", tld: "com" });
 console.log(result.updated, calls[0]?.url);
 ```
 
+## End-to-end tests (sandbox)
+
+The unit tests use recorded XML and a fake `fetch`. The E2E suites in `tests/e2e` call the real Namecheap **sandbox** and check that every command is read into its documented shape. They never reach production (`sandbox: true` is hardcoded) and are skipped when the credentials are missing, so CI is unaffected.
+
+1. Create a sandbox account at [sandbox.namecheap.com](https://www.sandbox.namecheap.com), enable API access (Profile, Tools, Namecheap API Access) and whitelist your public IP.
+2. Copy `.env.example` to `.env` (it is git-ignored) and fill in `NAMECHEAP_API_USER`, `NAMECHEAP_API_KEY` and `NAMECHEAP_CLIENT_IP`.
+3. Optional, for the login and password tests: `NAMECHEAP_E2E_USER` (letters and digits only) and `NAMECHEAP_E2E_PASS` (a strong password) for a throw-away account. They are skipped without them.
+4. Run `yarn test:e2e` (or `npm run test:e2e`).
+
+Things to know:
+
+- **Rate limit.** The API allows 20 calls per minute and 700 per hour, so the client waits 3.2 seconds between calls and a full run takes about 7 minutes. Over the limit the API answers HTTP 405.
+- **Never use your main account for passwords.** Three failed logins in a row lock an ApiUser for 24 hours. The E2E client and `scripts/record-fixtures.mjs` refuse `users.login`, `users.changePassword` and `users.resetPassword` on the main account, so those tests run on the throw-away account only.
+- **Leftovers.** The sandbox has no delete command: each run registers a throw-away domain and a few accounts. Sandbox money is fake.
+- **Not covered.** The success path of `ssl.activate`, `ssl.reissue` and the commands that need an active certificate.
+
 ## Known gaps
 
-1. `ssl.activate` and `ssl.reissue` do not expose domain control validation (DCV) parameters or the 0.6 OV/EV organisation option sets (organisation, department, admin address, company registration fields), because the API reference does not document them. Confirm the activation flow in the sandbox before relying on it.
+1. `ssl.activate` and `ssl.reissue` accept `approverEmail`, `httpDcValidation` and `dnsDcValidation` (verified against the sandbox) but do not expose the 0.6 OV/EV organisation option sets (organisation, department, admin address, company registration fields), because the API reference does not document them.
 2. `users.create`, `users.login`, `users.resetPassword`, `whoisGuard.renew`, `ssl.create`, `ssl.renew` and `ssl.purchaseMoreSans` have undocumented response shapes. They return loosely typed results parsed tolerantly: they never throw on an unexpected shape, and fields that cannot be read are simply absent.
-3. `dns.setEmailForwarding` sends `MailBox<n>` as spelled in the API reference; the Go SDK sends lowercase. This is unverified against the live API.
+3. `dns.setEmailForwarding` sends `MailBox<n>` as spelled in the API reference; the sandbox accepted it (verified by the E2E suite).
 4. CAA (`Flag`/`Tag`) records are not supported by `dns.setHosts`.
 5. `ssl.getInfo` accepts `returnCertificate` and sends it, but 1.0 does not parse the certificate body (its response shape is undocumented), so the result never contains the certificate.
 6. WhoisGuard `allot`, `unallot` and `discard` are not implemented.

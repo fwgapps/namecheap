@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import Namecheap, { NamecheapError, NamecheapHttpError, NamecheapParseError } from "../src";
 import { usersCommands } from "../src/commands/users";
-import { createTestClient, loadFixture } from "./helpers";
+import { createTestClient, loadFixture, okEnvelope } from "./helpers";
 
 describe("users", () => {
   it("getBalances sends the documented request and parses the fixture", async () => {
@@ -475,6 +475,55 @@ describe("users", () => {
       });
       const empty = createTestClient(envelope(""));
       expect(await empty.client.users.create(createParams)).toEqual({});
+    });
+  });
+
+  it("changePassword reads UserId, or no id at all, as the live API may send", async () => {
+    const spelled = createTestClient(
+      okEnvelope(
+        `<UserChangePasswordResult Success="true" UserId="9" />`,
+        "namecheap.users.changePassword",
+      ),
+    );
+    await expect(
+      spelled.client.users.changePassword({ oldPassword: "a", newPassword: "b" }),
+    ).resolves.toEqual({ success: true, userID: 9 });
+    const bare = createTestClient(
+      okEnvelope(`<UserChangePasswordResult Success="true" />`, "namecheap.users.changePassword"),
+    );
+    await expect(
+      bare.client.users.changePassword({ oldPassword: "a", newPassword: "b" }),
+    ).resolves.toEqual({ success: true });
+  });
+
+  it("createAddFundsRequest and getAddFundsStatus read the lower-case elements the API sends", async () => {
+    const created = createTestClient(
+      okEnvelope(
+        `<Createaddfundsrequestresult TokenID="t1" ReturnURL="https://r.example/" RedirectURL="https://p.example/" />`,
+        "namecheap.users.createAddfundsRequest",
+      ),
+    );
+    await expect(
+      created.client.users.createAddFundsRequest({
+        paymentType: "Creditcard",
+        amount: 5,
+        returnUrl: "https://r.example/",
+      }),
+    ).resolves.toEqual({
+      tokenID: "t1",
+      redirectURL: "https://p.example/",
+      returnURL: "https://r.example/",
+    });
+    const status = createTestClient(
+      okEnvelope(
+        `<Getaddfundsstatusresult TransactionID="7" Amount="5.00" Status="CREATED" />`,
+        "namecheap.users.getAddFundsStatus",
+      ),
+    );
+    await expect(status.client.users.getAddFundsStatus({ tokenId: "t1" })).resolves.toEqual({
+      transactionID: 7,
+      amount: "5.00",
+      status: "CREATED",
     });
   });
 });

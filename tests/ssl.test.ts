@@ -438,4 +438,70 @@ describe("ssl.getApproverEmailList with groups absent", () => {
       manualEmails: [],
     });
   });
+
+  it("getInfo accepts a response without CertificateID, as the live API sends", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<SSLGetInfoResult Status="newpurchase" Type="standard ssl" Years="1"><CertificateDetails/></SSLGetInfoResult>`,
+        "namecheap.ssl.getInfo",
+      ),
+    );
+    const result = await client.ssl.getInfo({ certificateID: 1 });
+    expect(result.status).toBe("newpurchase");
+    expect(result).not.toHaveProperty("certificateID");
+  });
+
+  it("parseCSR accepts a CSR without an organisational unit", async () => {
+    const { client } = createTestClient(
+      okEnvelope(
+        `<SSLParseCSRResult><CSRDetails><CommonName>a.example.com</CommonName><DomainName>a.example.com</DomainName><Country>US</Country></CSRDetails></SSLParseCSRResult>`,
+        "namecheap.ssl.parseCSR",
+      ),
+    );
+    const result = await client.ssl.parseCSR({ csr: "x" });
+    expect(result.commonName).toBe("a.example.com");
+    expect(result).not.toHaveProperty("organisationUnit");
+  });
+
+  it("activate sends the DCV parameters and reads the nested HTTP validation", async () => {
+    const { client, calls } = createTestClient(
+      okEnvelope(
+        `<SSLActivateResult ID="5" IsSuccess="true"><HttpDCValidation ValueAvailable="true"><DNS domain="a.example.com"><FileName><![CDATA[x.txt]]></FileName><FileContent><![CDATA[hash]]></FileContent></DNS></HttpDCValidation><DNSDCValidation ValueAvailable="false"/></SSLActivateResult>`,
+        "namecheap.ssl.activate",
+      ),
+    );
+    const result = await client.ssl.activate({
+      certificateID: 5,
+      csr: "csr",
+      adminEmailAddress: "a@example.com",
+      approverEmail: "approver@example.com",
+      httpDcValidation: true,
+    });
+    expect(calls[0]?.body.get("ApproverEmail")).toBe("approver@example.com");
+    expect(calls[0]?.body.get("HTTPDCValidation")).toBe("true");
+    expect(result.httpDCValidation).toEqual({
+      valueAvailable: true,
+      fileName: "x.txt",
+      fileContent: "hash",
+      entries: [{ domain: "a.example.com", fileName: "x.txt", fileContent: "hash" }],
+    });
+    expect(result.dnsDCValidation).toEqual({ valueAvailable: false });
+  });
+
+  it("reissue reads the nested DNS validation record", async () => {
+    const { client, calls } = createTestClient(
+      okEnvelope(
+        `<SSLReissueResult ID="6" IsSuccess="true"><HttpDCValidation ValueAvailable="false"/><DNSDCValidation ValueAvailable="true"><DNS domain="a.example.com"><HostName><![CDATA[_h.a.example.com]]></HostName><Target><![CDATA[dcv.ssl.com]]></Target></DNS></DNSDCValidation></SSLReissueResult>`,
+        "namecheap.ssl.reissue",
+      ),
+    );
+    const result = await client.ssl.reissue({
+      certificateID: 6,
+      csr: "csr",
+      dnsDcValidation: true,
+    });
+    expect(calls[0]?.body.get("DNSDCValidation")).toBe("true");
+    expect(result.dnsDCValidation?.hostName).toBe("_h.a.example.com");
+    expect(result.dnsDCValidation?.target).toBe("dcv.ssl.com");
+  });
 });

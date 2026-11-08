@@ -17,7 +17,9 @@ function toErrorItem(error: El): ApiErrorItem {
  * Throws `NamecheapError` for API errors and `NamecheapParseError` for malformed envelopes.
  */
 export function readEnvelope(xml: string): El {
-  const root = new El(parseXml(xml));
+  // The sandbox can prepend a PHP warning (HTML) before the XML, e.g. on ssl.parseCSR.
+  const start = xml.search(/<\?xml|<ApiResponse/);
+  const root = new El(parseXml(start > 0 ? xml.slice(start) : xml));
   if (root.name !== "ApiResponse") {
     throw new NamecheapParseError(`Unexpected response root element "${root.name}"`);
   }

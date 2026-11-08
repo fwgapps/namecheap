@@ -77,7 +77,7 @@ await nc.transfer.updateStatus({ transferID: started.transferID, resubmit: true 
 <h2 id="ssl">ssl</h2>
 <pre><code class="language-ts">const csrInfo = await nc.ssl.parseCSR({ csr: &quot;-----BEGIN CERTIFICATE REQUEST-----\n...&quot; });
 const { certificates } = await nc.ssl.getList({ listType: &quot;Active&quot; });
-const emails = await nc.ssl.getApproverEmailList({ domainName: &quot;example.com&quot;, certificateType: &quot;PositiveSSL&quot; });
+const emails = await nc.ssl.getApproverEmailList({ domainName: &quot;example.com&quot;, certificateType: &quot;Standard SSL SSLcom&quot; });
 const cert = await nc.ssl.getInfo({ certificateID: 12345 });</code></pre>
 <p>Activation, reissue, renewal and purchase (<code>ssl.create</code>, <code>ssl.activate</code>, <code>ssl.reissue</code>, <code>ssl.renew</code>, <code>ssl.purchaseMoreSans</code>) are available too; see <a href="known-gaps.html">Known gaps</a> before relying on the activation flow.</p>
 

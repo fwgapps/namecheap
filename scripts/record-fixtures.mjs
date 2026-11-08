@@ -17,6 +17,9 @@ export const SANDBOX_URL = "https://api.sandbox.namecheap.com/xml.response";
 const SOURCE_HEADER = "<!-- source: sandbox -->";
 const RESERVED_PARAMS = new Set(["apiuser", "apikey", "username", "clientip", "command"]);
 const FIXTURE_PATTERN = /^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/;
+// Never record password-checking commands: a wrong password counts as a failed login and three in
+// a row lock the ApiUser for 24 hours.
+const FORBIDDEN_COMMAND = /^namecheap.users.(login|changepassword|resetpassword)$/i;
 const REQUIRED_ENV = ["NAMECHEAP_API_USER", "NAMECHEAP_API_KEY", "NAMECHEAP_CLIENT_IP"];
 
 /**
@@ -100,6 +103,9 @@ function validateEntries(entries) {
     seen.add(entry.fixture);
     if (typeof entry.command !== "string" || entry.command === "") {
       throw new Error(`${where}: "command" must be a non-empty string`);
+    }
+    if (FORBIDDEN_COMMAND.test(entry.command)) {
+      throw new Error(`${where}: ${entry.command} is not allowed (it can lock the ApiUser)`);
     }
     if (entry.params !== undefined) {
       const p = entry.params;
