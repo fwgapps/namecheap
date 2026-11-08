@@ -9,7 +9,7 @@ import type {
 } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
 import { BadRequestError } from "../middleware/errors";
-import { bodyObject, bodyOf, pickQuery } from "../util/params";
+import { bodyOf, bodyString, optionalBodyString, pickQuery } from "../util/params";
 
 const router = Router();
 
@@ -82,12 +82,17 @@ router.put("/", async (req, res, next) => {
 // Body: { "oldPassword", "newPassword" } or { "resetCode", "newPassword" }
 router.put("/password", async (req, res, next) => {
   try {
-    const body = bodyOf<UsersChangePasswordParams>(req, ["newPassword"]);
-    const raw = bodyObject(req);
-    if (!raw.oldPassword && !raw.resetCode) {
-      throw new BadRequestError("Missing body field: oldPassword or resetCode");
+    const newPassword = bodyString(req, "newPassword");
+    const oldPassword = optionalBodyString(req, "oldPassword");
+    const resetCode = optionalBodyString(req, "resetCode");
+    if ((oldPassword === undefined) === (resetCode === undefined)) {
+      throw new BadRequestError("Send exactly one body field: oldPassword or resetCode");
     }
-    res.json(await namecheap.users.changePassword(body));
+    const params: UsersChangePasswordParams =
+      oldPassword !== undefined
+        ? { oldPassword, newPassword }
+        : { resetCode: resetCode!, newPassword };
+    res.json(await namecheap.users.changePassword(params));
   } catch (error) {
     next(error);
   }

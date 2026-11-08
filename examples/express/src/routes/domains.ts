@@ -41,13 +41,11 @@ router.post("/contacts", async (req, res, next) => {
   try {
     res.json(
       await namecheap.domains.setContacts(
-        bodyOf<DomainsSetContactsParams>(req, [
-          "domainName",
-          "registrant",
-          "tech",
-          "admin",
-          "auxBilling",
-        ]),
+        bodyOf<DomainsSetContactsParams>(
+          req,
+          ["domainName", "registrant", "tech", "admin", "auxBilling"],
+          ["registrant", "tech", "admin", "auxBilling"],
+        ),
       ),
     );
   } catch (error) {
@@ -77,14 +75,11 @@ router.post("/create", async (req, res, next) => {
   try {
     res.json(
       await namecheap.domains.create(
-        bodyOf<DomainsCreateParams>(req, [
-          "domainName",
-          "years",
-          "registrant",
-          "tech",
-          "admin",
-          "auxBilling",
-        ]),
+        bodyOf<DomainsCreateParams>(
+          req,
+          ["domainName", "years", "registrant", "tech", "admin", "auxBilling"],
+          ["registrant", "tech", "admin", "auxBilling"],
+        ),
       ),
     );
   } catch (error) {

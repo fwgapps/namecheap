@@ -33,7 +33,7 @@ USER_NAME=
 ENV=DEV
 ```
 
-`API_USER`, `API_KEY` and `CLIENT_IP` are required; the server refuses to start without them (the error names the missing variables, never their values). Optional: `PORT` (default 3000).
+`API_USER`, `API_KEY` and `CLIENT_IP` are required; the server refuses to start without them (the error names the missing variables, never their values). Optional: `PORT` (default 3000) and `HOST` (default `127.0.0.1`: the example has no authentication, so it only listens on the loopback interface; set `HOST` deliberately, for example behind your own authenticating proxy).
 
 ## Run
 
@@ -42,7 +42,7 @@ yarn dev          # ts-node-dev with auto-restart
 yarn typecheck    # tsc --noEmit (alias: yarn build)
 ```
 
-The server listens on http://localhost:3000.
+The server listens on http://127.0.0.1:3000 (see `HOST` above).
 
 ## Routes
 
@@ -75,7 +75,7 @@ Reads use `GET` with path/query parameters, writes use `POST`/`PUT`/`DELETE` wit
 | POST | `/transfer` | `transfer.create` |
 | GET | `/transfer` | `transfer.getList` |
 | GET | `/transfer/status/:id` | `transfer.getStatus` |
-| PUT | `/transfer/status/:id` | `transfer.updateStatus` (`{ resubmit }`) |
+| PUT | `/transfer/status/:id` | `transfer.updateStatus` (`{ resubmit }`, a JSON boolean; absent means `false`) |
 | POST | `/ssl` | `ssl.create` |
 | GET | `/ssl` | `ssl.getList` |
 | POST | `/ssl/parseCsr` | `ssl.parseCSR` (`{ csr, certificateType? }`) |
@@ -94,7 +94,7 @@ Reads use `GET` with path/query parameters, writes use `POST`/`PUT`/`DELETE` wit
 | GET | `/users/addFundsStatus/:tokenId` | `users.getAddFundsStatus` |
 | POST | `/users/addFundsRequest` | `users.createAddFundsRequest` |
 | PUT | `/users` | `users.update` |
-| PUT | `/users/password` | `users.changePassword` (body only) |
+| PUT | `/users/password` | `users.changePassword` (body only: `newPassword` plus exactly one of `oldPassword` or `resetCode`, as strings) |
 | POST | `/users` | `users.create` (body only) |
 | POST | `/users/login` | `users.login` (body only) |
 | POST | `/users/resetPassword` | `users.resetPassword` (body only) |
@@ -119,7 +119,7 @@ A single error middleware (`src/middleware/errors.ts`) answers every failure wit
 | Error | Status | Notes |
 | --- | --- | --- |
 | `NamecheapError` (API answered `ERROR`) | 400 | `code` is the Namecheap error code |
-| missing/invalid route parameter or body field (`BadRequestError`, defined by this example); ids, pages and years must be positive integers | 400 | no `code` |
+| missing/invalid route parameter or body field (`BadRequestError`, defined by this example); ids, pages and years must be positive integers; required body fields must be strings, numbers or booleans, except the lists and contact blocks that take arrays or objects | 400 | no `code` |
 | non-Namecheap errors with a 4xx `status` (Express/body-parser; Namecheap errors are never mapped this way, so an upstream 429 is still 502) (malformed JSON, body too large, wrong content type) | that status (400/413/415) | fixed message; only the error name and status are logged, never the message (it can quote the request body) |
 | `NamecheapParseError`, `NamecheapHttpError` | 502 | upstream unreachable or unreadable |
 | anything else, including a `TypeError` thrown by the SDK's own parameter validation that the route did not catch first | 500 | generic message; the real `name: message` is logged server-side |

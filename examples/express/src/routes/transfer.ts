@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { TransferCreateParams } from "@fwgapps/namecheap";
 import namecheap from "../services/namecheap";
-import { bodyObject, bodyOf, numericParam, pickQuery } from "../util/params";
+import { bodyOf, numericParam, optionalBodyBoolean, pickQuery } from "../util/params";
 
 const router = Router();
 
@@ -40,7 +40,10 @@ router.put("/status/:id", async (req, res, next) => {
   try {
     const transferID = numericParam(req.params.id, "id");
     res.json(
-      await namecheap.transfer.updateStatus({ transferID, resubmit: !!bodyObject(req).resubmit }),
+      await namecheap.transfer.updateStatus({
+        transferID,
+        resubmit: optionalBodyBoolean(req, "resubmit"),
+      }),
     );
   } catch (error) {
     next(error);

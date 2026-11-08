@@ -25,6 +25,9 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = Number(process.env.PORT) || 3000;
-app.listen(PORT, () => {
-  console.log(`Namecheap API example running in: http://localhost:${PORT}`);
+// The example has no authentication: listen on the loopback interface only. Set HOST to
+// expose it deliberately (for example behind your own authenticating proxy).
+const HOST = process.env.HOST || "127.0.0.1";
+app.listen(PORT, HOST, () => {
+  console.log(`Namecheap API example running in: http://${HOST}:${PORT}`);
 });

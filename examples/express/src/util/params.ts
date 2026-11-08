@@ -61,17 +61,39 @@ export function bodyObject(req: Request): Record<string, unknown> {
 
 /**
  * The JSON body typed as `T`, after checking that it is an object and that every
- * listed field is present (not undefined, null or an empty string).
+ * listed field is present (not undefined, null or an empty string) and of the right
+ * kind: a string, number or boolean, except the fields named in `structured`, which
+ * must be an array or an object (lists of records, contact blocks).
  */
-export function bodyOf<T>(req: Request, required: readonly string[] = []): T {
+export function bodyOf<T>(
+  req: Request,
+  required: readonly string[] = [],
+  structured: readonly string[] = [],
+): T {
   const body = bodyObject(req);
   for (const name of required) {
     const value = body[name];
     if (value === undefined || value === null || value === "") {
       throw new BadRequestError(`Missing body field: ${name}`);
     }
+    const isStructured = typeof value === "object";
+    const isPrimitive =
+      typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+    if (structured.includes(name) ? !isStructured : !isPrimitive) {
+      throw new BadRequestError(`Invalid body field: ${name}`);
+    }
   }
   return body as T;
+}
+
+/** An optional boolean body field (`false` when absent); a present non-boolean is rejected. */
+export function optionalBodyBoolean(req: Request, name: string): boolean {
+  const value = bodyObject(req)[name];
+  if (value === undefined) return false;
+  if (typeof value !== "boolean") {
+    throw new BadRequestError(`Invalid body field: ${name} (true or false expected)`);
+  }
+  return value;
 }
 
 /** A required non-empty string body field. */

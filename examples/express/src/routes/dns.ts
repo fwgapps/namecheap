@@ -22,7 +22,9 @@ router.post("/default", async (req, res, next) => {
 router.post("/custom", async (req, res, next) => {
   try {
     res.json(
-      await namecheap.dns.setCustom(bodyOf<DnsSetCustomParams>(req, ["sld", "tld", "nameservers"])),
+      await namecheap.dns.setCustom(
+        bodyOf<DnsSetCustomParams>(req, ["sld", "tld", "nameservers"], ["nameservers"]),
+      ),
     );
   } catch (error) {
     next(error);
@@ -53,7 +55,11 @@ router.get("/hosts", async (req, res, next) => {
 router.post("/hosts", async (req, res, next) => {
   try {
     bodyObjectArray(req, "hosts");
-    res.json(await namecheap.dns.setHosts(bodyOf<DnsSetHostsParams>(req, ["sld", "tld", "hosts"])));
+    res.json(
+      await namecheap.dns.setHosts(
+        bodyOf<DnsSetHostsParams>(req, ["sld", "tld", "hosts"], ["hosts"]),
+      ),
+    );
   } catch (error) {
     next(error);
   }
@@ -74,7 +80,7 @@ router.post("/emailForwarding", async (req, res, next) => {
     bodyObjectArray(req, "forwards", true);
     res.json(
       await namecheap.dns.setEmailForwarding(
-        bodyOf<DnsSetEmailForwardingParams>(req, ["domainName", "forwards"]),
+        bodyOf<DnsSetEmailForwardingParams>(req, ["domainName", "forwards"], ["forwards"]),
       ),
     );
   } catch (error) {
