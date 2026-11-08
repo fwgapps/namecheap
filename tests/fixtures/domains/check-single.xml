@@ -1,4 +1,5 @@
-<!-- source: go-namecheap-sdk -->
+<!-- source: docs -->
+<!-- derived from namecheap/go-namecheap-sdk namecheaptest/fixtures/domains_check.xml (Apache-2.0): second DomainCheckResult removed -->
 <?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
 	<Errors />

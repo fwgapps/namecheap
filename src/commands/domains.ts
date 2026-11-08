@@ -87,8 +87,10 @@ export interface DomainsCheckParams {
 export interface DomainsCheckItem {
   domain: string;
   available: boolean;
-  errorNo: number;
-  description: string;
+  /** Present in recorded responses, not in the reference. */
+  errorNo?: number;
+  /** Present in recorded responses, not in the reference. */
+  description?: string;
   isPremiumName: boolean;
   premiumRegistrationPrice: number;
   premiumRenewalPrice: number;
@@ -106,8 +108,8 @@ const check = defineCommand<DomainsCheckParams, DomainsCheckResult>({
     cr.all("DomainCheckResult").map((item) => ({
       domain: item.string("Domain"),
       available: item.boolean("Available"),
-      errorNo: item.number("ErrorNo"),
-      description: item.string("Description"),
+      ...optionalField("errorNo", item.optionalNumber("ErrorNo")),
+      ...optionalField("description", item.optionalString("Description")),
       isPremiumName: item.boolean("IsPremiumName"),
       premiumRegistrationPrice: item.number("PremiumRegistrationPrice"),
       premiumRenewalPrice: item.number("PremiumRenewalPrice"),

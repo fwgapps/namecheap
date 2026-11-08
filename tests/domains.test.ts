@@ -471,4 +471,31 @@ describe("domains", () => {
       ].sort(),
     );
   });
+
+  it("check does not require the fixture-only ErrorNo and Description attributes", async () => {
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+  <Errors />
+  <RequestedCommand>namecheap.domains.check</RequestedCommand>
+  <CommandResponse Type="namecheap.domains.check">
+    <DomainCheckResult Domain="example.com" Available="true" IsPremiumName="false" PremiumRegistrationPrice="0" PremiumRenewalPrice="0" PremiumRestorePrice="0" PremiumTransferPrice="0" IcannFee="0" EapFee="0" />
+  </CommandResponse>
+</ApiResponse>`;
+    const { client } = createTestClient(xml);
+    const result = await client.domains.check({ domainList: "example.com" });
+    expect(result).toEqual([
+      {
+        domain: "example.com",
+        available: true,
+        isPremiumName: false,
+        premiumRegistrationPrice: 0,
+        premiumRenewalPrice: 0,
+        premiumRestorePrice: 0,
+        premiumTransferPrice: 0,
+        icannFee: 0,
+        eapFee: 0,
+      },
+    ]);
+    expect(Object.keys(result[0] ?? {})).not.toContain("errorNo");
+  });
 });
