@@ -17,7 +17,7 @@ Decisions agreed with the maintainer:
 | --- | --- |
 | Product | npm library (not a standalone REST service) |
 | Public API | Free to break; released as 1.0.0 with a migration guide |
-| Runtimes | Node >= 20 and edge runtimes (Cloudflare Workers, Deno, Bun). No browser, no CDN/IIFE build |
+| Runtimes | Node >= 22 and edge runtimes (Cloudflare Workers, Deno, Bun). No browser, no CDN/IIFE build |
 | Dependencies | Zero runtime dependencies. Own minimal XML parser |
 | Transport | Every command is an HTTP POST with an `application/x-www-form-urlencoded` body, as in the official Go SDK. Credentials never appear in the URL |
 | Coverage | Every command of every group, each covered by tests on XML fixtures |
@@ -30,7 +30,7 @@ Success criteria:
   method and a contract test.
 - No runtime dependency in `package.json`.
 - A consumer on the 0.6 API can migrate using `MIGRATION.md` alone.
-- The package works unchanged on Node 20+ and on a Cloudflare Worker.
+- The package works unchanged on Node 22+ and on a Cloudflare Worker.
 
 Non-goals: browser support, automatic retries, caching, a hosted REST service,
 code generation from documentation.
@@ -150,7 +150,7 @@ Tests (Vitest):
 - Build with `tsup`: ESM, CJS and `.d.ts`. The IIFE build and the `unpkg` and
   `jsdelivr` fields are removed.
 - `package.json` has an `exports` map (`import`, `require`, `types`),
-  `engines.node >= 20`, `files: ["dist"]`, `sideEffects: false`, and no
+  `engines.node >= 22`, `files: ["dist"]`, `sideEffects: false`, and no
   `dependencies`.
 - Tooling kept: Yarn, ESLint, Prettier, Vitest, Husky, Commitizen. Unused tools
   (`ts-node`, `ts-node-dev`) are removed. The `@fwg/...` path aliases are
