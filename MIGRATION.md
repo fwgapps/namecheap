@@ -5,7 +5,7 @@ Version 1.0 is a complete rewrite of `@fwgapps/namecheap`. It is not backwards c
 ## 1. What changed
 
 - **Zero dependencies.** `fast-xml-parser` and `change-case-all` are gone; the XML parser is built in (no DTD or external entity support).
-- **Node.js >= 20.** The library uses the global `fetch` and `AbortSignal.timeout`. Edge runtimes with `fetch` work too.
+- **Node.js >= 22.** The library uses the global `fetch` and `AbortSignal.timeout`. Edge runtimes with `fetch` work too.
 - **No IIFE/CDN build, no browser support.** See [section 6](#6-removed-browsercdn-build).
 - **ESM and CJS** builds with `exports` map and separate `.d.ts` / `.d.cts` declarations.
 - **POST transport.** Every command is a `POST` with an `application/x-www-form-urlencoded` body. The URL has no query string, so the API key never appears in it. (0.6 used GET with the credentials in the query string, and POST only for `setHosts` with more than 10 hosts and `ssl.parseCSR`.)
