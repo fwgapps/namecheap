@@ -1,3 +1,18 @@
+# [2.0.0](https://github.com/fwgapps/[secure]/compare/v1.1.0...v2.0.0) (2026-11-11)
+
+
+* feat!: require Node >= 22 and update vitest to 5 ([658850e](https://github.com/fwgapps/[secure]/commit/658850eeb30ed050d9dd2d251cbb9f4f7148837c))
+
+
+### BREAKING CHANGES
+
+* engines.node is now >=22. Node 20 reached end of life on
+2026-04-30. CI now tests Node 22, 24 and 26; tsup targets node22.
+Also bumps vitest and @vitest/coverage-v8 to 5 (adds vite as a dev dependency).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_019LNn1DfhDn8HDSgv2hJMa2
+
 # [1.1.0](https://github.com/fwgapps/[secure]/compare/v1.0.0...v1.1.0) (2026-11-08)
 
 
