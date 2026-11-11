@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/fwgapps/[secure]/compare/v2.0.1...v2.0.2) (2026-11-11)
+
+
+### Bug Fixes
+
+* add fwgapps brand links and author url to package metadata ([be0eb26](https://github.com/fwgapps/[secure]/commit/be0eb269befb4359a692d2708bdf894f037ee6af))
+
 ## [2.0.1](https://github.com/fwgapps/[secure]/compare/v2.0.0...v2.0.1) (2026-11-11)
 
 
