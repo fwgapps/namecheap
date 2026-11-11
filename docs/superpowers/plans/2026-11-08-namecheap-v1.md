@@ -6,14 +6,14 @@
 
 **Architecture:** A small `core/` (XML parser, element reader, param serializer, envelope check, transport, `defineCommand`/`group`) that knows no specific command, plus `commands/<group>.ts` files that hold only declarative command definitions with their param/result types. Every command is covered by a contract test that runs a fixture XML through a fake `fetch`.
 
-**Tech Stack:** TypeScript 5.x, Node >= 20 (`fetch`, `AbortSignal.timeout`), `tsup` (ESM + CJS + `.d.ts`), Vitest, ESLint, Prettier, Yarn classic, semantic-release.
+**Tech Stack:** TypeScript 5.x, Node >= 22 (`fetch`, `AbortSignal.timeout`), `tsup` (ESM + CJS + `.d.ts`), Vitest, ESLint, Prettier, Yarn classic, semantic-release.
 
 **Spec:** `docs/superpowers/specs/2026-11-08-namecheap-v1-design.md`
 
 ## Global Constraints
 
 - Branch: `claude/trusting-einstein-vizfy8`. Everything in the repository (code, comments, docs, commit messages, fixtures) is written in English.
-- `package.json`: `engines.node` is `>=20`, no `dependencies` at all, `files: ["dist"]`, `sideEffects: false`, an `exports` map with `types`, `import` and `require`.
+- `package.json`: `engines.node` is `>=22`, no `dependencies` at all, `files: ["dist"]`, `sideEffects: false`, an `exports` map with `types`, `import` and `require`.
 - Build output is ESM, CJS and `.d.ts` only. No IIFE build, no `unpkg`/`jsdelivr` fields, no browser support.
 - No `@fwg/...` path aliases: relative imports only.
 - The parser never coerces values; commands read fields with `string`/`number`/`boolean` accessors.
@@ -66,8 +66,8 @@ scripts/record-fixtures.mjs    sandbox recorder
 - Produces: working `yarn lint`, `yarn tsc --noEmit`, `yarn test`, `yarn build` on an empty project.
 
 - [ ] **Step 1:** `git rm -r src tests`, then create `src/index.ts` containing `export {};` and `tests/smoke.test.ts` asserting `expect(1 + 1).toBe(2)`.
-- [ ] **Step 2:** Edit `package.json`: remove `dependencies`, `unpkg`, `jsdelivr`, `ts-node`, `ts-node-dev`, `vite-tsconfig-paths`, `change-case-all`, `fast-xml-parser`; set `engines.node` to `>=20`, add `sideEffects: false`, `exports` (`{".": {"types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs"}}`), `typecheck` script `tsc --noEmit`, and run `yarn install` to refresh `yarn.lock`.
-- [ ] **Step 3:** `tsconfig.json`: `target ES2022`, `module ESNext`, `moduleResolution Bundler`, `strict`, `noUncheckedIndexedAccess`, no `paths`/`baseUrl`, `include` only `src`, `tests`, `scripts`. `tsup.config.ts`: `format: ["esm", "cjs"]`, `dts: true`, `sourcemap: true`, `clean: true`, `target: "node20"`, no `minify`, no `globalName`. `vitest.config.ts`: drop `tsconfigPaths`, keep `globals: true`, coverage v8 with thresholds `lines 95, functions 95, statements 95, branches 90`, excluding `examples/**`, `dist`, `scripts`.
+- [ ] **Step 2:** Edit `package.json`: remove `dependencies`, `unpkg`, `jsdelivr`, `ts-node`, `ts-node-dev`, `vite-tsconfig-paths`, `change-case-all`, `fast-xml-parser`; set `engines.node` to `>=22`, add `sideEffects: false`, `exports` (`{".": {"types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs"}}`), `typecheck` script `tsc --noEmit`, and run `yarn install` to refresh `yarn.lock`.
+- [ ] **Step 3:** `tsconfig.json`: `target ES2022`, `module ESNext`, `moduleResolution Bundler`, `strict`, `noUncheckedIndexedAccess`, no `paths`/`baseUrl`, `include` only `src`, `tests`, `scripts`. `tsup.config.ts`: `format: ["esm", "cjs"]`, `dts: true`, `sourcemap: true`, `clean: true`, `target: "node22"`, no `minify`, no `globalName`. `vitest.config.ts`: drop `tsconfigPaths`, keep `globals: true`, coverage v8 with thresholds `lines 95, functions 95, statements 95, branches 90`, excluding `examples/**`, `dist`, `scripts`.
 - [ ] **Step 4:** Run `yarn lint && yarn typecheck && yarn test --run && yarn build`. Expected: all exit 0 and `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts` exist.
 - [ ] **Step 5:** `git add -A && git commit -m "chore: reset scaffold for the 1.0 rewrite"`
 
@@ -356,11 +356,11 @@ After the last command of a group:
 - Consumes: the final public API from Tasks 9 and 10-17.
 
 - [ ] **Step 1:** Rewrite `.github/workflows/publish.yml`: on pull requests run `yarn lint`, `yarn typecheck`, `yarn test --run --coverage`, `yarn build`; on push to `main` add a `release` job (needs the checks) with `permissions: { contents: write, id-token: write, issues: write, pull-requests: write }`, `NPM_CONFIG_PROVENANCE: true`, running `yarn semantic-release`. Keep the Codecov upload and the audit job. Pin Node to 20.
-- [ ] **Step 2:** Rewrite `README.md` in English: install, a runnable example per group property, error handling with the three classes, `timeoutMs` and `fetch` options, runtime support (Node >= 20, edge, no browser), and the sandbox/production warning (`sandbox` defaults to `false`, meaning production).
+- [ ] **Step 2:** Rewrite `README.md` in English: install, a runnable example per group property, error handling with the three classes, `timeoutMs` and `fetch` options, runtime support (Node >= 22, edge, no browser), and the sandbox/production warning (`sandbox` defaults to `false`, meaning production).
 - [ ] **Step 3:** Write `MIGRATION.md` with a table mapping every 0.6 method/type to its 1.0 equivalent (get the 0.6 surface with `git show 2cb5f7f:src/methods/<file>`), plus sections on errors (objects thrown → `Error` subclasses), return shapes, renamed properties (`domainsDns → dns`, `domainsNs → ns`, `domainsTransfer → transfer`, `whoIsGuard → whoisGuard`, `domainPrivacy` removed), and the removal of the browser/CDN build.
 - [ ] **Step 4:** Run `yarn lint && yarn typecheck && yarn test --run --coverage && yarn build`. Expected: all exit 0 and coverage thresholds met.
 - [ ] **Step 5:** Commit with the breaking footer:
   ```bash
   git add -A
-  git commit -m "feat!: rewrite the library from scratch for 1.0" -m "BREAKING CHANGE: new client API, zero dependencies, Node >= 20, no browser build. See MIGRATION.md."
+  git commit -m "feat!: rewrite the library from scratch for 1.0" -m "BREAKING CHANGE: new client API, zero dependencies, Node >= 22, no browser build. See MIGRATION.md."
   ```

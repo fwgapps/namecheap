@@ -6,7 +6,7 @@
 //     node scripts/record-fixtures.mjs scripts/fixture-requests.example.json
 //
 // The host is a constant (the sandbox); it cannot be changed by flag or env var.
-// Zero dependencies, Node >= 20.
+// Zero dependencies, Node >= 22.
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";

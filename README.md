@@ -33,7 +33,7 @@ A typed, zero-dependency client for the [Namecheap XML API](https://www.namechea
 - Zero runtime dependencies: the XML parser is built in (no DTD or external entity support).
 - ESM and CommonJS builds with bundled type declarations.
 - Tree-shakeable: import just the commands you use (see [Using a single command](#using-a-single-command-tree-shaking)).
-- Node.js >= 20 and edge runtimes that provide `fetch` (Cloudflare Workers, Deno, Bun, ...).
+- Node.js >= 22 and edge runtimes that provide `fetch` (Cloudflare Workers, Deno, Bun, ...).
 - No automatic retries and no logging.
 - **No browser support, on purpose.** The API key must never reach a browser, and Namecheap only accepts requests from an allow-listed server IP. Call this library from your backend.
 

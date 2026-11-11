@@ -29,7 +29,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "keywords": [
     "namecheap",
@@ -40,31 +40,32 @@
   "license": "ISC",
   "description": "A simple and efficient TypeScript library for interacting with the Namecheap API, returning structured JSON responses.",
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/commit-analyzer": "^13.0.1",
-    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/git": "^11.0.1",
     "@semantic-release/github": "^12.0.10",
     "@semantic-release/npm": "^13",
     "@semantic-release/release-notes-generator": "^14.1.1",
-    "@types/node": "^22.13.11",
-    "@typescript-eslint/eslint-plugin": "^8.33.0",
-    "@typescript-eslint/parser": "^8.33.0",
-    "@typescript-eslint/utils": "^8.33.0",
-    "@vitest/coverage-v8": "^4",
+    "@types/node": "^22.20.5",
+    "@typescript-eslint/eslint-plugin": "^8.72.2",
+    "@typescript-eslint/parser": "^8.72.2",
+    "@typescript-eslint/utils": "^8.72.2",
+    "@vitest/coverage-v8": "^5.1.0",
     "cz-conventional-changelog": "^3.3.0",
-    "esbuild": "^0.25.5",
-    "eslint": "^9.27.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.5",
-    "eslint-flat-config-utils": "^2.1.0",
+    "eslint-flat-config-utils": "^3.2.0",
     "eslint-plugin-prettier": "^5.4.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.0.0",
-    "prettier": "^3.5.3",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.10.0",
     "semantic-release": "^25",
     "tsup": "^9.0.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.33.0",
-    "vitest": "^4"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
   },
   "repository": {
     "type": "git",
