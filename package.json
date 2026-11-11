@@ -33,12 +33,38 @@
   },
   "keywords": [
     "namecheap",
+    "namecheap-api",
+    "namecheap-sdk",
+    "namecheap-client",
+    "namecheap-xml-api",
+    "domain",
+    "domains",
+    "domain-registrar",
+    "domain-registration",
+    "domain-availability",
+    "dns",
+    "dns-management",
+    "nameserver",
+    "ssl",
+    "ssl-certificates",
+    "whoisguard",
+    "whois",
+    "registrar",
+    "api-client",
+    "sdk",
+    "typescript",
+    "esm",
+    "cjs",
+    "tree-shakeable",
+    "zero-dependency",
     "nodejs",
-    "typescript"
+    "cloudflare-workers",
+    "deno",
+    "bun"
   ],
   "author": "Anderson Fernandes",
   "license": "ISC",
-  "description": "A simple and efficient TypeScript library for interacting with the Namecheap API, returning structured JSON responses.",
+  "description": "Typed, zero-dependency TypeScript client for the Namecheap XML API: domains, DNS, nameservers, SSL, transfers and WhoisGuard. ESM + CJS, tree-shakeable, works on Node 22+ and edge runtimes.",
   "devDependencies": {
     "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/commit-analyzer": "^13.0.1",
@@ -70,6 +96,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/fwgapps/namecheap.git"
+  },
+  "homepage": "https://github.com/fwgapps/namecheap#readme",
+  "bugs": {
+    "url": "https://github.com/fwgapps/namecheap/issues"
   },
   "config": {
     "commitizen": {

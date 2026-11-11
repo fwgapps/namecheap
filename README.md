@@ -8,6 +8,8 @@
 
 A typed, zero-dependency client for the [Namecheap XML API](https://www.namecheap.com/support/api/intro/). Every command returns a plain, fully typed object instead of raw XML.
 
+Use it from Node.js, Bun, Deno or Cloudflare Workers to check domain availability, register and renew domains, manage DNS records and nameservers, order SSL certificates, handle domain transfers and WhoisGuard, all through the Namecheap API with full TypeScript types.
+
 > Upgrading from 0.x? Read [MIGRATION.md](./MIGRATION.md). Version 1.0 is a complete rewrite and is not backwards compatible.
 
 ## Table of contents
