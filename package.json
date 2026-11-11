@@ -100,6 +100,9 @@
     "**/@npmcli/map-workspaces/glob/minimatch": "^11.0.5",
     "**/@npmcli/package-json/glob/minimatch": "^11.0.5",
     "**/cacache/glob/minimatch": "^11.0.5",
-    "**/npm/glob/minimatch": "^11.0.5"
+    "**/npm/glob/minimatch": "^11.0.5",
+    "**/eslint/minimatch": "^11.0.5",
+    "**/@eslint/config-array/minimatch": "^11.0.5",
+    "**/commitizen/glob/minimatch": "^11.0.5"
   }
 }
