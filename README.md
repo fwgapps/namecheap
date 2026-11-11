@@ -365,6 +365,8 @@ Issues and pull requests are welcome. The project uses Conventional Commits (`ya
 
 Licensed under the [ISC license](./LICENSE).
 
+Built and maintained by [fwgapps](https://fwgapps.com).
+
 ## Attribution
 
 Some test fixtures are copied or derived from [namecheap/go-namecheap-sdk](https://github.com/namecheap/go-namecheap-sdk), licensed under Apache-2.0. See [NOTICE](./NOTICE).

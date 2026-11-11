@@ -26,6 +26,7 @@
     <a href="https://www.npmjs.com/package/@fwgapps/namecheap">npm package</a>
     <a href="https://github.com/fwgapps/namecheap/blob/main/MIGRATION.md">Migration guide (0.x &rarr; 1.0)</a>
     <a href="https://www.namecheap.com/support/api/intro/">Namecheap API reference</a>
+    <a href="https://fwgapps.com">fwgapps.com</a>
   </div>
 </aside>
 <main>
@@ -33,7 +34,7 @@
 <p class="lead">Behavior that is undocumented, unverified, or intentionally not implemented.</p>
 <ol><li><code>ssl.activate</code> and <code>ssl.reissue</code> accept <code>approverEmail</code>, <code>httpDcValidation</code> and <code>dnsDcValidation</code> (verified against the sandbox) but do not expose the 0.6 OV/EV organisation option sets, because the API reference does not document them.</li><li><code>users.create</code>, <code>users.login</code>, <code>users.resetPassword</code>, <code>whoisGuard.renew</code>, <code>ssl.create</code>, <code>ssl.renew</code> and <code>ssl.purchaseMoreSans</code> have undocumented response shapes. They return loosely typed results parsed tolerantly: they never throw on an unexpected shape, and fields that cannot be read are simply absent.</li><li><code>dns.setEmailForwarding</code> sends <code>MailBox&lt;n&gt;</code> as spelled in the API reference; the sandbox accepted it (verified by the E2E suite).</li><li>CAA (<code>Flag</code>/<code>Tag</code>) records are not supported by <code>dns.setHosts</code>.</li><li><code>ssl.getInfo</code> accepts <code>returnCertificate</code> and sends it, but 1.0 does not parse the certificate body, so the result never contains the certificate.</li><li>WhoisGuard <code>allot</code>, <code>unallot</code> and <code>discard</code> are not implemented.</li><li><code>domains.create</code> no longer exposes <code>idnCode</code>, the billing contact and <code>extendedAttributes</code>, which 0.6 did. IDN registrations and some ccTLDs (such as .us, .ca, .eu) need them. Unknown extra keys still pass through the serializer, so you can try a workaround such as <code>nc.domains.create({ ...params, ExtendedAttributes: &quot;...&quot; } as never)</code>, unverified against the live API.</li><li>Test fixtures marked <code>source: docs</code> or <code>source: go-namecheap-sdk</code> have not all been verified against the live sandbox. <code>scripts/record-fixtures.mjs</code> re-records them from a real sandbox account.</li></ol>
 <div class="pager"><a href="advanced.html">&larr; Advanced</a><span></span></div>
-<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>.</footer>
+<footer>Licensed under the <a href="https://github.com/fwgapps/namecheap/blob/main/LICENSE">ISC license</a>. Found a problem with this page? <a href="https://github.com/fwgapps/namecheap/issues">Open an issue</a>. Built by <a href="https://fwgapps.com">fwgapps</a>.</footer>
 </main>
 </div>
 </body>
