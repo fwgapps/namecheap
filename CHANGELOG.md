@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/fwgapps/[secure]/compare/v2.0.0...v2.0.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **deps:** force minimatch ^11.0.5 to fix globparts DoS ([#198](https://github.com/fwgapps/[secure]/issues/198)) ([#9](https://github.com/fwgapps/[secure]/issues/9)) ([05ae64f](https://github.com/fwgapps/[secure]/commit/05ae64fd0685829693819c5fb0f02d3ada4d8d38))
+
 # [2.0.0](https://github.com/fwgapps/[secure]/compare/v1.1.0...v2.0.0) (2026-11-11)
 
 
