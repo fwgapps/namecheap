@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://fwgapps.github.io/namecheap/sitemap.xml
