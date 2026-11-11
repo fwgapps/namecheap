@@ -8,6 +8,8 @@
 
 A typed, zero-dependency client for the [Namecheap XML API](https://www.namecheap.com/support/api/intro/). Every command returns a plain, fully typed object instead of raw XML.
 
+Use it from Node.js, Bun, Deno or Cloudflare Workers to check domain availability, register and renew domains, manage DNS records and nameservers, order SSL certificates, handle domain transfers and WhoisGuard, all through the Namecheap API with full TypeScript types.
+
 > Upgrading from 0.x? Read [MIGRATION.md](./MIGRATION.md). Version 1.0 is a complete rewrite and is not backwards compatible.
 
 ## Table of contents
@@ -362,6 +364,8 @@ The package also exports the command tables behind each group (`domainsCommands`
 Issues and pull requests are welcome. The project uses Conventional Commits (`yarn commit` starts Commitizen) and semantic-release. Before opening a pull request run `yarn lint && yarn typecheck && yarn test --run --coverage && yarn build`.
 
 Licensed under the [ISC license](./LICENSE).
+
+Built and maintained by [fwgapps](https://fwgapps.com).
 
 ## Attribution
 
